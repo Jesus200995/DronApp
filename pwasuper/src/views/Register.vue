@@ -580,8 +580,8 @@ async function register() {
     
     const payload = {
       correo: form.email.trim(),
-      nombre_completo: nombreCompleto,
-      cargo: form.cargo.trim().toUpperCase(),
+      nombre: nombreCompleto,  // Usar 'nombre' en lugar de 'nombre_completo'
+      puesto: form.cargo.trim().toUpperCase(),  // Usar 'puesto' en lugar de 'cargo'
       supervisor: form.supervisor.trim().toUpperCase(),
       contrasena: form.password,
       curp: form.curp.toUpperCase().trim(),

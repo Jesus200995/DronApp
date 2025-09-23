@@ -232,8 +232,8 @@ async def health_check():
 # Modelos para autenticación
 class UserCreate(BaseModel):
     correo: str
-    nombre_completo: str
-    cargo: str
+    nombre: str  # Cambiado de nombre_completo a nombre
+    puesto: str  # Cambiado de cargo a puesto
     supervisor: str = None
     contrasena: str
     curp: str  # CURP obligatoria
@@ -250,9 +250,9 @@ class PasswordChange(BaseModel):
 
 # Modelo para actualizar información personal (sin contraseña)
 class UserInfoUpdate(BaseModel):
-    nombre_completo: str
+    nombre: str  # Cambiado de nombre_completo a nombre
     correo: str
-    cargo: str
+    puesto: str  # Cambiado de cargo a puesto
     supervisor: str = None
     curp: str = None
     telefono: str = None
@@ -446,8 +446,8 @@ async def crear_usuario(usuario: UserCreate):
         
         # Insertar usuario con CURP, teléfono y rol (contraseña sin encriptar)
         cursor.execute(
-            "INSERT INTO usuarios (correo, nombre_completo, cargo, supervisor, contrasena, curp, telefono, rol) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (usuario.correo, usuario.nombre_completo, usuario.cargo, usuario.supervisor, usuario.contrasena, curp_upper, usuario.telefono, usuario.rol)
+            "INSERT INTO usuarios (correo, nombre, puesto, supervisor, contrasena, curp, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+            (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, usuario.contrasena, curp_upper, usuario.telefono)
         )
         
         user_id = cursor.fetchone()[0]
@@ -488,7 +488,7 @@ async def crear_usuario(usuario: UserCreate):
 @app.post("/login")
 async def login(usuario: UserLogin):
     # Buscar usuario por correo
-    cursor.execute("SELECT id, correo, nombre_completo, cargo, contrasena FROM usuarios WHERE correo = %s", (usuario.correo,))
+    cursor.execute("SELECT id, correo, nombre, puesto, contrasena FROM usuarios WHERE correo = %s", (usuario.correo,))
     user = cursor.fetchone()
     
     if not user:
@@ -501,8 +501,8 @@ async def login(usuario: UserLogin):
     return {
         "id": user[0],
         "correo": user[1],
-        "nombre_completo": user[2],
-        "cargo": user[3]
+        "nombre_completo": user[2],  # Mantenemos el nombre de campo para compatibilidad con frontend
+        "cargo": user[3]  # Mantenemos el nombre de campo para compatibilidad con frontend
     }
 
 @app.post("/cambiar_contrasena")
@@ -1188,12 +1188,8 @@ async def obtener_usuarios():
         
         tiene_columna_rol = bool(rol_check)
         
-        if tiene_columna_rol:
-            # Obtener todos los usuarios con rol
-            query = "SELECT id, correo, nombre_completo, cargo, supervisor, curp, contrasena, telefono, rol FROM usuarios ORDER BY id DESC"
-        else:
-            # Obtener usuarios sin rol (por compatibilidad)
-            query = "SELECT id, correo, nombre_completo, cargo, supervisor, curp, contrasena, telefono FROM usuarios ORDER BY id DESC"
+        # Siempre obtener todos los usuarios de la nueva estructura
+        query = "SELECT id, correo, nombre, puesto, supervisor, curp, contrasena, telefono FROM usuarios ORDER BY id DESC"
         
         resultados = ejecutar_consulta_segura(query, fetch_type='all')
         
@@ -1208,13 +1204,13 @@ async def obtener_usuarios():
             usuario = {
                 "id": row[0],
                 "correo": row[1],
-                "nombre_completo": row[2],
-                "cargo": row[3],
+                "nombre_completo": row[2],  # Mapear nombre a nombre_completo para compatibilidad
+                "cargo": row[3],  # Mapear puesto a cargo para compatibilidad
                 "supervisor": row[4],
                 "curp": row[5],
                 "contrasena": row[6],
                 "telefono": row[7] if len(row) > 7 else None,
-                "rol": row[8] if tiene_columna_rol and len(row) > 8 else 'user'
+                "rol": 'user'  # Valor por defecto ya que no tenemos columna rol en nueva estructura
             }
             usuarios.append(usuario)
         
@@ -1240,7 +1236,7 @@ async def obtener_usuarios_exportacion_completa():
         
         # Obtener TODOS los campos de usuarios incluyendo contraseñas y teléfono
         cursor.execute(
-            "SELECT id, correo, nombre_completo, cargo, supervisor, contrasena, curp, telefono FROM usuarios ORDER BY id DESC"
+            "SELECT id, correo, nombre, puesto, supervisor, contrasena, curp, telefono FROM usuarios ORDER BY id DESC"
         )
         
         resultados = cursor.fetchall()
@@ -1252,8 +1248,8 @@ async def obtener_usuarios_exportacion_completa():
             usuario = {
                 "id": row[0],
                 "correo": row[1],
-                "nombre_completo": row[2],
-                "cargo": row[3],
+                "nombre_completo": row[2],  # Mapear nombre a nombre_completo para compatibilidad
+                "cargo": row[3],  # Mapear puesto a cargo para compatibilidad
                 "supervisor": row[4],
                 "contrasena": row[5],  # INCLUIR LA CONTRASEÑA REAL
                 "curp": row[6],
@@ -1280,7 +1276,7 @@ async def obtener_usuario(user_id: int):
         
         # Buscar usuario por ID con CURP, teléfono y contraseña
         cursor.execute(
-            "SELECT id, correo, nombre_completo, cargo, supervisor, curp, contrasena, telefono FROM usuarios WHERE id = %s",
+            "SELECT id, correo, nombre, puesto, supervisor, curp, contrasena, telefono FROM usuarios WHERE id = %s",
             (user_id,)
         )
         
@@ -1291,8 +1287,8 @@ async def obtener_usuario(user_id: int):
         usuario = {
             "id": resultado[0],
             "correo": resultado[1],
-            "nombre_completo": resultado[2],
-            "cargo": resultado[3],
+            "nombre_completo": resultado[2],  # Mapear nombre a nombre_completo para compatibilidad
+            "cargo": resultado[3],  # Mapear puesto a cargo para compatibilidad
             "supervisor": resultado[4],
             "curp": resultado[5],
             "contrasena": resultado[6],  # Incluir contraseña
@@ -1314,26 +1310,21 @@ async def obtener_usuario(user_id: int):
 # Endpoint para actualizar un usuario específico
 class UserUpdate(BaseModel):
     correo: str
-    nombre_completo: str
-    cargo: str
+    nombre: str  # Cambiado de nombre_completo a nombre
+    puesto: str  # Cambiado de cargo a puesto
     supervisor: str = None
     curp: str = None
     telefono: str = None
-    rol: str = 'user'
     nueva_contrasena: Optional[str] = None  # Contraseña opcional para actualización
 
 @app.put("/usuarios/{user_id}")
 async def actualizar_usuario(user_id: int, usuario: UserUpdate):
-    """Actualiza los datos de un usuario específico incluyendo rol y contraseña opcional"""
+    """Actualiza los datos de un usuario específico con contraseña opcional"""
     try:
         if not conn:
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
         
         print(f"✏️ Actualizando usuario {user_id}...")
-        
-        # Validación de rol
-        if usuario.rol not in ['admin', 'user']:
-            raise HTTPException(status_code=400, detail="Rol inválido. Debe ser 'admin' o 'user'")
         
         # Validación de CURP si se proporciona
         if usuario.curp and usuario.curp.strip():
@@ -1362,38 +1353,27 @@ async def actualizar_usuario(user_id: int, usuario: UserUpdate):
         if not usuario_actual:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
-        # Verificar si la columna 'rol' existe, si no, agregarla
-        cursor.execute("""
-            SELECT column_name FROM information_schema.columns 
-            WHERE table_name = 'usuarios' AND column_name = 'rol'
-        """)
-        
-        if not cursor.fetchone():
-            print("📝 Agregando columna 'rol' a la tabla usuarios")
-            cursor.execute("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(10) DEFAULT 'user'")
-            conn.commit()
-        
         # Determinar la contraseña a usar
         contrasena_final = usuario_actual[1]  # Mantener la actual por defecto
         if usuario.nueva_contrasena and usuario.nueva_contrasena.strip():
             contrasena_final = usuario.nueva_contrasena.strip()
             print("🔑 Actualizando contraseña del usuario")
         
-        # Actualizar usuario con rol
+        # Actualizar usuario sin rol (nueva estructura)
         cursor.execute(
             """UPDATE usuarios 
-               SET correo = %s, nombre_completo = %s, cargo = %s, 
-                   supervisor = %s, contrasena = %s, curp = %s, telefono = %s, rol = %s 
+               SET correo = %s, nombre = %s, puesto = %s, 
+                   supervisor = %s, contrasena = %s, curp = %s, telefono = %s 
                WHERE id = %s""",
-            (usuario.correo, usuario.nombre_completo, usuario.cargo, 
-             usuario.supervisor, contrasena_final, curp_upper, usuario.telefono, usuario.rol, user_id)
+            (usuario.correo, usuario.nombre, usuario.puesto, 
+             usuario.supervisor, contrasena_final, curp_upper, usuario.telefono, user_id)
         )
         
         conn.commit()
         
         # Obtener usuario actualizado
         cursor.execute(
-            "SELECT id, correo, nombre_completo, cargo, supervisor, contrasena, curp, telefono, rol FROM usuarios WHERE id = %s",
+            "SELECT id, correo, nombre, puesto, supervisor, contrasena, curp, telefono FROM usuarios WHERE id = %s",
             (user_id,)
         )
         
@@ -1401,16 +1381,16 @@ async def actualizar_usuario(user_id: int, usuario: UserUpdate):
         usuario_actualizado = {
             "id": resultado[0],
             "correo": resultado[1],
-            "nombre_completo": resultado[2],
-            "cargo": resultado[3],
+            "nombre_completo": resultado[2],  # Mapear nombre a nombre_completo para compatibilidad
+            "cargo": resultado[3],  # Mapear puesto a cargo para compatibilidad
             "supervisor": resultado[4],
             "contrasena": resultado[5],
             "curp": resultado[6],
             "telefono": resultado[7],
-            "rol": resultado[8] if len(resultado) > 8 else 'user'
+            "rol": 'user'  # Valor por defecto ya que no tenemos columna rol
         }
         
-        print(f"✅ Usuario {user_id} actualizado exitosamente con rol {usuario.rol}")
+        print(f"✅ Usuario {user_id} actualizado exitosamente")
         return {"mensaje": "Usuario actualizado exitosamente", "usuario": usuario_actualizado}
         
     except HTTPException:
@@ -1462,10 +1442,10 @@ async def actualizar_info_usuario(user_id: int, info: UserInfoUpdate):
         # Actualizar solo información personal (sin modificar contraseña)
         cursor.execute(
             """UPDATE usuarios 
-               SET correo = %s, nombre_completo = %s, cargo = %s, 
+               SET correo = %s, nombre = %s, puesto = %s, 
                    supervisor = %s, curp = %s, telefono = %s 
                WHERE id = %s""",
-            (info.correo, info.nombre_completo, info.cargo, 
+            (info.correo, info.nombre, info.puesto, 
              info.supervisor, curp_upper, info.telefono, user_id)
         )
         
@@ -1473,7 +1453,7 @@ async def actualizar_info_usuario(user_id: int, info: UserInfoUpdate):
         
         # Obtener usuario actualizado
         cursor.execute(
-            "SELECT id, correo, nombre_completo, cargo, supervisor, curp, telefono FROM usuarios WHERE id = %s",
+            "SELECT id, correo, nombre, puesto, supervisor, curp, telefono FROM usuarios WHERE id = %s",
             (user_id,)
         )
         
@@ -1481,8 +1461,8 @@ async def actualizar_info_usuario(user_id: int, info: UserInfoUpdate):
         usuario_actualizado = {
             "id": resultado[0],
             "correo": resultado[1],
-            "nombre_completo": resultado[2],
-            "cargo": resultado[3],
+            "nombre_completo": resultado[2],  # Mapear nombre a nombre_completo para compatibilidad
+            "cargo": resultado[3],  # Mapear puesto a cargo para compatibilidad
             "supervisor": resultado[4],
             "curp": resultado[5],
             "telefono": resultado[6]
@@ -1513,7 +1493,7 @@ async def eliminar_usuario(user_id: int):
         print(f"🗑️ Iniciando eliminación completa del usuario {user_id}...")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT id, correo, nombre_completo FROM usuarios WHERE id = %s", (user_id,))
+        cursor.execute("SELECT id, correo, nombre FROM usuarios WHERE id = %s", (user_id,))
         usuario = cursor.fetchone()
         
         if not usuario:
@@ -1522,7 +1502,7 @@ async def eliminar_usuario(user_id: int):
         usuario_info = {
             "id": usuario[0],
             "correo": usuario[1], 
-            "nombre_completo": usuario[2]
+            "nombre_completo": usuario[2]  # Mapear nombre a nombre_completo para compatibilidad
         }
         
         print(f"👤 Usuario encontrado: {usuario_info}")
@@ -2616,7 +2596,7 @@ async def verificar_estructura_usuarios():
         curp_existe = cursor.fetchone() is not None
         
         # Obtener algunos registros de ejemplo (sin contraseñas)
-        cursor.execute("SELECT id, correo, nombre_completo, curp FROM usuarios LIMIT 3")
+        cursor.execute("SELECT id, correo, nombre, curp FROM usuarios LIMIT 3")
         registros_ejemplo = cursor.fetchall()
         
         return {
@@ -2695,7 +2675,7 @@ async def obtener_historial_usuario(
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT id, nombre_completo FROM usuarios WHERE id = %s", (usuario_id,))
+        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
         usuario = cursor.fetchone()
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -2703,7 +2683,7 @@ async def obtener_historial_usuario(
         # Construir consulta con filtros
         query = """
             SELECT h.id, h.usuario_id, h.tipo, h.descripcion, h.fecha, h.hora, h.detalles, h.creado_en,
-                   u.nombre_completo, u.correo, u.curp, u.cargo
+                   u.nombre, u.correo, u.curp, u.puesto
             FROM historial h
             JOIN usuarios u ON h.usuario_id = u.id
             WHERE h.usuario_id = %s
@@ -2768,7 +2748,7 @@ async def obtener_todos_historiales():
         
         cursor.execute("""
             SELECT h.id, h.usuario_id, h.tipo, h.descripcion, h.fecha, h.hora, h.detalles, h.creado_en,
-                   u.nombre_completo, u.correo, u.curp, u.cargo
+                   u.nombre, u.correo, u.curp, u.puesto
             FROM historial h
             JOIN usuarios u ON h.usuario_id = u.id
             ORDER BY h.fecha DESC, h.hora DESC 
@@ -2811,7 +2791,7 @@ async def obtener_resumen_historial(usuario_id: int):
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT nombre_completo FROM usuarios WHERE id = %s", (usuario_id,))
+        cursor.execute("SELECT nombre FROM usuarios WHERE id = %s", (usuario_id,))
         usuario = cursor.fetchone()
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -3285,18 +3265,18 @@ async def obtener_notificacion(notificacion_id: int):
         destinatarios = []
         if not resultado[7]:  # Si enviada_a_todos es False
             cursor.execute("""
-                SELECT u.id, u.nombre_completo, u.correo
+                SELECT u.id, u.nombre, u.correo
                 FROM notificacion_usuarios nu
                 JOIN usuarios u ON nu.usuario_id = u.id
                 WHERE nu.notificacion_id = %s
-                ORDER BY u.nombre_completo
+                ORDER BY u.nombre
             """, (notificacion_id,))
             
             usuarios = cursor.fetchall()
             destinatarios = [
                 {
                     "id": usuario[0],
-                    "nombre_completo": usuario[1],
+                    "nombre_completo": usuario[1],  # Mapear nombre a nombre_completo para compatibilidad
                     "correo": usuario[2]
                 }
                 for usuario in usuarios
@@ -3903,7 +3883,7 @@ async def obtener_estadisticas_notificacion(notificacion_id: int):
         # Obtener detalles de usuarios que han leído (máximo 20 para no sobrecargar)
         if notificacion[3]:  # enviada_a_todos
             cursor.execute("""
-                SELECT u.id, u.nombre_completo, u.correo, u.curp, nl.leida_en
+                SELECT u.id, u.nombre, u.correo, u.curp, nl.leida_en
                 FROM notificacion_leidos nl
                 INNER JOIN usuarios u ON nl.usuario_id = u.id
                 WHERE nl.notificacion_id = %s
@@ -3912,7 +3892,7 @@ async def obtener_estadisticas_notificacion(notificacion_id: int):
             """, (notificacion_id,))
         else:  # usuarios específicos
             cursor.execute("""
-                SELECT u.id, u.nombre_completo, u.correo, u.curp, nl.leida_en
+                SELECT u.id, u.nombre, u.correo, u.curp, nl.leida_en
                 FROM notificacion_leidos nl
                 INNER JOIN notificacion_usuarios nu ON nl.usuario_id = nu.usuario_id
                 INNER JOIN usuarios u ON nl.usuario_id = u.id
@@ -3935,19 +3915,19 @@ async def obtener_estadisticas_notificacion(notificacion_id: int):
         # Obtener detalles de usuarios que NO han leído (máximo 20 para no sobrecargar)
         if notificacion[3]:  # enviada_a_todos
             cursor.execute("""
-                SELECT u.id, u.nombre_completo, u.correo, u.curp
+                SELECT u.id, u.nombre, u.correo, u.curp
                 FROM usuarios u
                 WHERE u.id NOT IN (
                     SELECT nl.usuario_id 
                     FROM notificacion_leidos nl 
                     WHERE nl.notificacion_id = %s
                 )
-                ORDER BY u.nombre_completo
+                ORDER BY u.nombre
                 LIMIT 20
             """, (notificacion_id,))
         else:  # usuarios específicos
             cursor.execute("""
-                SELECT u.id, u.nombre_completo, u.correo, u.curp
+                SELECT u.id, u.nombre, u.correo, u.curp
                 FROM notificacion_usuarios nu
                 INNER JOIN usuarios u ON nu.usuario_id = u.id
                 WHERE nu.notificacion_id = %s 
@@ -3956,7 +3936,7 @@ async def obtener_estadisticas_notificacion(notificacion_id: int):
                     FROM notificacion_leidos nl 
                     WHERE nl.notificacion_id = %s
                 )
-                ORDER BY u.nombre_completo
+                ORDER BY u.nombre
                 LIMIT 20
             """, (notificacion_id, notificacion_id))
         
@@ -4007,7 +3987,7 @@ async def obtener_notificaciones_usuario(usuario_id: int, limit: int = 20, offse
         print(f"📱 Obteniendo notificaciones para usuario {usuario_id} (limit: {limit}, offset: {offset})")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT id, nombre_completo FROM usuarios WHERE id = %s", (usuario_id,))
+        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
         usuario = cursor.fetchone()
         
         if not usuario:
@@ -4130,7 +4110,7 @@ async def obtener_notificaciones_usuario_mejorado(
         print(f"📱 Obteniendo notificaciones para usuario {usuario_id} (limit: {limit}, offset: {offset})")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT id, nombre_completo FROM usuarios WHERE id = %s", (usuario_id,))
+        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
         usuario = cursor.fetchone()
         
         if not usuario:
@@ -4228,7 +4208,7 @@ async def cambiar_rol_usuario(user_id: int, rol_data: UsuarioRolUpdate):
             raise HTTPException(status_code=400, detail="Rol inválido. Debe ser 'admin' o 'user'")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT id, nombre_completo FROM usuarios WHERE id = %s", (user_id,))
+        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (user_id,))
         usuario = cursor.fetchone()
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -4272,7 +4252,7 @@ async def cambiar_contrasena_usuario(user_id: int, password_data: UsuarioPasswor
         print(f"🔄 Cambiando contraseña del usuario {user_id}")
         
         # Verificar que el usuario existe
-        cursor.execute("SELECT id, nombre_completo FROM usuarios WHERE id = %s", (user_id,))
+        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (user_id,))
         usuario = cursor.fetchone()
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -4332,10 +4312,10 @@ async def obtener_estadisticas_usuarios():
         
         # Contar usuarios por cargo (top 5)
         cursor.execute("""
-            SELECT cargo, COUNT(*) as cantidad 
+            SELECT puesto, COUNT(*) as cantidad 
             FROM usuarios 
-            WHERE cargo IS NOT NULL AND cargo != ''
-            GROUP BY cargo 
+            WHERE puesto IS NOT NULL AND puesto != ''
+            GROUP BY puesto 
             ORDER BY cantidad DESC 
             LIMIT 5
         """)
@@ -4343,7 +4323,7 @@ async def obtener_estadisticas_usuarios():
         
         # Obtener usuarios recientes (últimos 10)
         cursor.execute("""
-            SELECT id, nombre_completo, correo, cargo, rol
+            SELECT id, nombre, correo, puesto, rol
             FROM usuarios 
             ORDER BY id DESC 
             LIMIT 10
@@ -4413,7 +4393,7 @@ async def buscar_usuarios(correo: Optional[str] = None, nombre: Optional[str] = 
         tiene_rol = bool(cursor.fetchone())
         
         consulta = f"""
-            SELECT id, correo, nombre_completo, cargo, supervisor, curp, telefono, contrasena
+            SELECT id, correo, nombre, puesto, supervisor, curp, telefono, contrasena
             {'rol' if tiene_rol else ''}
             FROM usuarios 
             WHERE {' AND '.join(condiciones)}
