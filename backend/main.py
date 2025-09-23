@@ -360,23 +360,61 @@ async def crear_usuario(usuario: UserCreate):
 
 @app.post("/login")
 async def login(usuario: UserLogin):
-    # Buscar usuario por correo
-    cursor.execute("SELECT id, correo, nombre, puesto, contrasena FROM usuarios WHERE correo = %s", (usuario.correo,))
-    user = cursor.fetchone()
-    
-    if not user:
-        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-    
-    # Verificar contraseña (comparación directa sin encriptación)
-    if usuario.contrasena != user[4]:
-        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-      # Devolver datos del usuario (sin la contraseña)
-    return {
-        "id": user[0],
-        "correo": user[1],
-        "nombre_completo": user[2],  # Mantenemos el nombre de campo para compatibilidad con frontend
-        "cargo": user[3]  # Mantenemos el nombre de campo para compatibilidad con frontend
-    }
+    try:
+        # Verificar conexión antes de ejecutar
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        
+        # Buscar usuario por correo en la nueva tabla usuarios
+        query = """
+        SELECT id, correo, nombre, puesto, supervisor, curp, telefono, fecha_registro 
+        FROM usuarios 
+        WHERE correo = %s
+        """
+        cursor.execute(query, (usuario.correo,))
+        user = cursor.fetchone()
+        
+        if not user:
+            raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+        
+        # Obtener la contraseña hasheada
+        cursor.execute("SELECT contrasena FROM usuarios WHERE id = %s", (user[0],))
+        password_row = cursor.fetchone()
+        
+        if not password_row:
+            raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+        
+        stored_password = password_row[0]
+        
+        # Verificar contraseña (puede ser hasheada o en texto plano para compatibilidad)
+        password_valid = False
+        try:
+            # Intentar verificar con bcrypt primero
+            password_valid = bcrypt.checkpw(usuario.contrasena.encode('utf-8'), stored_password.encode('utf-8'))
+        except:
+            # Si falla bcrypt, comparar directamente (compatibilidad con contraseñas no hasheadas)
+            password_valid = (usuario.contrasena == stored_password)
+        
+        if not password_valid:
+            raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+        
+        # Devolver datos del usuario con la nueva estructura
+        return {
+            "id": user[0],
+            "correo": user[1],
+            "nombre": user[2],  # Nuevo campo nombre
+            "puesto": user[3],  # Nuevo campo puesto
+            "supervisor": user[4],
+            "curp": user[5],
+            "telefono": user[6],
+            "fecha_registro": user[7].isoformat() if user[7] else None
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error en login: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @app.post("/cambiar_contrasena")
 async def cambiar_contrasena(datos: PasswordChange):

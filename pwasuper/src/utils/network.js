@@ -20,7 +20,7 @@ export function getOfflineMessage() {
 
 // Configuración de URLs de API
 const API_URLS = {
-  development: ["http://localhost:8000", "http://localhost:8001"],
+  development: ["http://localhost:8001", "http://localhost:8000", "http://127.0.0.1:8001", "http://127.0.0.1:8000"],
   production: "https://apidron.sembrandodatos.com"
 };
 
@@ -29,11 +29,7 @@ export const API_URL = "https://apidron.sembrandodatos.com";
 
 // Función para detectar automáticamente el entorno
 function detectEnvironment() {
-  // Si estamos en localhost, usar desarrollo
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-    return 'development';
-  }
-  // Si no, usar producción
+  // Siempre usar producción
   return 'production';
 }
 
@@ -69,48 +65,9 @@ async function testServerConnection(url) {
 
 // Función para obtener la mejor URL disponible
 export async function getBestApiUrl() {
-  const environment = detectEnvironment();
-  
-  if (environment === 'development') {
-    // Probar todas las URLs de desarrollo
-    const devUrls = getAllDevelopmentUrls();
-    for (const url of devUrls) {
-      const works = await testServerConnection(url);
-      if (works) {
-        console.log(`✅ Conectado a servidor de desarrollo: ${url}`);
-        return url;
-      }
-    }
-    
-    // Si ninguna URL de desarrollo funciona, probar producción
-    const productionWorks = await testServerConnection(API_URLS.production);
-    if (productionWorks) {
-      console.log(`✅ Conectado a servidor de producción: ${API_URLS.production}`);
-      return API_URLS.production;
-    }
-  } else {
-    // Probar producción primero
-    const productionWorks = await testServerConnection(API_URLS.production);
-    if (productionWorks) {
-      console.log(`✅ Conectado a servidor de producción: ${API_URLS.production}`);
-      return API_URLS.production;
-    }
-    
-    // Si producción falla, probar desarrollo
-    const devUrls = getAllDevelopmentUrls();
-    for (const url of devUrls) {
-      const works = await testServerConnection(url);
-      if (works) {
-        console.log(`✅ Conectado a servidor de desarrollo alternativo: ${url}`);
-        return url;
-      }
-    }
-  }
-  
-  // Si todo falla, devolver la URL primaria
-  const primaryUrl = getApiUrl();
-  console.log(`❌ Ningún servidor disponible, usando ${primaryUrl} por defecto`);
-  return primaryUrl;
+  // SIEMPRE usar la URL de producción apidron como especificaste
+  console.log(`✅ Usando servidor de producción: ${API_URL}`);
+  return API_URL;
 }
 
 // URL dinámica para casos donde se necesite la mejor conexión disponible (uso interno)

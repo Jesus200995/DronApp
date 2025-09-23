@@ -193,8 +193,8 @@
                   </svg>
                 </div>
                 <input 
-                  v-model="form.cargo" 
-                  @input="formatCargo"
+                  v-model="form.puesto" 
+                  @input="formatPuesto"
                   id="cargo" 
                   name="cargo" 
                   type="text" 
@@ -436,7 +436,7 @@ const form = reactive({
   nombre: '',
   primerApellido: '',
   segundoApellido: '',
-  cargo: '',
+  puesto: '',
   curp: '',
   supervisor: '',
   codigoPais: '+52', // Código de país por defecto (México)
@@ -522,7 +522,7 @@ async function register() {
     const payload = {
       correo: form.email.trim(),
       nombre: nombreCompleto,  // Usar 'nombre' en lugar de 'nombre_completo'
-      puesto: form.cargo.trim().toUpperCase(),  // Usar 'puesto' en lugar de 'cargo'
+      puesto: form.puesto.trim().toUpperCase(),  // Usar 'puesto' en lugar de 'cargo'
       supervisor: form.supervisor.trim().toUpperCase(),
       contrasena: form.password,
       curp: form.curp.toUpperCase().trim(),
@@ -617,7 +617,7 @@ function validateForm() {
   }
 
   // Validación de cargo obligatorio
-  if (!form.cargo || !form.cargo.trim()) {
+  if (!form.puesto || !form.puesto.trim()) {
     message.text = 'El puesto de trabajo es obligatorio';
     message.type = 'error';
     return false;
@@ -723,8 +723,8 @@ function formatSupervisor() {
   form.supervisor = form.supervisor.toUpperCase();
 }
 
-function formatCargo() {
-  form.cargo = form.cargo.toUpperCase();
+function formatPuesto() {
+  form.puesto = form.puesto.toUpperCase();
 }
 
 function validatePhone() {

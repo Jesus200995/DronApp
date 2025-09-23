@@ -190,13 +190,9 @@ onMounted(async () => {
   if (!isOnline.value) {
     errorMessage.value = getOfflineMessage();
   } else {
-    try {
-      currentApiUrl.value = await getBestApiUrl();
-      console.log(`🌐 Login usando servidor: ${currentApiUrl.value}`);
-    } catch (error) {
-      console.warn('Error detectando servidor, usando URL por defecto:', error);
-      currentApiUrl.value = API_URL;
-    }
+    // Usar siempre la URL de producción
+    currentApiUrl.value = API_URL;
+    console.log(`🌐 Login usando servidor de producción: ${currentApiUrl.value}`);
   }
 });
 
@@ -226,10 +222,8 @@ async function login() {
     return;
   }
   
-  // Actualizar URL si es necesario
-  if (!currentApiUrl.value || currentApiUrl.value === API_URL) {
-    currentApiUrl.value = await getBestApiUrl();
-  }
+  // Usar siempre la URL de producción
+  currentApiUrl.value = API_URL;
   
   try {
     // Conectar con la API real
