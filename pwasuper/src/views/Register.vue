@@ -94,7 +94,7 @@
       <!-- Register Form -->
       <div class="glass-card">
 
-        <form @submit.prevent="register" @keydown.enter="handleEnterKey">
+        <form @submit.prevent="register">
           <div class="space-y-3">
             <div>
               <label for="email" class="block text-xs font-medium text-gray-800 mb-1">Correo electrónico *</label>
@@ -395,74 +395,17 @@
             </div>
           </div>
 
-          <!-- AVISO DE PRIVACIDAD -->
-          <div class="mt-4 mb-3">
-            <div class="glass-card-inner">
-              <div class="p-3">
-                <h3 class="font-bold text-orange-600 mb-2 text-base bg-gradient-to-r from-yellow-200/80 to-yellow-100/80 px-2 py-1 rounded-lg shadow-sm border border-yellow-300/50 backdrop-filter backdrop-blur-sm">
-                  Aviso de Privacidad
-                </h3>
-                <div class="max-h-32 overflow-y-auto text-xs text-gray-700 space-y-1 pr-2">
-                  <div class="font-semibold">AVISO DE PRIVACIDAD PARA EL REGISTRO Y USO DE INFORMACIÓN DE LOS TÉCNICOS DEL PROGRAMA SEMBRANDO VIDA MEDIANTE APLICACIÓN MÓVIL OFICIAL</div>
-                  
-                  <p>En cumplimiento con lo dispuesto por la Ley General de Transparencia y Acceso a la Información pública y la Ley Federal de Transparencia y Acceso a la Información Pública, se informa a las y los Técnico(a)s del Programa Sembrando Vida que los datos personales recabados serán tratados conforme a los siguientes términos:</p>
-                  
-                  <div class="font-semibold">1. Identidad y domicilio del responsable</div>
-                  <p>El responsable del tratamiento de los datos personales es la Secretaría de Bienestar, Subsecretaria de Inclusión Productiva y Desarrollo Rural con domicilio en: Av. P.º de la Reforma 116, Juárez, Cuauhtémoc, 06600 Ciudad de México, CDMX.</p>
-                  
-                  <div class="font-semibold">2. Datos personales que se recaban</div>
-                  <ul class="list-disc pl-4 space-y-1">
-                    <li>Nombre completo, CURP, Número telefónico, Correo electrónico</li>
-                    <li>Cargo y supervisor asignado</li>
-                    <li>Datos de localización geográfica precisa, capturados a través de coordenadas</li>
-                    <li>Actividades realizadas en campo y fotografías</li>
-                  </ul>
-                  
-                  <div class="font-semibold">3. Finalidades del tratamiento</div>
-                  <p>Los datos serán utilizados exclusivamente para registrar actividades de técnicos, documentar avances del programa y elaborar reportes internos.</p>
-                  
-                  <div class="font-semibold">Fecha de última actualización: 12 de agosto del 2025.</div>
-                  
-                  <p class="font-semibold text-blue-800">Al proporcionar mis datos personales, acepto el tratamiento conforme al Aviso de Privacidad.</p>
-                </div>
-              </div>
-            </div>
-            
-            <!-- CHECKBOX OBLIGATORIO -->
-            <div class="mt-3">
-              <div class="flex items-start">
-                <div class="flex items-center h-4">
-                  <input 
-                    v-model="termsAccepted" 
-                    @change="clearTermsError"
-                    id="terms" 
-                    name="terms" 
-                    type="checkbox" 
-                    class="focus:ring-blue-500 h-3 w-3 text-blue-600 border-gray-300 rounded"
-                    required
-                  />
-                </div>
-                <div class="ml-2 text-xs">
-                  <label for="terms" class="font-medium text-gray-700">
-                    He leído y acepto el Aviso de Privacidad y los Términos y Condiciones. <span class="text-red-500">*</span>
-                  </label>
-                </div>
-              </div>
-              <p v-if="termsError" class="mt-1 text-xs text-red-600">{{ termsError }}</p>
-            </div>
-          </div>
-
           <button 
             type="submit" 
-            :disabled="loading || !termsAccepted" 
+            :disabled="loading" 
             class="glass-button w-full mt-4 flex items-center justify-center py-2 text-sm"
-            :class="{ 'opacity-50 cursor-not-allowed': loading || !termsAccepted }"
+            :class="{ 'opacity-50 cursor-not-allowed': loading }"
           >
             <svg v-if="loading" class="animate-spin h-3 w-3 mr-2" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <span>{{ loading ? 'Registrando...' : termsAccepted ? 'Registrarme' : 'Debes aceptar los términos' }}</span>
+            <span>{{ loading ? 'Registrando...' : 'Registrarme' }}</span>
           </button>
         </form>
       </div>
@@ -483,8 +426,6 @@ const isOnline = ref(true);
 const curpError = ref('');
 const curpWarning = ref('');
 const currentApiUrl = ref('');
-const termsAccepted = ref(false);
-const termsError = ref('');
 const showSuccessModal = ref(false);
 const countrySearch = ref('');
 const showPassword = ref(false);
@@ -638,17 +579,8 @@ async function register() {
 function validateForm() {
   curpError.value = '';
   curpWarning.value = '';
-  termsError.value = '';
   message.text = '';
   
-  // Validación de términos y condiciones
-  if (!termsAccepted.value) {
-    termsError.value = 'Debes aceptar el Aviso de Privacidad para continuar';
-    message.text = 'Debes aceptar el Aviso de Privacidad para continuar';
-    message.type = 'error';
-    return false;
-  }
-
   // Validación de email obligatorio y formato
   if (!form.email || !form.email.trim()) {
     message.text = 'El correo electrónico es obligatorio';
@@ -761,9 +693,6 @@ function formatCurp() {
   if (curpWarning.value) {
     curpWarning.value = '';
   }
-  if (termsError.value) {
-    termsError.value = '';
-  }
   
   if (form.curp.length > 0 && form.curp.length < 18) {
     curpError.value = `Faltan ${18 - form.curp.length} caracteres`;
@@ -822,24 +751,6 @@ function closeCountrySelector(e) {
 function handleEscKey(event) {
   if (event.key === 'Escape' && showCountrySelector.value) {
     showCountrySelector.value = false;
-  }
-}
-
-function clearTermsError() {
-  if (termsError.value) {
-    termsError.value = '';
-  }
-  if (message.text && message.text.includes('Aviso de Privacidad')) {
-    message.text = '';
-  }
-}
-
-function handleEnterKey(event) {
-  if (!termsAccepted.value) {
-    event.preventDefault();
-    termsError.value = 'Debes aceptar el Aviso de Privacidad para continuar';
-    message.text = 'Debes aceptar el Aviso de Privacidad para continuar';
-    message.type = 'error';
   }
 }
 

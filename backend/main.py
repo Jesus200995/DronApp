@@ -238,7 +238,6 @@ class UserCreate(BaseModel):
     contrasena: str
     curp: str  # CURP obligatoria
     telefono: str  # Teléfono obligatorio
-    rol: str = 'user'  # Rol por defecto es user
 
 class UserLogin(BaseModel):
     correo: str
@@ -256,9 +255,6 @@ class UserInfoUpdate(BaseModel):
     supervisor: str = None
     curp: str = None
     telefono: str = None
-
-class TerminosAceptados(BaseModel):
-    usuario_id: int
 
 # ==================== MODELOS PARA NOTIFICACIONES ====================
 
@@ -294,109 +290,14 @@ app.mount("/fotos", StaticFiles(directory="fotos"), name="fotos")
 
 # ==================== NUEVOS ENDPOINTS DE TÉRMINOS ====================
 
-@app.get("/usuarios/{user_id}/terminos")
-async def verificar_terminos_usuario(user_id: int):
-    """Verificar si un usuario ha aceptado los términos y condiciones"""
-    try:
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
-            
-        print(f"🔍 Verificando términos para usuario {user_id}")
-        
-        # Verificar que el usuario existe
-        cursor.execute("SELECT id, correo FROM usuarios WHERE id = %s", (user_id,))
-        usuario = cursor.fetchone()
-        
-        if not usuario:
-            print(f"❌ Usuario {user_id} no encontrado")
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        
-        # Verificar si ha aceptado términos
-        cursor.execute(
-            "SELECT aceptado, fecha_aceptado FROM usuarios_terminos WHERE usuario_id = %s",
-            (user_id,)
-        )
-        terminos = cursor.fetchone()
-        
-        resultado = {
-            "usuario_id": user_id,
-            "ha_aceptado_terminos": terminos is not None and terminos[0] if terminos else False,
-            "fecha_aceptacion": terminos[1].isoformat() if terminos and terminos[1] else None
-        }
-        
-        print(f"✅ Términos verificados para usuario {user_id}: {resultado['ha_aceptado_terminos']}")
-        return resultado
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        print(f"❌ Error verificando términos: {e}")
-        raise HTTPException(status_code=500, detail=f"Error al verificar términos: {str(e)}")
-
-@app.post("/usuarios/aceptar_terminos")
-async def aceptar_terminos(terminos: TerminosAceptados):
-    """Registrar la aceptación de términos y condiciones de un usuario"""
-    try:
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
-            
-        print(f"📝 Registrando términos para usuario {terminos.usuario_id}")
-        
-        # Verificar que el usuario existe
-        cursor.execute("SELECT id, correo FROM usuarios WHERE id = %s", (terminos.usuario_id,))
-        usuario = cursor.fetchone()
-        
-        if not usuario:
-            print(f"❌ Usuario {terminos.usuario_id} no encontrado")
-            raise HTTPException(status_code=404, detail="Usuario no encontrado")
-        
-        # Verificar si ya existe un registro para este usuario
-        cursor.execute("SELECT id FROM usuarios_terminos WHERE usuario_id = %s", (terminos.usuario_id,))
-        existe = cursor.fetchone()
-        
-        if existe:
-            # Actualizar registro existente
-            cursor.execute("""
-                UPDATE usuarios_terminos 
-                SET aceptado = %s, fecha_aceptado = NOW()
-                WHERE usuario_id = %s
-            """, (True, terminos.usuario_id))
-            print(f"✅ Términos actualizados para usuario {terminos.usuario_id}")
-        else:
-            # Insertar nuevo registro
-            cursor.execute("""
-                INSERT INTO usuarios_terminos (usuario_id, aceptado, fecha_aceptado) 
-                VALUES (%s, %s, NOW())
-            """, (terminos.usuario_id, True))
-            print(f"✅ Términos creados para usuario {terminos.usuario_id}")
-        
-        conn.commit()
-        
-        return {
-            "status": "success",
-            "message": "Términos y condiciones aceptados exitosamente",
-            "usuario_id": terminos.usuario_id
-        }
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        conn.rollback()
-        print(f"❌ Error aceptando términos: {e}")
-        raise HTTPException(status_code=500, detail=f"Error al registrar aceptación de términos: {str(e)}")
-
 @app.post("/usuarios")
 async def crear_usuario(usuario: UserCreate):
-    """Crear usuario con rol y automáticamente registrar aceptación de términos"""
+    """Crear usuario y automáticamente registrar aceptación de términos"""
     try:
         if not conn:
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
             
-        print(f"👤 Creando usuario: {usuario.correo} con rol {usuario.rol}")
-        
-        # Validación de rol
-        if usuario.rol not in ['admin', 'user']:
-            raise HTTPException(status_code=400, detail="Rol inválido. Debe ser 'admin' o 'user'")
+        print(f"👤 Creando usuario: {usuario.correo}")
         
         # Validación de CURP obligatoria
         if not usuario.curp or not usuario.curp.strip():
@@ -433,18 +334,7 @@ async def crear_usuario(usuario: UserCreate):
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="La CURP ya está registrada")
         
-        # Verificar si la columna 'rol' existe, si no, agregarla
-        cursor.execute("""
-            SELECT column_name FROM information_schema.columns 
-            WHERE table_name = 'usuarios' AND column_name = 'rol'
-        """)
-        
-        if not cursor.fetchone():
-            print("📝 Agregando columna 'rol' a la tabla usuarios")
-            cursor.execute("ALTER TABLE usuarios ADD COLUMN rol VARCHAR(10) DEFAULT 'user'")
-            conn.commit()
-        
-        # Insertar usuario con CURP, teléfono y rol (contraseña sin encriptar)
+        # Insertar usuario (contraseña sin encriptar como especificaste)
         cursor.execute(
             "INSERT INTO usuarios (correo, nombre, puesto, supervisor, contrasena, curp, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
             (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, usuario.contrasena, curp_upper, usuario.telefono)
@@ -453,29 +343,12 @@ async def crear_usuario(usuario: UserCreate):
         user_id = cursor.fetchone()[0]
         print(f"✅ Usuario creado con ID: {user_id}")
         
-        # ==================== REGISTRO AUTOMÁTICO DE TÉRMINOS ====================
-        
-        # Registrar automáticamente la aceptación de términos al crear el usuario
-        try:
-            cursor.execute(
-                "INSERT INTO usuarios_terminos (usuario_id, aceptado, fecha_aceptado) VALUES (%s, %s, NOW())",
-                (user_id, True)
-            )
-            print(f"✅ Términos registrados automáticamente para usuario {user_id}")
-        except psycopg2.IntegrityError as e:
-            print(f"⚠️ Usuario {user_id} ya tiene términos registrados: {e}")
-            # No es un error crítico, continuar
-        except Exception as e:
-            print(f"❌ Error registrando términos para usuario {user_id}: {e}")
-            # No hacer rollback completo, solo advertir
-        
         conn.commit()
         
         return {
             "id": user_id, 
-            "mensaje": "Usuario creado exitosamente con términos aceptados automáticamente", 
-            "curp": curp_upper,
-            "terminos_registrados": True
+            "mensaje": "Usuario creado exitosamente", 
+            "curp": curp_upper
         }
         
     except HTTPException:
