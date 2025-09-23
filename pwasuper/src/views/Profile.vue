@@ -12,7 +12,7 @@
       <!-- Header del perfil -->
       <div class="glass-card mb-2">
         <div class="text-center mb-3">
-          <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-2 glass-avatar">
+          <div class="w-12 h-12 bg-blue-800 rounded-full flex items-center justify-center mx-auto mb-2 glass-avatar">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
@@ -28,7 +28,7 @@
       <div class="glass-card mb-2">
         <div class="flex justify-between items-center mb-2">
           <h2 class="text-sm font-semibold text-gray-800 modern-title flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-2 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Información Personal
@@ -82,7 +82,7 @@
       <!-- Cambio de contraseña -->
       <div class="glass-card">
         <h2 class="text-sm font-semibold text-gray-800 mb-2 modern-title flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-2 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-2 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
           Cambiar Contraseña
@@ -141,7 +141,7 @@
         <div class="glass-card max-w-xs w-full mx-3">
           <div class="text-center">
             <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 glass-success-icon">
-              <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-6 h-6 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
@@ -163,7 +163,7 @@
           <div class="sticky top-0 bg-white rounded-t-2xl border-b border-blue-100 p-3">
             <div class="flex justify-between items-center">
               <h3 class="text-sm font-bold text-gray-800 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
                 Editar Información
@@ -275,7 +275,7 @@
                           type="text"
                           v-model="countrySearch"
                           placeholder="Buscar país..."
-                          class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-blue-800"
                           @click="$event.stopPropagation()"
                         />
                       </div>
@@ -324,7 +324,7 @@
                 <button
                   type="submit"
                   :disabled="isUpdatingUser"
-                  class="flex-1 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  class="flex-1 px-3 py-1.5 bg-gradient-to-r from-blue-700 to-blue-800 text-white rounded-lg text-xs font-medium hover:from-blue-800 hover:to-blue-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <svg v-if="isUpdatingUser" class="animate-spin h-3 w-3 mr-2" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -344,13 +344,13 @@
       <div v-if="showEditSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3" style="z-index: 70;">
         <div class="bg-white rounded-2xl max-w-xs w-full mx-3 p-6 text-center">
           <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-8 h-8 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
           </div>
           <h3 class="text-lg font-bold text-gray-900 mb-2">¡Información actualizada!</h3>
           <p class="text-sm text-gray-600 mb-4">Tus datos personales han sido actualizados correctamente.</p>
-          <button @click="showEditSuccessModal = false" class="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all">
+          <button @click="showEditSuccessModal = false" class="w-full px-4 py-2 bg-gradient-to-r from-blue-700 to-blue-800 text-white rounded-lg font-medium hover:from-blue-800 hover:to-blue-900 transition-all">
             Entendido
           </button>
         </div>
@@ -900,10 +900,10 @@ const validatePhoneEdit = () => {
 .glass-button {
   padding: 0.625rem 1rem;
   border-radius: 10px;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(30, 58, 138, 0.3);
   background: linear-gradient(135deg, 
-    rgba(59, 130, 246, 0.8) 0%, 
-    rgba(37, 99, 235, 0.8) 100%);
+    rgba(30, 64, 175, 0.8) 0%, 
+    rgba(30, 58, 138, 0.8) 100%);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   color: white;
@@ -914,7 +914,7 @@ const validatePhoneEdit = () => {
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 3px 15px 0 rgba(59, 130, 246, 0.3),
+    0 3px 15px 0 rgba(30, 64, 175, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.1),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -923,12 +923,12 @@ const validatePhoneEdit = () => {
 .glass-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 30px 0 rgba(59, 130, 246, 0.4),
+    0 8px 30px 0 rgba(30, 64, 175, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.2),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
   background: linear-gradient(135deg, 
-    rgba(59, 130, 246, 0.9) 0%, 
-    rgba(37, 99, 235, 0.9) 100%);
+    rgba(30, 64, 175, 0.9) 0%, 
+    rgba(30, 58, 138, 0.9) 100%);
 }
 
 .glass-button:active:not(:disabled) {
@@ -970,9 +970,9 @@ const validatePhoneEdit = () => {
 .glass-success-icon {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 2px solid rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(30, 64, 175, 0.2);
   box-shadow: 
-    0 8px 32px 0 rgba(59, 130, 246, 0.2),
+    0 8px 32px 0 rgba(30, 64, 175, 0.2),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -998,11 +998,11 @@ const validatePhoneEdit = () => {
 .modern-title {
   background: linear-gradient(
     90deg, 
-    #166534 0%, 
-    #15803d 25%, 
-    #86efac 50%, 
-    #15803d 75%, 
-    #166534 100%
+    #1e3a8a 0%, 
+    #1e40af 25%, 
+    #3b82f6 50%, 
+    #1e40af 75%, 
+    #1e3a8a 100%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
@@ -1018,7 +1018,7 @@ const validatePhoneEdit = () => {
 .blue-line {
   width: 40px;
   height: 1.5px;
-  background: linear-gradient(90deg, #2563eb, #3b82f6, #2563eb);
+  background: linear-gradient(90deg, #1e3a8a, #1e40af, #1e3a8a);
   border-radius: 1px;
   animation: line-glow 2s ease-in-out infinite alternate;
 }
@@ -1034,11 +1034,11 @@ const validatePhoneEdit = () => {
 
 @keyframes line-glow {
   0% {
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    box-shadow: 0 0 5px rgba(30, 64, 175, 0.3);
     opacity: 0.8;
   }
   100% {
-    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+    box-shadow: 0 0 15px rgba(30, 64, 175, 0.6);
     opacity: 1;
   }
 }
@@ -1062,7 +1062,7 @@ const validatePhoneEdit = () => {
 /* Respaldo para navegadores que no soportan background-clip: text */
 @supports not (-webkit-background-clip: text) {
   .modern-title {
-    color: #166534;
+    color: #1e3a8a;
     animation: none;
   }
 }
@@ -1310,7 +1310,7 @@ const validatePhoneEdit = () => {
   }
   
   .glass-button {
-    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+    background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
   }
 }
 
@@ -1343,9 +1343,9 @@ const validatePhoneEdit = () => {
 
 .edit-input:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #1e40af;
   background-color: white;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
 }
 
 .edit-input.border-red-500 {
@@ -1369,9 +1369,9 @@ const validatePhoneEdit = () => {
 
 .edit-input-small:focus {
   outline: none;
-  border-color: #3b82f6;
+  border-color: #1e40af;
   background-color: white;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.1);
 }
 
 .edit-input-small.border-red-500 {
@@ -1400,9 +1400,9 @@ const validatePhoneEdit = () => {
 }
 
 .glass-edit-button:hover {
-  background: rgba(59, 130, 246, 0.1);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+  background: rgba(30, 64, 175, 0.1);
+  border-color: rgba(30, 64, 175, 0.3);
+  color: #1e40af;
   transform: scale(1.05);
 }
 
