@@ -198,7 +198,7 @@ const getBannerClasses = () => {
   } else if (pendientes.value.total > 0) {
     return 'bg-yellow-600 text-white';
   } else {
-    return 'bg-green-700 text-white';
+    return 'bg-cyan-600 text-white';
   }
 };
 
@@ -208,7 +208,7 @@ const getModalIconClasses = () => {
   } else if (isSyncing.value) {
     return 'bg-blue-100 text-blue-700';
   } else {
-    return 'bg-green-100 text-green-700';
+    return 'bg-cyan-100 text-cyan-700';
   }
 };
 

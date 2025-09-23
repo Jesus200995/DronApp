@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex flex-col p-2 sm:p-3 relative overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50 flex flex-col p-2 sm:p-3 relative overflow-hidden">
     <!-- Elementos decorativos para mejorar el efecto de vidrio -->
     <div class="absolute inset-0">
-      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
-      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
+      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
+      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
     </div>
 
     <div class="page-container w-full max-w-lg mx-auto relative z-10 pt-0 pb-1 space-y-2">
@@ -12,7 +12,7 @@
       <div v-if="!modoAsistencia" class="glass-card">
         <div class="text-center mb-3">
           <h1 class="text-xl font-bold text-gray-800 mb-2 modern-title">Panel de Registro</h1>
-          <div class="green-line mx-auto mb-2"></div>
+          <div class="blue-line mx-auto mb-2"></div>
           <p class="text-xs text-gray-500 mb-3">Selecciona el tipo de registro que deseas realizar</p>
           
           <!-- Botones de navegación entre secciones -->
@@ -80,7 +80,7 @@
         
         <div class="text-center mb-2">
           <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title">Registra tu asistencia</h2>
-          <div class="green-line mx-auto mb-1"></div>
+          <div class="blue-line mx-auto mb-1"></div>
           <p class="text-xs text-gray-500">
             {{ modoAsistencia ? 'Completa los datos para ' + (tipoAsistencia === 'entrada' ? 'marcar entrada' : 'marcar salida') : 'Marca tu entrada y salida del día' }}
           </p>

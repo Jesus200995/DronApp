@@ -202,10 +202,10 @@ function logout() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50">
     <!-- Mensaje de bienvenida -->
     <transition name="slide-down">
-      <div v-if="showWelcome" class="fixed top-0 inset-x-0 z-50 bg-primary-dark text-white p-3 shadow-lg">
+      <div v-if="showWelcome" class="fixed top-0 inset-x-0 z-50 bg-blue-700 text-white p-3 shadow-lg">
         <div class="max-w-sm mx-auto flex items-center justify-between">
           <div class="flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,7 +230,7 @@ function logout() {
       <div class="max-w-sm mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center">
-            <div class="relative w-8 h-8 bg-gradient-to-br from-green-700 via-green-800 to-green-900 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-3">
+            <div class="relative w-8 h-8 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-3">
               <!-- Efecto vidrio en círculo de iniciales -->
               <div class="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/10 pointer-events-none rounded-full"></div>
               
@@ -241,7 +241,7 @@ function logout() {
               <span class="text-white text-xs font-bold drop-shadow-lg filter brightness-110 relative z-10">{{ getUserInitials }}</span>
             </div>
             <div>
-              <h1 class="text-base font-bold text-green-800 mb-0">Sembrando Vida</h1>
+              <h1 class="text-base font-bold text-blue-800 mb-0">Aplicación de Drones</h1>
               <p class="text-xs text-gray-500 -mt-0.5">{{ userName }}</p>
             </div>
           </div>
@@ -289,7 +289,7 @@ function logout() {
               to="/" 
               @click="closeMobileMenu"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-              :class="{ 'bg-primary/10 text-primary': route.name === 'Home' }"
+              :class="{ 'bg-blue/10 text-blue-600': route.name === 'Home' }"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -301,7 +301,7 @@ function logout() {
               to="/historial" 
               @click="closeMobileMenu"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-              :class="{ 'bg-primary/10 text-primary': route.name === 'Historial' }"
+              :class="{ 'bg-blue/10 text-blue-600': route.name === 'Historial' }"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -313,7 +313,7 @@ function logout() {
               to="/notificaciones" 
               @click="closeMobileMenu"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors relative"
-              :class="{ 'bg-primary/10 text-primary': route.name === 'Notificaciones' }"
+              :class="{ 'bg-blue/10 text-blue-600': route.name === 'Notificaciones' }"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
@@ -329,7 +329,7 @@ function logout() {
               to="/profile" 
               @click="closeMobileMenu"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-              :class="{ 'bg-primary/10 text-primary': route.name === 'Profile' }"
+              :class="{ 'bg-blue/10 text-blue-600': route.name === 'Profile' }"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -341,7 +341,7 @@ function logout() {
               to="/support" 
               @click="closeMobileMenu"
               class="flex items-center px-3 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-              :class="{ 'bg-primary/10 text-primary': route.name === 'Support' }"
+              :class="{ 'bg-blue/10 text-blue-600': route.name === 'Support' }"
             >
               <font-awesome-icon 
                 icon="headset"
@@ -417,7 +417,7 @@ function logout() {
 h1 {
   position: relative;
   overflow: hidden;
-  color: #052e16;
+  color: #1e3a8a;
 }
 
 h1::before {
