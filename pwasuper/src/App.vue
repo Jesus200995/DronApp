@@ -230,18 +230,43 @@ function logout() {
       <div class="max-w-sm mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center">
-            <div class="relative w-8 h-8 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-3">
-              <!-- Efecto vidrio en círculo de iniciales -->
-              <div class="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/10 pointer-events-none rounded-full"></div>
-              
-              <!-- Reflejo superior del círculo -->
-              <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-full"></div>
-              
-              <!-- Iniciales con efecto mejorado -->
-              <span class="text-white text-xs font-bold drop-shadow-lg filter brightness-110 relative z-10">{{ getUserInitials }}</span>
+            <!-- Dron estático en círculo azul suave -->
+            <div class="relative w-8 h-8 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 rounded-full shadow-md border border-blue-200 overflow-hidden flex items-center justify-center mr-3">
+              <svg viewBox="0 0 100 100" class="w-6 h-6">
+                <!-- Cuerpo principal del dron -->
+                <ellipse cx="50" cy="50" rx="16" ry="6" fill="#1e40af" stroke="#3b82f6" stroke-width="1"/>
+                
+                <!-- Hélices giratorias (solo giran, sin bounce) -->
+                <g class="animate-spin origin-center" style="animation-duration: 0.4s;">
+                  <!-- Hélice superior izquierda -->
+                  <circle cx="32" cy="38" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
+                  <line x1="26" y1="38" x2="38" y2="38" stroke="#3b82f6" stroke-width="1.5"/>
+                  
+                  <!-- Hélice superior derecha -->
+                  <circle cx="68" cy="38" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
+                  <line x1="62" y1="38" x2="74" y2="38" stroke="#3b82f6" stroke-width="1.5"/>
+                  
+                  <!-- Hélice inferior izquierda -->
+                  <circle cx="32" cy="62" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
+                  <line x1="32" y1="56" x2="32" y2="68" stroke="#3b82f6" stroke-width="1.5"/>
+                  
+                  <!-- Hélice inferior derecha -->
+                  <circle cx="68" cy="62" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
+                  <line x1="68" y1="56" x2="68" y2="68" stroke="#3b82f6" stroke-width="1.5"/>
+                </g>
+                
+                <!-- Brazos del dron -->
+                <line x1="34" y1="48" x2="32" y2="38" stroke="#1e40af" stroke-width="1.5"/>
+                <line x1="66" y1="48" x2="68" y2="38" stroke="#1e40af" stroke-width="1.5"/>
+                <line x1="34" y1="52" x2="32" y2="62" stroke="#1e40af" stroke-width="1.5"/>
+                <line x1="66" y1="52" x2="68" y2="62" stroke="#1e40af" stroke-width="1.5"/>
+                
+                <!-- Luz LED central suave -->
+                <circle cx="50" cy="50" r="2" fill="#ef4444" opacity="0.8"/>
+              </svg>
             </div>
             <div>
-              <h1 class="text-base font-bold text-blue-800 mb-0">Aplicación de Drones</h1>
+              <h1 class="text-base font-bold text-blue-800 mb-0">Seguimiento de Drones</h1>
               <p class="text-xs text-gray-500 -mt-0.5">{{ userName }}</p>
             </div>
           </div>
