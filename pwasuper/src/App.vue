@@ -122,19 +122,23 @@ const isLoggedIn = computed(() => {
 });
 
 const userName = computed(() => {
-  if (userData.value && userData.value.nombre_completo) {
-    return userData.value.nombre_completo;
+  if (userData.value) {
+    // Verificar ambos campos para compatibilidad con datos antiguos y nuevos
+    return userData.value.nombre || userData.value.nombre_completo || '';
   }
   return '';
 });
 
 // Función para obtener las primeras dos letras del nombre
 const getUserInitials = computed(() => {
-  if (userData.value && userData.value.nombre_completo) {
-    const names = userData.value.nombre_completo.split(' ');
-    return names.length >= 2 ? 
-      (names[0][0] + names[1][0]).toUpperCase() : 
-      names[0].substring(0, 2).toUpperCase();
+  if (userData.value) {
+    const nombreCompleto = userData.value.nombre || userData.value.nombre_completo || '';
+    if (nombreCompleto) {
+      const names = nombreCompleto.split(' ');
+      return names.length >= 2 ? 
+        (names[0][0] + names[1][0]).toUpperCase() : 
+        names[0].substring(0, 2).toUpperCase();
+    }
   }
   return 'US';
 });
