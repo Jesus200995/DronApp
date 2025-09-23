@@ -1,23 +1,23 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 flex items-center justify-center p-4 relative overflow-hidden">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50 flex items-center justify-center p-4 relative overflow-hidden">
     <!-- Elementos decorativos para mejorar el efecto de vidrio -->
     <div class="absolute inset-0">
-      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
-      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
+      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
+      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-sky-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
     </div>
     
     <div class="page-container w-full max-w-md relative z-10 px-2">
       <!-- Back to Login Link - Top Left -->
       <div class="flex justify-start mb-3">
-        <router-link to="/login" class="text-sm font-medium text-primary hover:text-primary-dark transition-colors duration-200 glass-link">
+        <router-link to="/login" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 glass-link">
           ← Volver al inicio de sesión
         </router-link>
       </div>
 
       <!-- Header Section -->
       <div class="text-center mb-4">
-        <h1 class="text-lg font-bold text-primary mb-1 text-center glass-title">Crear Cuenta</h1>
+        <h1 class="text-lg font-bold text-blue-600 mb-1 text-center glass-title">Crear Cuenta</h1>
         <h2 class="text-base font-semibold text-gray-700">Registro</h2>
         <p class="mt-1 text-gray-500 text-xs">Completa los datos para crear tu cuenta</p>
       </div>
@@ -30,31 +30,31 @@
               
               <!-- Elementos decorativos de fondo -->
               <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-green-400 via-emerald-300 to-teal-400"></div>
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-400 via-indigo-300 to-sky-400"></div>
                 <div class="absolute -top-4 -right-4 w-16 h-16 bg-white/20 rounded-full animate-pulse"></div>
-                <div class="absolute -bottom-2 -left-2 w-12 h-12 bg-green-400/30 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
+                <div class="absolute -bottom-2 -left-2 w-12 h-12 bg-blue-400/30 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
               </div>
 
               <!-- Icono de éxito animado -->
-              <div class="relative z-10 mx-auto mb-4 w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg animate-success-icon">
-                <div class="absolute inset-0 bg-gradient-to-br from-green-300 to-emerald-400 rounded-full animate-ping opacity-20"></div>
+              <div class="relative z-10 mx-auto mb-4 w-20 h-20 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-full flex items-center justify-center shadow-lg animate-success-icon">
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-300 to-indigo-400 rounded-full animate-ping opacity-20"></div>
                 <svg class="w-10 h-10 text-white animate-check-draw" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" class="check-path"></path>
                 </svg>
               </div>
               
               <!-- Título -->
-              <h3 class="relative z-10 text-xl font-bold text-green-600 mb-2 animate-slide-up">¡Registro Exitoso!</h3>
+              <h3 class="relative z-10 text-xl font-bold text-blue-600 mb-2 animate-slide-up">¡Registro Exitoso!</h3>
               
               <!-- Mensaje -->
               <p class="relative z-10 text-gray-700 mb-6 text-sm leading-relaxed animate-slide-up" style="animation-delay: 0.2s;">
                 Tu cuenta ha sido creada correctamente.<br>
-                <span class="text-green-600 font-medium">Serás redirigido al login...</span>
+                <span class="text-blue-600 font-medium">Serás redirigido al login...</span>
               </p>
               
               <!-- Barra de progreso mejorada -->
               <div class="relative z-10 w-full bg-gray-200 rounded-full h-2 mb-6 overflow-hidden animate-slide-up" style="animation-delay: 0.4s;">
-                <div class="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full animate-progress-fill shadow-sm relative">
+                <div class="bg-gradient-to-r from-blue-400 to-indigo-500 h-2 rounded-full animate-progress-fill shadow-sm relative">
                   <div class="absolute inset-0 bg-white/30 animate-shimmer"></div>
                 </div>
               </div>
@@ -62,7 +62,7 @@
               <!-- Botón mejorado -->
               <button @click="goToLogin" class="relative z-10 success-button animate-slide-up" style="animation-delay: 0.6s;">
                 <span class="relative z-10">Ir al Login Ahora</span>
-                <div class="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </button>
 
               <!-- Confeti animado -->
@@ -228,7 +228,7 @@
               </div>
               <p v-if="curpError" class="mt-1 text-xs text-red-600">{{ curpError }}</p>
               <p class="mt-1 text-xs text-gray-500">La CURP debe contener exactamente 18 caracteres en mayúsculas</p>
-              <p v-if="curpWarning" class="mt-1 text-xs text-green-600">{{ curpWarning }}</p>
+              <p v-if="curpWarning" class="mt-1 text-xs text-blue-600">{{ curpWarning }}</p>
             </div>
             
             <div>
@@ -283,7 +283,7 @@
                         type="text"
                         v-model="countrySearch"
                         placeholder="Buscar país..."
-                        class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         @click="$event.stopPropagation()"
                       />
                     </div>
@@ -346,7 +346,7 @@
                 <button
                   type="button"
                   @click="togglePasswordVisibility"
-                  class="absolute inset-y-0 right-0 flex items-center pr-2 text-primary hover:text-primary-dark focus:outline-none transition-colors duration-200"
+                  class="absolute inset-y-0 right-0 flex items-center pr-2 text-blue-600 hover:text-blue-800 focus:outline-none transition-colors duration-200"
                 >
                   <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
@@ -381,7 +381,7 @@
                 <button
                   type="button"
                   @click="toggleConfirmPasswordVisibility"
-                  class="absolute inset-y-0 right-0 flex items-center pr-2 text-primary hover:text-primary-dark focus:outline-none transition-colors duration-200"
+                  class="absolute inset-y-0 right-0 flex items-center pr-2 text-blue-600 hover:text-blue-800 focus:outline-none transition-colors duration-200"
                 >
                   <svg v-if="showConfirmPassword" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
@@ -438,7 +438,7 @@
                     id="terms" 
                     name="terms" 
                     type="checkbox" 
-                    class="focus:ring-green-500 h-3 w-3 text-green-600 border-gray-300 rounded"
+                    class="focus:ring-blue-500 h-3 w-3 text-blue-600 border-gray-300 rounded"
                     required
                   />
                 </div>
@@ -953,10 +953,10 @@ function goToLogin() {
 
 .glass-input:focus {
   outline: none;
-  border: 1px solid rgba(76, 175, 80, 0.4);
+  border: 1px solid rgba(59, 130, 246, 0.4);
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 
-    0 0 0 3px rgba(76, 175, 80, 0.1),
+    0 0 0 3px rgba(59, 130, 246, 0.1),
     0 8px 25px 0 rgba(31, 38, 135, 0.15),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
@@ -969,10 +969,10 @@ function goToLogin() {
 .glass-button {
   padding: 0.875rem 1.5rem;
   border-radius: 12px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   background: linear-gradient(135deg, 
-    rgba(76, 175, 80, 0.8) 0%, 
-    rgba(56, 142, 60, 0.8) 100%);
+    rgba(59, 130, 246, 0.8) 0%, 
+    rgba(37, 99, 235, 0.8) 100%);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   color: white;
@@ -983,7 +983,7 @@ function goToLogin() {
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 4px 20px 0 rgba(76, 175, 80, 0.3),
+    0 4px 20px 0 rgba(59, 130, 246, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.1),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -992,12 +992,12 @@ function goToLogin() {
 .glass-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 30px 0 rgba(76, 175, 80, 0.4),
+    0 8px 30px 0 rgba(59, 130, 246, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.2),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
   background: linear-gradient(135deg, 
-    rgba(76, 175, 80, 0.9) 0%, 
-    rgba(56, 142, 60, 0.9) 100%);
+    rgba(59, 130, 246, 0.9) 0%, 
+    rgba(37, 99, 235, 0.9) 100%);
 }
 
 .glass-button:active:not(:disabled) {
@@ -1049,10 +1049,10 @@ function goToLogin() {
 }
 
 .glass-title {
-  color: #2e7d32;
+  color: #1d4ed8;
   text-shadow: 
-    0 1px 2px rgba(46, 125, 50, 0.3),
-    0 0 8px rgba(46, 125, 50, 0.2);
+    0 1px 2px rgba(29, 78, 216, 0.3),
+    0 0 8px rgba(29, 78, 216, 0.2);
   filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.3));
   position: relative;
 }
@@ -1128,8 +1128,8 @@ button[type="button"]:hover svg {
 
 /* Mejoras visuales para el checkbox */
 input[type="checkbox"]:checked {
-  background-color: #10b981;
-  border-color: #10b981;
+  background-color: #3b82f6;
+  border-color: #3b82f6;
 }
 
 /* Animación de la barra de progreso */
@@ -1174,7 +1174,7 @@ input[type="checkbox"]:checked {
 }
 
 .success-button {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: white;
   font-weight: 600;
   border-radius: 12px;
@@ -1198,7 +1198,7 @@ input[type="checkbox"]:checked {
 }
 
 .success-button:focus {
-  outline: 2px solid #059669;
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
@@ -1300,14 +1300,14 @@ input[type="checkbox"]:checked {
 }
 
 .confetti-1 {
-  background: #10b981;
+  background: #3b82f6;
   left: 10%;
   animation-delay: 0s;
   animation-duration: 2.5s;
 }
 
 .confetti-2 {
-  background: #34d399;
+  background: #60a5fa;
   left: 20%;
   animation-delay: 0.3s;
   animation-duration: 3s;
@@ -1321,21 +1321,21 @@ input[type="checkbox"]:checked {
 }
 
 .confetti-4 {
-  background: #059669;
+  background: #2563eb;
   left: 90%;
   animation-delay: 0.9s;
   animation-duration: 3.2s;
 }
 
 .confetti-5 {
-  background: #6ee7b7;
+  background: #93c5fd;
   left: 50%;
   animation-delay: 0.2s;
   animation-duration: 2.7s;
 }
 
 .confetti-6 {
-  background: #d1fae5;
+  background: #dbeafe;
   left: 70%;
   animation-delay: 0.5s;
   animation-duration: 3.1s;
