@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/pwa-192x192.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#10b981" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#10b981" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#065f46" />
+    <meta name="description" content="Sistema de registro de asistencia y actividades con funcionalidad offline" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Sembrando Vida" />
+    
+    <!-- Manifest PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- iOS Safari Icons -->
+    <link rel="apple-touch-icon" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/pwa-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/pwa-512x512.png" />
+    
+    <!-- Windows Tiles -->
+    <meta name="msapplication-TileImage" content="/pwa-192x192.png" />
+    <meta name="msapplication-TileColor" content="#10b981" />
+    
+    <!-- Offline Support -->
+    <meta name="offline-support" content="true" />
+    
+    <!-- Google Fonts para Century Gothic y alternativas -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;600;700;800;900&family=Nunito+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <title>Sembrando Vida: CONTROL</title>
+    
+    <style>
+      /* Definición de fuente Century Gothic personalizada */
+      @font-face {
+        font-family: 'Century Gothic';
+        src: local('Century Gothic'), local('CenturyGothic'), local('Gothic A1');
+        font-display: swap;
+      }
+      
+      /* Clase personalizada para Century Gothic */
+      .century-gothic-font {
+        font-family: 'Century Gothic', 'Gothic A1', 'Nunito Sans', 'Futura', 'Avenir', 'Proxima Nova', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
+        font-display: swap;
+      }
+      
+      /* Fondo de vidrio para evitar color morado durante la carga */
+      html, body {
+        background: linear-gradient(to bottom right, #f0fdfa, #ecfdf5, #f0fdfa) !important;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+    </style>
+  </head>
+  <body style="background: linear-gradient(to bottom right, #f0fdfa, #ecfdf5, #f0fdfa);">
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    
+    <noscript>
+      <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h1>JavaScript Requerido</h1>
+        <p>Esta aplicación requiere JavaScript para funcionar correctamente.</p>
+        <p>Por favor, habilita JavaScript en tu navegador e intenta nuevamente.</p>
+      </div>
+    </noscript>
+  </body>
+</html>

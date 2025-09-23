@@ -1,0 +1,4334 @@
+<template>
+  <div class="usuarios-container">
+    <Sidebar @logout="logout" />
+    
+    <main class="main-content">      <header class="page-header">
+        <div class="header-content">
+          <div class="header-main">
+            <div class="header-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div class="header-text">
+              <h1 class="header-title">Gestión de Usuarios</h1>
+              <p class="header-subtitle">Administra todos los usuarios registrados en la aplicación</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="connection-status" :class="{ 'online': isOnline, 'offline': !isOnline }">
+              <div class="status-indicator"></div>
+              <span class="status-text">{{ isOnline ? 'En línea' : 'Sin conexión' }}</span>
+            </div>
+            <button @click="cargarUsuarios" class="refresh-btn" :disabled="loading">
+              <svg class="refresh-icon" :class="{ spinning: loading }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="m3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              {{ loading ? 'Cargando...' : 'Actualizar' }}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <!-- Búsqueda y Filtros -->
+        <div class="search-section">
+          <div class="controls-row">
+            <!-- Contenedor izquierdo con filtros -->
+            <div class="controls-left">
+              <!-- Barra de búsqueda -->
+              <div class="search-group">
+                <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+                <input 
+                  v-model="searchTerm" 
+                  type="text" 
+                  placeholder="Buscar..." 
+                  class="search-input"
+                  @input="filtrarUsuarios"
+                >
+              </div>
+
+              <!-- Ordenamiento -->
+              <div class="sort-group">
+                <label>Ordenar:</label>
+                <div class="sort-buttons">
+                  <button 
+                    @click="ordenarPor('id')"
+                    :class="['sort-btn', { active: campoOrdenamiento === 'id' }]"
+                    title="Ordenar por ID"
+                  >
+                    ID
+                    <svg v-if="campoOrdenamiento === 'id'" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path v-if="direccionOrdenamiento === 'asc'" d="m7 15 5 5 5-5"/>
+                      <path v-else d="m7 9 5-5 5 5"/>
+                    </svg>
+                  </button>
+                  <button 
+                    @click="ordenarPor('nombre')"
+                    :class="['sort-btn', { active: campoOrdenamiento === 'nombre' }]"
+                    title="Ordenar por Nombre"
+                  >
+                    Nombre
+                    <svg v-if="campoOrdenamiento === 'nombre'" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path v-if="direccionOrdenamiento === 'asc'" d="m7 15 5 5 5-5"/>
+                      <path v-else d="m7 9 5-5 5 5"/>
+                    </svg>
+                  </button>
+                  <button 
+                    @click="ordenarPor('fecha')"
+                    :class="['sort-btn', { active: campoOrdenamiento === 'fecha' }]"
+                    title="Ordenar por Fecha de Registro"
+                  >
+                    Fecha
+                    <svg v-if="campoOrdenamiento === 'fecha'" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path v-if="direccionOrdenamiento === 'asc'" d="m7 15 5 5 5-5"/>
+                      <path v-else d="m7 9 5-5 5 5"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Botones de exportación -->
+              <div class="export-actions">
+                <button @click="exportarExcel" class="export-btn excel">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  Excel
+                </button>
+                <button @click="imprimirUsuarios" class="export-btn print">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                  </svg>
+                  Imprimir
+                </button>
+              </div>
+            </div>
+            
+            <!-- Contador de usuarios en el lado derecho -->
+            <div class="controls-right">
+              <div class="users-stats-compact">
+                <div class="compact-stat-card">
+                  <div class="compact-stat-icon">
+                    <!-- Icono de usuarios -->
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" 
+                            stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="9" cy="7" r="4" stroke="#4CAF50" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M22 21v-2a4 4 0 0 0-3-3.87" stroke="#66BB6A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#66BB6A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </div>
+                  <div class="compact-stat-info">
+                    <div class="compact-stat-value">{{ totalUsuarios }}</div>
+                    <div class="compact-stat-label">Total usuarios</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div class="usuarios-section">
+          <div v-if="loading && usuarios.length === 0" class="loading-container">
+            <div class="spinner-large"></div>
+            <p>Cargando usuarios...</p>
+          </div>
+          
+          <div v-else-if="error" class="error-container">
+            <p>{{ error }}</p>
+            <button @click="cargarUsuarios" class="retry-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                <path d="M21 21v-5h-5"></path>
+              </svg>
+              Reintentar
+            </button>
+          </div>
+            <div v-else-if="usuariosFiltrados.length === 0" class="empty-state">
+            <div class="empty-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <h3>No hay usuarios</h3>
+            <p v-if="searchTerm">No se encontraron usuarios con el término "{{ searchTerm }}"</p>
+            <p v-else>Aún no se han registrado usuarios en la aplicación.</p>
+          </div>
+          
+          <div v-else class="table-container">
+            <table class="usuarios-table">
+              <thead>
+                <tr>
+                  <th class="col-id">ID</th>
+                  <th class="col-nombre">Nombre Completo</th>
+                  <th class="col-correo">Correo</th>
+                  <th class="col-cargo">Cargo</th>
+                  <th class="col-supervisor">Supervisor</th>
+                  <th class="col-fecha">Fecha de Registro</th>
+                  <th class="col-estado">Estado</th>
+                  <th class="col-acciones">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="usuario in usuariosPaginados" :key="usuario.id">
+                  <td class="col-id">#{{ usuario.id }}</td>
+                  <td class="col-nombre">
+                    <span class="nombre-normal">{{ usuario.nombre_completo || 'Sin nombre' }}</span>
+                  </td>
+                  <td>{{ usuario.correo }}</td>
+                  <td>{{ usuario.cargo }}</td>
+                  <td>{{ usuario.supervisor }}</td>
+                  <td>{{ formatFecha(usuario.created_at || new Date()) }}</td>
+                  <td>
+                    <span class="status-badge active">
+                      Activo
+                    </span>
+                  </td>
+                  <td>
+                    <div class="actions-container">
+                      <button @click="verDetalles(usuario)" class="btn-ver" title="Ver detalles del usuario">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                      <button @click="editarUsuario(usuario)" class="btn-editar" title="Editar usuario">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button @click="confirmarEliminarUsuario(usuario)" class="btn-eliminar" title="Eliminar usuario">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="3,6 5,6 21,6"></polyline>
+                          <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                          <line x1="10" y1="11" x2="10" y2="17"></line>
+                          <line x1="14" y1="11" x2="14" y2="17"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Paginación -->
+          <div v-if="totalPaginas > 1" class="pagination-container">
+            <div class="pagination-info">
+              <span class="pagination-text">
+                Mostrando <strong>{{ (paginaActual - 1) * usuariosPorPagina + 1 }}</strong> a <strong>{{ Math.min(paginaActual * usuariosPorPagina, usuariosFiltrados.length) }}</strong> 
+                de <strong>{{ usuariosFiltrados.length }}</strong> usuarios
+              </span>
+              <div class="pagination-selector">
+                <label for="itemsPorPagina" class="pagination-label">Usuarios por página:</label>
+                <select 
+                  id="itemsPorPagina" 
+                  v-model="usuariosPorPagina" 
+                  @change="cambiarUsuariosPorPagina"
+                  class="pagination-select"
+                >
+                  <option value="10">10</option>
+                  <option value="25">25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+            </div>
+            
+            <nav class="pagination-nav" aria-label="Navegación de páginas">
+              <!-- Botón Primera Página -->
+              <button 
+                @click="irAPagina(1)" 
+                :disabled="paginaActual === 1"
+                class="pagination-btn pagination-first"
+                title="Primera página"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="11 17 6 12 11 7"></polyline>
+                  <polyline points="18 17 13 12 18 7"></polyline>
+                </svg>
+              </button>
+              
+              <!-- Botón Página Anterior -->
+              <button 
+                @click="irAPagina(paginaActual - 1)" 
+                :disabled="paginaActual === 1"
+                class="pagination-btn pagination-prev"
+                title="Página anterior"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span class="pagination-btn-text">Anterior</span>
+              </button>
+              
+              <!-- Números de Página -->
+              <div class="pagination-numbers">
+                <!-- Página 1 siempre visible si hay más de 1 página -->
+                <button 
+                  v-if="mostrarPagina(1)"
+                  @click="irAPagina(1)"
+                  :class="['pagination-number', { active: paginaActual === 1 }]"
+                >
+                  1
+                </button>
+                
+                <!-- Puntos suspensivos iniciales -->
+                <span v-if="paginaActual > 4" class="pagination-ellipsis">...</span>
+                
+                <!-- Páginas del rango visible -->
+                <button 
+                  v-for="pagina in paginasVisibles" 
+                  :key="pagina"
+                  @click="irAPagina(pagina)"
+                  :class="['pagination-number', { active: paginaActual === pagina }]"
+                >
+                  {{ pagina }}
+                </button>
+                
+                <!-- Puntos suspensivos finales -->
+                <span v-if="paginaActual < totalPaginas - 3" class="pagination-ellipsis">...</span>
+                
+                <!-- Última página siempre visible si hay más de 1 página -->
+                <button 
+                  v-if="mostrarPagina(totalPaginas) && totalPaginas > 1"
+                  @click="irAPagina(totalPaginas)"
+                  :class="['pagination-number', { active: paginaActual === totalPaginas }]"
+                >
+                  {{ totalPaginas }}
+                </button>
+              </div>
+              
+              <!-- Botón Página Siguiente -->
+              <button 
+                @click="irAPagina(paginaActual + 1)" 
+                :disabled="paginaActual === totalPaginas"
+                class="pagination-btn pagination-next"
+                title="Página siguiente"
+              >
+                <span class="pagination-btn-text">Siguiente</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+              
+              <!-- Botón Última Página -->
+              <button 
+                @click="irAPagina(totalPaginas)" 
+                :disabled="paginaActual === totalPaginas"
+                class="pagination-btn pagination-last"
+                title="Última página"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="13 17 18 12 13 7"></polyline>
+                  <polyline points="6 17 11 12 6 7"></polyline>
+                </svg>
+              </button>
+            </nav>
+            
+            <!-- Navegación rápida -->
+            <div class="pagination-jump">
+              <label for="jumpToPage" class="pagination-label">Ir a página:</label>
+              <input 
+                id="jumpToPage"
+                type="number" 
+                v-model.number="paginaSalto"
+                @keyup.enter="saltarAPagina"
+                :min="1" 
+                :max="totalPaginas"
+                class="pagination-input"
+                placeholder="Nº"
+              >
+              <button @click="saltarAPagina" class="pagination-jump-btn" title="Ir a página">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M5 12h14m-7-7 7 7-7 7"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9,18 15,12 9,6"></polyline>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </template>
+
+  <script setup>
+  import { ref, computed, onMounted } from 'vue'
+    <div v-if="showModal" class="modal-overlay-modern" @click="cerrarModal">
+      <div class="modal-content-modern" @click.stop>
+        <div class="modal-header-modern">
+          <div class="modal-title-section">
+            <div class="modal-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </div>
+            <h3 class="modal-title">{{ modalTitle }}</h3>
+          </div>
+          <button @click="cerrarModal" class="btn-close-modern">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body-modern">
+          <div v-if="usuarioSeleccionado" class="user-details-grid">
+            <!-- ID Usuario -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">ID Usuario</span>
+                <span class="detail-value">#{{ usuarioSeleccionado.id }}</span>
+              </div>
+            </div>
+
+            <!-- Correo Electrónico -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">Correo</span>
+                <span class="detail-value">{{ usuarioSeleccionado.correo }}</span>
+              </div>
+            </div>
+
+            <!-- Nombre Completo -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">Nombre</span>
+                <span class="detail-value">{{ usuarioSeleccionado.nombre_completo || 'No especificado' }}</span>
+              </div>
+            </div>
+
+            <!-- Cargo -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                  <line x1="8" y1="21" x2="16" y2="21"/>
+                  <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">Cargo</span>
+                <span class="detail-value">{{ usuarioSeleccionado.cargo || 'No especificado' }}</span>
+              </div>
+            </div>
+
+            <!-- Supervisor -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">Supervisor</span>
+                <span class="detail-value">{{ usuarioSeleccionado.supervisor || 'No asignado' }}</span>
+              </div>
+            </div>
+
+            <!-- CURP -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10,9 9,9 8,9"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">CURP</span>
+                <span class="detail-value">{{ usuarioSeleccionado.curp || 'No especificada' }}</span>
+              </div>
+            </div>
+
+            <!-- Teléfono -->
+            <div class="detail-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">Teléfono</span>
+                <span class="detail-value phone-value">{{ usuarioSeleccionado.telefono || 'No especificado' }}</span>
+              </div>
+            </div>
+
+            <!-- Estado -->
+            <div class="detail-card">
+              <div class="detail-icon status-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22,4 12,14.01 9,11.01"/>
+                </svg>
+              </div>
+              <div class="detail-content">
+                <span class="detail-label">Estado</span>
+                <span class="detail-value status-active">● Activo</span>
+              </div>
+            </div>
+
+            <!-- Contraseña -->
+            <div class="detail-card password-card">
+              <div class="detail-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <circle cx="12" cy="16" r="1"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <div class="detail-content password-content">
+                <span class="detail-label">Contraseña</span>
+                <div class="password-display">
+                  <span class="password-value">
+                    {{ showPassword ? obtenerContrasenaUsuario(usuarioSeleccionado) : '••••••••••••' }}
+                  </span>
+                  <button @click="togglePassword" class="password-toggle-btn" type="button">
+                    <svg v-if="showPassword" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                    <svg v-else width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación para eliminar usuario -->
+    <div v-if="showDeleteModal" class="modal-overlay-modern" @click="cancelarEliminar">
+      <div class="modal-content-modern delete-modal" @click.stop>
+        <div class="modal-header-modern delete-header">
+          <div class="modal-title-section">
+            <div class="modal-icon delete-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"></path>
+                <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                <path d="M8 6V4c0-1 1-2 2-2h4c0-1 1-2 2-2v2"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </div>
+            <h3 class="modal-title">Confirmar Eliminación</h3>
+          </div>
+          <button @click="cancelarEliminar" class="btn-close-modern">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body-modern">
+          <div v-if="usuarioAEliminar" class="delete-confirmation">
+            <div class="warning-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f44336" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                <line x1="12" y1="9" x2="12" y2="13"></line>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            </div>
+            <h4>¿Estás seguro de que deseas eliminar este usuario?</h4>
+            <div class="user-info-delete">
+              <p><strong>ID:</strong> #{{ usuarioAEliminar.id }}</p>
+              <p><strong>Nombre:</strong> {{ usuarioAEliminar.nombre_completo }}</p>
+              <p><strong>Correo:</strong> {{ usuarioAEliminar.correo }}</p>
+              <p><strong>Teléfono:</strong> {{ usuarioAEliminar.telefono || 'No especificado' }}</p>
+            </div>
+            <p class="warning-text">Esta acción eliminará permanentemente al usuario y todos sus datos asociados. <strong>Esta acción no se puede deshacer.</strong></p>
+          </div>
+        </div>
+        
+        <div class="modal-footer-delete">
+          <button @click="cancelarEliminar" class="btn-cancel">
+            Cancelar
+          </button>
+          <button @click="eliminarUsuario" class="btn-delete" :disabled="eliminandoUsuario">
+            <svg v-if="eliminandoUsuario" class="spinner-small" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 11-6.219-8.56"/>
+            </svg>
+            {{ eliminandoUsuario ? 'Eliminando...' : 'Eliminar Usuario' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de edición de usuario -->
+    <div v-if="showEditModal" class="modal-overlay-modern" @click="cancelarEdicion">
+      <div class="modal-content-modern edit-modal" @click.stop>
+        <div class="modal-header-modern edit-header">
+          <div class="modal-title-section">
+            <div class="modal-icon edit-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </div>
+            <h3 class="modal-title">Editar Usuario</h3>
+          </div>
+          <button @click="cancelarEdicion" class="btn-close-modern">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body-modern">
+          <div v-if="usuarioAEditar" class="edit-form">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="edit-correo">Correo Electrónico</label>
+                <input 
+                  id="edit-correo"
+                  v-model="datosEdicion.correo" 
+                  type="email" 
+                  class="form-input"
+                  placeholder="correo@ejemplo.com"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-nombre">Nombre Completo</label>
+                <input 
+                  id="edit-nombre"
+                  v-model="datosEdicion.nombre_completo" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="Nombre completo del usuario"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-cargo">Cargo</label>
+                <input 
+                  id="edit-cargo"
+                  v-model="datosEdicion.cargo" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="Cargo o puesto"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-supervisor">Supervisor</label>
+                <input 
+                  id="edit-supervisor"
+                  v-model="datosEdicion.supervisor" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="Nombre del supervisor"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-contrasena">Contraseña</label>
+                <input 
+                  id="edit-contrasena"
+                  v-model="datosEdicion.contrasena" 
+                  type="password" 
+                  class="form-input"
+                  placeholder="Nueva contraseña (opcional)"
+                />
+              </div>
+              
+              <div class="form-group">
+                <label for="edit-curp">CURP</label>
+                <input 
+                  id="edit-curp"
+                  v-model="datosEdicion.curp" 
+                  type="text" 
+                  class="form-input"
+                  placeholder="CURP de 18 caracteres"
+                  maxlength="18"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="edit-telefono">Teléfono</label>
+                <input 
+                  id="edit-telefono"
+                  v-model="datosEdicion.telefono" 
+                  type="tel" 
+                  class="form-input"
+                  placeholder="Teléfono con código de país"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer-edit">
+          <button @click="cancelarEdicion" class="btn-cancel">
+            Cancelar
+          </button>
+          <button @click="guardarEdicion" class="btn-save" :disabled="editandoUsuario">
+            <svg v-if="editandoUsuario" class="spinner-small" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12a9 9 0 11-6.219-8.56"/>
+            </svg>
+            {{ editandoUsuario ? 'Guardando...' : 'Guardar Cambios' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Éxito -->
+  <div v-if="showSuccessModal" class="modal-overlay-success" @click="cerrarSuccessModal">
+    <div class="modal-content-success" @click.stop>
+      <div class="success-icon">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20,6 9,17 4,12"></polyline>
+        </svg>
+      </div>
+      
+      <h3>¡Usuario actualizado!</h3>
+      <p>Los cambios se guardaron exitosamente en la base de datos.</p>
+      
+      <button @click="cerrarSuccessModal" class="btn-success-ok">
+        Aceptar
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+import Sidebar from '../components/Sidebar.vue'
+import { usuariosService } from '../services/usuariosService.js'
+
+const router = useRouter()
+
+// Estado de conexión
+const isOnline = ref(navigator.onLine)
+
+const API_URL = 'https://apipwa.sembrandodatos.com'
+const usuarios = ref([])
+const usuariosFiltrados = ref([])
+const loading = ref(false)
+const error = ref('')
+const searchTerm = ref('')
+
+// Variable para contador de usuarios
+const totalUsuarios = ref('-')
+
+// Variables para paginación
+const paginaActual = ref(1)
+const usuariosPorPagina = ref(50)
+
+// Variables para ordenamiento
+const campoOrdenamiento = ref('fecha') // Por defecto ordenar por fecha
+const direccionOrdenamiento = ref('desc') // Por defecto más reciente primero
+
+const showModal = ref(false)
+const modalTitle = ref('')
+const modalContent = ref('')
+const usuarioSeleccionado = ref(null)
+const showPassword = ref(false)
+
+// Variables para eliminación de usuarios
+const showDeleteModal = ref(false)
+const usuarioAEliminar = ref(null)
+const eliminandoUsuario = ref(false)
+
+// Variables para edición de usuarios
+const showEditModal = ref(false)
+const usuarioAEditar = ref(null)
+const editandoUsuario = ref(false)
+const datosEdicion = ref({
+  correo: '',
+  nombre_completo: '',
+  cargo: '',
+  supervisor: '',
+  contrasena: '',
+  curp: '',
+  telefono: ''
+})
+
+// Variables para modal de éxito
+const showSuccessModal = ref(false)
+
+onMounted(() => {
+  cargarUsuarios()
+  
+  // Escuchar cambios de conexión
+  window.addEventListener('online', () => {
+    isOnline.value = true
+  })
+  
+  window.addEventListener('offline', () => {
+    isOnline.value = false
+  })
+})
+
+const cargarUsuarios = async () => {
+  loading.value = true
+  error.value = ''
+  
+  try {
+    // Usar el servicio de usuarios con datos reales de la base de datos
+    usuarios.value = await usuariosService.obtenerUsuarios()
+    usuariosFiltrados.value = usuarios.value
+    
+    // Actualizar contador de usuarios
+    totalUsuarios.value = usuarios.value.length.toLocaleString('es')
+    
+    // Aplicar ordenamiento inicial
+    aplicarOrdenamiento()
+    
+    console.log('✅ Usuarios reales cargados desde la base de datos:', usuarios.value)
+  } catch (err) {
+    console.error('❌ Error al cargar usuarios desde la base de datos:', err)
+    error.value = 'Error al conectar con la base de datos. Verifica que el servidor esté funcionando.'
+    usuarios.value = []
+    usuariosFiltrados.value = []
+    totalUsuarios.value = '0'
+  } finally {
+    loading.value = false
+  }
+}
+
+// Funciones de exportación
+const imprimirUsuarios = () => {
+  const ventanaImpresion = window.open('', '_blank')
+  
+  const estilosImpresion = `
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      
+      body { 
+        font-family: Arial, sans-serif; 
+        font-size: 10px; 
+        margin: 0; 
+        padding: 15px;
+        background: white;
+        color: #333;
+      }
+      
+      .header { 
+        text-align: center; 
+        margin-bottom: 25px; 
+        border-bottom: 2px solid #4CAF50;
+        padding-bottom: 12px;
+      }
+      
+      .header h1 { 
+        color: #4CAF50; 
+        margin: 0; 
+        font-size: 22px;
+        font-weight: bold;
+      }
+      
+      .header p { 
+        margin: 4px 0; 
+        color: #666;
+        font-size: 11px;
+      }
+      
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 15px;
+        font-size: 9px;
+        border: 2px solid #4CAF50;
+      }
+      
+      th, td { 
+        border: 1px solid #ddd; 
+        padding: 6px 4px; 
+        text-align: left;
+        word-wrap: break-word;
+        vertical-align: top;
+      }
+      
+      th { 
+        background-color: #4CAF50 !important; 
+        color: white !important; 
+        font-weight: bold;
+        font-size: 8px;
+        text-align: center;
+      }
+      
+      tr:nth-child(even) { 
+        background-color: #f8f9fa !important; 
+      }
+      
+      tr:nth-child(odd) { 
+        background-color: white !important; 
+      }
+      
+      .col-id { width: 7%; text-align: center; }
+      .col-correo { width: 20%; }
+      .col-nombre { width: 18%; }
+      .col-cargo { width: 13%; }
+      .col-supervisor { width: 13%; }
+      .col-curp { width: 12%; font-family: monospace; font-size: 8px; }
+      .col-telefono { width: 12%; font-family: monospace; font-size: 8px; }
+      .col-estado { width: 8%; text-align: center; }
+      
+      .estado-activo { 
+        color: #28a745 !important; 
+        font-weight: bold; 
+      }
+      
+      .estado-inactivo { 
+        color: #dc3545 !important; 
+        font-weight: bold; 
+      }
+      
+      .footer {
+        margin-top: 25px;
+        text-align: center;
+        font-size: 9px;
+        color: #666;
+        border-top: 1px solid #ddd;
+        padding-top: 12px;
+      }
+      
+      @media print {
+        body { 
+          font-family: Arial, sans-serif; 
+          font-size: 10px; 
+          margin: 0; 
+          padding: 15px;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        
+        table {
+          page-break-inside: auto;
+        }
+        
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+        
+        @page {
+          margin: 0.5in;
+          size: A4 landscape;
+        }
+      }
+      
+      @media screen {
+        body {
+          max-width: 1200px;
+          margin: 0 auto;
+        }
+      }
+    </style>
+  `
+  
+  const fecha = new Date().toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  
+  const obtenerEstadoUsuario = (usuario) => {
+    // Determinar estado basado en si tiene datos completos (sin contar contraseña)
+    const tieneCorreo = usuario.correo && usuario.correo.trim() !== ''
+    const tieneNombre = usuario.nombre_completo && usuario.nombre_completo.trim() !== ''
+    const tieneCargo = usuario.cargo && usuario.cargo.trim() !== ''
+    const tieneCurp = usuario.curp && usuario.curp.trim() !== ''
+    
+    return (tieneCorreo && tieneNombre && tieneCargo && tieneCurp) ? 'Activo' : 'Incompleto'
+  }
+  
+  const obtenerFechaRegistro = (usuario) => {
+    // Usar fecha real si está disponible, sino simular basada en ID
+    if (usuario.fecha_registro) {
+      return formatFecha(usuario.fecha_registro)
+    } else if (usuario.created_at) {
+      return formatFecha(usuario.created_at)
+    } else {
+      // Simular fecha basada en ID (usuarios más recientes tienen ID mayor)
+      const baseDate = new Date('2024-01-01')
+      const daysToAdd = (usuario.id || 1) * 2 // 2 días por ID para espaciar
+      const fechaSimulada = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+      return fechaSimulada.toLocaleDateString('es-ES')
+    }
+  }
+  
+  const contenidoHTML = `
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Lista Completa de Usuarios - ${fecha}</title>
+      ${estilosImpresion}
+    </head>
+    <body>
+      <div class="header">
+        <h1>📋 Lista de Usuarios del Sistema</h1>
+        <p>Generado el: ${fecha}</p>
+        <p>Total de usuarios: ${usuariosFiltrados.value.length}</p>
+        <p><strong>Información administrativa del sistema</strong></p>
+      </div>
+      
+      <table>
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-correo">Correo Electrónico</th>
+            <th class="col-nombre">Nombre Completo</th>
+            <th class="col-cargo">Cargo</th>
+            <th class="col-supervisor">Supervisor</th>
+            <th class="col-curp">CURP</th>
+            <th class="col-telefono">Teléfono</th>
+            <th class="col-estado">Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${usuariosFiltrados.value.map(usuario => {
+            const estado = obtenerEstadoUsuario(usuario)
+            const claseEstado = estado === 'Activo' ? 'estado-activo' : 'estado-inactivo'
+            
+            return `
+            <tr>
+              <td class="col-id">${usuario.id}</td>
+              <td class="col-correo">${usuario.correo || 'No especificado'}</td>
+              <td class="col-nombre">${usuario.nombre_completo || 'Sin nombre'}</td>
+              <td class="col-cargo">${usuario.cargo || 'Sin cargo'}</td>
+              <td class="col-supervisor">${usuario.supervisor || 'Sin supervisor'}</td>
+              <td class="col-curp">${usuario.curp || 'Sin CURP'}</td>
+              <td class="col-telefono">${usuario.telefono || 'Sin teléfono'}</td>
+              <td class="col-estado"><span class="${claseEstado}">${estado}</span></td>
+            </tr>
+            `
+          }).join('')}
+        </tbody>
+      </table>
+      
+      <div class="footer">
+        <p><strong>Sistema de Gestión de Usuarios PWA</strong></p>
+        <p>Documento generado automáticamente</p>
+        <p>Total de registros: ${usuariosFiltrados.value.length} usuarios</p>
+      </div>
+    </body>
+    </html>
+  `
+  
+  // Escribir el contenido y asegurar carga completa
+  ventanaImpresion.document.open()
+  ventanaImpresion.document.write(contenidoHTML)
+  ventanaImpresion.document.close()
+  
+  // Esperar a que se carguen completamente los estilos antes de imprimir
+  ventanaImpresion.onload = function() {
+    setTimeout(() => {
+      ventanaImpresion.print()
+    }, 500)
+  }
+  
+  // Fallback por si onload no se dispara
+  setTimeout(() => {
+    if (ventanaImpresion.document.readyState === 'complete') {
+      ventanaImpresion.print()
+    }
+  }, 750)
+}
+
+const exportarExcel = () => {
+  // Headers completos con todos los campos (sin contraseña ni fecha)
+  const headers = [
+    'ID Usuario',
+    'Correo Electrónico', 
+    'Nombre Completo', 
+    'Cargo', 
+    'Supervisor', 
+    'CURP',
+    'Teléfono',
+    'Estado'
+  ]
+  
+  const obtenerEstadoUsuario = (usuario) => {
+    const tieneCorreo = usuario.correo && usuario.correo.trim() !== ''
+    const tieneNombre = usuario.nombre_completo && usuario.nombre_completo.trim() !== ''
+    const tieneCargo = usuario.cargo && usuario.cargo.trim() !== ''
+    const tieneCurp = usuario.curp && usuario.curp.trim() !== ''
+    
+    return (tieneCorreo && tieneNombre && tieneCargo && tieneCurp) ? 'Activo' : 'Incompleto'
+  }
+  
+  const obtenerFechaRegistro = (usuario) => {
+    if (usuario.fecha_registro) {
+      return formatFecha(usuario.fecha_registro)
+    } else if (usuario.created_at) {
+      return formatFecha(usuario.created_at)
+    } else {
+      // Simular fecha basada en ID
+      const baseDate = new Date('2024-01-01')
+      const daysToAdd = (usuario.id || 1) * 2
+      const fechaSimulada = new Date(baseDate.getTime() + (daysToAdd * 24 * 60 * 60 * 1000))
+      return fechaSimulada.toLocaleDateString('es-ES')
+    }
+  }
+  
+  const csvData = usuariosFiltrados.value.map(usuario => [
+    usuario.id || '',
+    usuario.correo || 'No especificado',
+    usuario.nombre_completo || 'Sin nombre',
+    usuario.cargo || 'Sin cargo',
+    usuario.supervisor || 'Sin supervisor',
+    usuario.curp || 'Sin CURP',
+    usuario.telefono || 'Sin teléfono',
+    obtenerEstadoUsuario(usuario)
+  ])
+  
+  // Crear contenido CSV con información adicional
+  let csvContent = `"SISTEMA DE GESTIÓN DE USUARIOS PWA"\n`
+  csvContent += `"Exportación generada el: ${new Date().toLocaleDateString('es-ES', { 
+    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+  })}"\n`
+  csvContent += `"Total de usuarios: ${usuariosFiltrados.value.length}"\n`
+  csvContent += `"Información administrativa del sistema"\n\n`
+  
+  // Agregar headers
+  csvContent += headers.join(',') + '\n'
+  
+  // Agregar datos
+  csvData.forEach(row => {
+    csvContent += row.map(field => `"${field}"`).join(',') + '\n'
+  })
+  
+  // Agregar información adicional al final
+  csvContent += `\n"Notas:"\n`
+  csvContent += `"- Estado 'Activo': Usuario tiene correo, nombre, cargo y CURP completados"\n`
+  csvContent += `"- Estado 'Incompleto': Faltan datos en campos importantes"\n`
+  csvContent += `"- Información de contraseñas y fechas excluida por seguridad"\n`
+  
+  // Agregar BOM para caracteres especiales en Excel
+  const BOM = '\uFEFF'
+  const csvWithBOM = BOM + csvContent
+  
+  // Crear y descargar el archivo
+  const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  
+  if (link.download !== undefined) {
+    const fecha = new Date().toISOString().split('T')[0]
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `usuarios_${fecha}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+}
+
+const filtrarUsuarios = () => {
+  if (!searchTerm.value.trim()) {
+    usuariosFiltrados.value = usuarios.value
+  } else {
+    const termino = searchTerm.value.toLowerCase()
+    usuariosFiltrados.value = usuarios.value.filter(usuario => 
+      usuario.correo.toLowerCase().includes(termino) ||
+      (usuario.nombre_completo && usuario.nombre_completo.toLowerCase().includes(termino)) ||
+      (usuario.cargo && usuario.cargo.toLowerCase().includes(termino)) ||
+      (usuario.supervisor && usuario.supervisor.toLowerCase().includes(termino))
+    )
+  }
+  resetearPaginacion()
+  aplicarOrdenamiento()
+}
+
+// Funciones de ordenamiento
+const ordenarPor = (campo) => {
+  if (campoOrdenamiento.value === campo) {
+    // Si es el mismo campo, cambiar dirección
+    direccionOrdenamiento.value = direccionOrdenamiento.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    // Si es un campo diferente, establecer nuevo campo y dirección por defecto
+    campoOrdenamiento.value = campo
+    direccionOrdenamiento.value = campo === 'fecha' ? 'desc' : 'asc' // Fecha descendente por defecto, otros ascendente
+  }
+  aplicarOrdenamiento()
+}
+
+const aplicarOrdenamiento = () => {
+  if (!usuariosFiltrados.value.length) return
+
+  usuariosFiltrados.value.sort((a, b) => {
+    let valorA, valorB
+
+    switch (campoOrdenamiento.value) {
+      case 'id':
+        valorA = parseInt(a.id)
+        valorB = parseInt(b.id)
+        break
+      case 'nombre':
+        valorA = (a.nombre_completo || '').toLowerCase()
+        valorB = (b.nombre_completo || '').toLowerCase()
+        break
+      case 'fecha':
+        valorA = new Date(a.fecha_registro)
+        valorB = new Date(b.fecha_registro)
+        break
+      default:
+        return 0
+    }
+
+    if (direccionOrdenamiento.value === 'asc') {
+      if (valorA < valorB) return -1
+      if (valorA > valorB) return 1
+      return 0
+    } else {
+      if (valorA > valorB) return -1
+      if (valorA < valorB) return 1
+      return 0
+    }
+  })
+}
+
+const formatFecha = (fechaStr) => {
+  try {
+    // Si viene una fecha ISO completa (con T), la procesamos con zona horaria
+    if (typeof fechaStr === 'string' && fechaStr.includes('T')) {
+      return new Date(fechaStr).toLocaleDateString('es-ES', {
+        timeZone: 'America/Mexico_City' // Forzar zona horaria de México
+      })
+    }
+    
+    // Si viene solo una fecha (YYYY-MM-DD), crear la fecha sin zona horaria
+    if (typeof fechaStr === 'string' && fechaStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = fechaStr.split('-').map(num => parseInt(num, 10))
+      const fecha = new Date(year, month - 1, day) // month - 1 porque los meses en JS van de 0-11
+      
+      return fecha.toLocaleDateString('es-ES')
+    }
+    
+    // Para otros casos, usar el método estándar
+    return new Date(fechaStr).toLocaleDateString('es-ES')
+  } catch (e) {
+    console.error('Error al formatear fecha:', e, 'Fecha original:', fechaStr)
+    return fechaStr
+  }
+}
+
+const verDetalles = (usuario) => {
+  modalTitle.value = 'Detalles del Usuario'
+  usuarioSeleccionado.value = usuario
+  showPassword.value = false // Resetear al cerrar/abrir modal
+  
+  // Debug para ver qué datos tiene el usuario
+  console.log('🔍 Usuario seleccionado para detalles:', usuario)
+  console.log('🔑 Contraseña disponible:', usuario.contrasena || usuario.password || usuario.contraseña || 'No encontrada')
+  
+  showModal.value = true
+}
+
+const togglePassword = () => {
+  showPassword.value = !showPassword.value
+}
+
+// Función helper para obtener la contraseña del usuario
+const obtenerContrasenaUsuario = (usuario) => {
+  if (!usuario) return 'Sin contraseña'
+  
+  // Verificar diferentes posibles nombres del campo contraseña
+  const contraseña = usuario.contrasena || usuario.password || usuario.contraseña || usuario.pwd
+  
+  console.log('🔍 Buscando contraseña en usuario:', usuario)
+  console.log('🔑 Contraseña encontrada:', contraseña)
+  console.log('📋 Propiedades del usuario:', Object.keys(usuario))
+  
+  return contraseña || 'Sin contraseña'
+}
+
+const cerrarModal = () => {
+  showModal.value = false
+  usuarioSeleccionado.value = null
+  showPassword.value = false
+}
+
+const confirmarEliminarUsuario = (usuario) => {
+  usuarioAEliminar.value = usuario
+  showDeleteModal.value = true
+}
+
+const cancelarEliminar = () => {
+  showDeleteModal.value = false
+  usuarioAEliminar.value = null
+  eliminandoUsuario.value = false
+}
+
+const eliminarUsuario = async () => {
+  if (!usuarioAEliminar.value) return
+  
+  eliminandoUsuario.value = true
+  
+  try {
+    console.log('🗑️ Eliminando usuario:', usuarioAEliminar.value)
+    
+    // Llamar al servicio para eliminar el usuario
+    await usuariosService.eliminarUsuario(usuarioAEliminar.value.id)
+    
+    // Eliminar del array local
+    const index = usuarios.value.findIndex(u => u.id === usuarioAEliminar.value.id)
+    if (index !== -1) {
+      usuarios.value.splice(index, 1)
+    }
+    
+    // Actualizar usuarios filtrados
+    filtrarUsuarios()
+    
+    console.log('✅ Usuario eliminado exitosamente')
+    
+    // Cerrar modal
+    cancelarEliminar()
+    
+  } catch (error) {
+    console.error('❌ Error al eliminar usuario:', error)
+    // Aquí podrías mostrar un mensaje de error al usuario
+    alert('Error al eliminar el usuario. Por favor, inténtalo de nuevo.')
+  } finally {
+    eliminandoUsuario.value = false
+  }
+}
+
+// Funciones para edición de usuarios
+const editarUsuario = (usuario) => {
+  usuarioAEditar.value = usuario
+  // Llenar el formulario con los datos del usuario
+  datosEdicion.value = {
+    correo: usuario.correo || '',
+    nombre_completo: usuario.nombre_completo || '',
+    cargo: usuario.cargo || '',
+    supervisor: usuario.supervisor || '',
+    contrasena: usuario.contrasena || '',
+    curp: usuario.curp || '',
+    telefono: usuario.telefono || ''
+  }
+  showEditModal.value = true
+}
+
+const cancelarEdicion = () => {
+  showEditModal.value = false
+  usuarioAEditar.value = null
+  editandoUsuario.value = false
+  // Limpiar formulario
+  datosEdicion.value = {
+    correo: '',
+    nombre_completo: '',
+    cargo: '',
+    supervisor: '',
+    contrasena: '',
+    curp: '',
+    telefono: ''
+  }
+}
+
+const guardarEdicion = async () => {
+  if (!usuarioAEditar.value) return
+  
+  editandoUsuario.value = true
+  
+  try {
+    console.log('✏️ Editando usuario:', usuarioAEditar.value.id, datosEdicion.value)
+    
+    // Llamar al servicio para actualizar el usuario en la base de datos
+    const resultado = await usuariosService.actualizarUsuario(usuarioAEditar.value.id, datosEdicion.value)
+    
+    // Actualizar el usuario en el array local con los datos devueltos por el servidor
+    const index = usuarios.value.findIndex(u => u.id === usuarioAEditar.value.id)
+    if (index !== -1) {
+      usuarios.value[index] = resultado.usuario
+    }
+    
+    // Actualizar usuarios filtrados
+    filtrarUsuarios()
+    
+    console.log('✅ Usuario editado exitosamente en la base de datos')
+    
+    // Cerrar modal de edición
+    cancelarEdicion()
+    
+    // Mostrar modal de éxito
+    showSuccessModal.value = true
+    
+  } catch (error) {
+    console.error('❌ Error al editar usuario:', error)
+    alert(`Error al editar el usuario: ${error.message}`)
+  } finally {
+    editandoUsuario.value = false
+  }
+}
+
+// Función para cerrar modal de éxito
+const cerrarSuccessModal = () => {
+  showSuccessModal.value = false
+}
+
+// Funciones de paginación
+const usuariosPaginados = computed(() => {
+  const inicio = (paginaActual.value - 1) * usuariosPorPagina.value
+  const fin = inicio + usuariosPorPagina.value
+  return usuariosFiltrados.value.slice(inicio, fin)
+})
+
+const totalPaginas = computed(() => {
+  return Math.ceil(usuariosFiltrados.value.length / usuariosPorPagina.value)
+})
+
+const cambiarPagina = (nuevaPagina) => {
+  if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas.value) {
+    paginaActual.value = nuevaPagina
+  }
+}
+
+const paginaAnterior = () => {
+  if (paginaActual.value > 1) {
+    paginaActual.value--
+  }
+}
+
+const paginaSiguiente = () => {
+  if (paginaActual.value < totalPaginas.value) {
+    paginaActual.value++
+  }
+}
+
+// Resetear página al filtrar
+const resetearPaginacion = () => {
+  paginaActual.value = 1
+}
+
+// Watchers para mejor funcionalidad
+watch(searchTerm, () => {
+  filtrarUsuarios()
+})
+
+watch(usuarios, () => {
+  filtrarUsuarios()
+})
+
+// Validar que la página actual no exceda el total de páginas
+watch(totalPaginas, (newTotal) => {
+  if (paginaActual.value > newTotal && newTotal > 0) {
+    paginaActual.value = newTotal
+  }
+})
+
+// Obtener páginas visibles alrededor de la actual
+const paginasVisibles = computed(() => {
+  const paginas = []
+  const inicio = Math.max(2, paginaActual.value - 2)
+  const fin = Math.min(totalPaginas.value - 1, paginaActual.value + 2)
+  
+  for (let i = inicio; i <= fin; i++) {
+    if (i !== 1 && i !== totalPaginas.value) {
+      paginas.push(i)
+    }
+  }
+  
+  return paginas
+})
+
+const mostrarPagina = (numeroPagina) => {
+  if (numeroPagina === 1) {
+    return totalPaginas.value > 1 && (paginaActual.value <= 4 || numeroPagina === 1)
+  }
+  if (numeroPagina === totalPaginas.value) {
+    return totalPaginas.value > 1 && (paginaActual.value >= totalPaginas.value - 3 || numeroPagina === totalPaginas.value)
+  }
+  return true
+}
+
+const saltarAPagina = () => {
+  if (paginaSalto.value && paginaSalto.value >= 1 && paginaSalto.value <= totalPaginas.value) {
+    irAPagina(paginaSalto.value)
+    paginaSalto.value = ''
+  }
+}
+    }
+  }
+  
+  return paginas
+}
+
+const logout = () => {
+  // No usar confirm(), el modal se maneja en el Sidebar
+  localStorage.removeItem('admin_token')
+  localStorage.removeItem('admin_user')
+  router.push('/login')
+}
+</script>
+
+<style scoped>
+.usuarios-container {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: clamp(180px, 18vw, 240px);
+  width: calc(100vw - clamp(180px, 18vw, 240px));
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0fff0 100%);
+  min-height: 100vh;
+  position: relative;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.page-header {
+  background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+  border-bottom: none;
+  padding: clamp(0.3rem, 0.8vw, 0.5rem);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  box-sizing: border-box;
+  color: white;
+  box-shadow: 0 2px 12px rgba(46, 204, 113, 0.12);
+  overflow: hidden;
+}
+
+.page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+  z-index: 1;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 100%;
+  margin: 0;
+  gap: clamp(0.25rem, 0.8vw, 0.5rem);
+  flex-wrap: wrap;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+}
+
+.header-main {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.25rem, 0.8vw, 0.5rem);
+  flex: 1;
+  min-width: 140px;
+}
+
+.header-icon {
+  width: clamp(24px, 3vw, 30px);
+  height: clamp(24px, 3vw, 30px);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: clamp(5px, 0.8vw, 6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  animation: float 3s ease-in-out infinite;
+}
+
+.header-icon svg {
+  width: clamp(12px, 2vw, 15px);
+  height: clamp(12px, 2vw, 15px);
+  color: white;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.header-text {
+  flex: 1;
+  min-width: 120px;
+}
+
+.header-title {
+  font-size: clamp(0.8rem, 2vw, 1rem);
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(45deg, #ffffff 0%, #e8f5e8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.header-subtitle {
+  margin: clamp(0.05rem, 0.2vw, 0.08rem) 0 0 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: clamp(0.55rem, 1vw, 0.65rem);
+  line-height: 1.1;
+  font-weight: 400;
+  letter-spacing: 0.05px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.25rem, 0.8vw, 0.5rem);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.15rem, 0.4vw, 0.2rem);
+  padding: clamp(0.15rem, 0.4vw, 0.2rem) clamp(0.3rem, 0.8vw, 0.4rem);
+  border-radius: clamp(8px, 1.2vw, 10px);
+  font-size: clamp(0.55rem, 1vw, 0.6rem);
+  font-weight: 500;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.connection-status.online {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.connection-status.offline {
+  background: rgba(244, 67, 54, 0.2);
+  color: #fff2f0;
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.2);
+}
+
+.status-indicator {
+  width: clamp(2px, 0.6vw, 3px);
+  height: clamp(2px, 0.6vw, 3px);
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.15rem, 0.4vw, 0.2rem);
+  padding: clamp(0.2rem, 0.5vw, 0.25rem) clamp(0.4rem, 1vw, 0.5rem);
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: clamp(4px, 0.8vw, 5px);
+  font-weight: 500;
+  font-size: clamp(0.55rem, 1vw, 0.6rem);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+}
+
+.refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-icon.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.page-content {
+  padding: clamp(8px, 1.5vw, 16px) clamp(16px, 4vw, 32px);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.search-section {
+  margin-bottom: clamp(0.4rem, 1vw, 0.6rem);
+  animation: slideInRight 0.6s ease-out;
+  background: linear-gradient(135deg, #f0fff4 0%, #e8f5e8 100%);
+  border: 2px solid #4CAF50;
+  border-radius: clamp(6px, 1.2vw, 9px);
+  padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+  box-shadow: 
+    0 6px 24px rgba(76, 175, 80, 0.12),
+    0 3px 12px rgba(76, 175, 80, 0.08);
+  transition: all 0.3s ease;
+}
+
+.search-section:hover {
+  border-color: #45a049;
+  box-shadow: 
+    0 8px 32px rgba(76, 175, 80, 0.15),
+    0 4px 16px rgba(76, 175, 80, 0.1);
+  transform: translateY(-1px);
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.controls-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.controls-right {
+  display: flex;
+  align-items: center;
+  margin-left: clamp(0.5rem, 1.5vw, 1rem);
+  flex-shrink: 0;
+}
+
+.controls-right .users-stats-compact {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: clamp(0.3rem, 0.8vw, 0.4rem);
+}
+
+.search-group, .sort-group, .export-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1vw, 6px);
+}
+
+.search-group {
+  position: relative;
+  flex: 1;
+  min-width: clamp(150px, 20vw, 180px);
+}
+
+.sort-group label {
+  font-weight: 600;
+  color: #4CAF50;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 11px;
+  min-width: fit-content;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.sort-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  color: #4CAF50;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(76, 175, 80, 0.1);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  min-width: fit-content;
+}
+
+.sort-btn:hover {
+  border-color: rgba(76, 175, 80, 0.5);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2);
+}
+
+.sort-btn.active {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border-color: #4CAF50;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  transform: translateY(-1px);
+}
+
+.sort-btn.active:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(76, 175, 80, 0.4);
+}
+
+/* Estilos para botones de exportación */
+.export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(0.5rem, 1.5vw, 0.75rem);
+  justify-content: flex-end;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: clamp(0.2rem, 0.6vw, 0.3rem);
+  padding: clamp(0.25rem, 0.7vw, 0.35rem) clamp(0.45rem, 1.2vw, 0.6rem);
+  background: rgba(33, 150, 243, 0.1);
+  color: #2196F3;
+  border: none;
+  border-radius: clamp(3px, 0.8vw, 5px);
+  font-weight: 500;
+  font-size: clamp(0.55rem, 1.1vw, 0.65rem);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.export-btn:hover {
+  background: rgba(33, 150, 243, 0.2);
+}
+
+.export-btn.excel {
+  background: rgba(76, 175, 80, 0.1);
+  color: #4CAF50;
+}
+
+.export-btn.excel:hover {
+  background: rgba(76, 175, 80, 0.2);
+}
+
+.export-btn.print {
+  background: rgba(156, 39, 176, 0.1);
+  color: #9C27B0;
+}
+
+.export-btn.print:hover {
+  background: rgba(156, 39, 176, 0.2);
+}
+
+.sort-btn svg {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+@keyframes slideInRight {
+  0% { transform: translateX(30px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+.search-input {
+  width: 100%;
+  padding: clamp(4px, 1vw, 5px) clamp(8px, 1.5vw, 10px) clamp(4px, 1vw, 5px) clamp(24px, 3vw, 28px);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: clamp(12px, 2vw, 14px);
+  font-size: clamp(10px, 1.2vw, 11px);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  transition: all 0.3s ease;
+  box-shadow: 0 1px 4px rgba(76, 175, 80, 0.1);
+  font-weight: 500;
+  box-sizing: border-box;
+  color: #333;
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-weight: 400;
+  font-size: clamp(9px, 1.1vw, 10px);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+  transform: translateY(-1px);
+}
+
+.search-input:hover {
+  border-color: rgba(76, 175, 80, 0.5);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.15);
+}
+
+.search-icon {
+  position: absolute;
+  left: clamp(6px, 1.2vw, 7px);
+  top: 50%;
+  transform: translateY(-50%);
+  color: #4CAF50;
+  z-index: 1;
+}
+
+.usuarios-section {
+  background: linear-gradient(135deg, #ffffff 0%, #fafffe 100%);
+  border-radius: clamp(12px, 3vw, 20px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 16px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255,255,255,0.8);
+  overflow: hidden;
+  border: 1px solid rgba(76, 175, 80, 0.1);
+  /* Eliminar transición para mejor rendimiento */
+  padding: clamp(16px, 4vw, 24px);
+  box-sizing: border-box;
+}
+
+.usuarios-section:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.12),
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+}
+
+.loading-container, .error-container, .empty-state {
+  text-align: center;
+  padding: clamp(40px, 10vh, 80px) clamp(16px, 4vw, 32px);
+  color: #666;
+  /* Eliminar animación fadeIn para mejor rendimiento */
+}
+
+.spinner-large {
+  width: clamp(40px, 8vw, 48px);
+  height: clamp(40px, 8vw, 48px);
+  border: 4px solid rgba(76, 175, 80, 0.1);
+  border-top: 4px solid #4CAF50;
+  border-radius: 50%;
+  animation: spinLarge 1.2s cubic-bezier(0.55, 0.06, 0.68, 0.19) infinite;
+  margin: 0 auto 20px;
+  position: relative;
+}
+
+.spinner-large::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border: 4px solid transparent;
+  border-top: 4px solid rgba(76, 175, 80, 0.3);
+  border-radius: 50%;
+  animation: spinLarge 2s linear infinite reverse;
+}
+
+@keyframes spinLarge {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.error-container {
+  color: #d63384;
+}
+
+.retry-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #d63384 0%, #c2185b 50%, #d63384 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  margin: 16px auto 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 
+    0 4px 16px rgba(214, 51, 132, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.retry-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s ease;
+}
+
+.retry-btn:hover::before {
+  left: 100%;
+}
+
+.retry-btn:hover {
+  background: linear-gradient(135deg, #c2185b 0%, #ad1457 50%, #c2185b 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 8px 24px rgba(214, 51, 132, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.empty-icon {
+  margin-bottom: 24px;
+  animation: bounce 2s ease-in-out infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-icon svg {
+  filter: drop-shadow(0 4px 8px rgba(76, 175, 80, 0.3));
+  transition: all 0.3s ease;
+}
+
+.empty-state:hover .empty-icon svg {
+  transform: scale(1.1) rotate(5deg);
+  filter: drop-shadow(0 6px 12px rgba(76, 175, 80, 0.4));
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+.empty-state h3 {
+  color: #4CAF50;
+  font-size: 24px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.empty-state p {
+  font-size: 16px;
+  color: #888;
+}
+
+.table-container {
+  overflow: hidden;
+  /* Eliminar animación para mejor rendimiento */
+  border-radius: clamp(12px, 3vw, 16px);
+  background: white; /* Simplificar el fondo para mejor rendimiento */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04); /* Sombra más ligera */
+  width: 100%;
+  max-width: 100%;
+}
+
+.usuarios-table {
+  width: 100%;
+  min-width: clamp(320px, 90vw, 800px);
+  border-collapse: collapse;
+  position: relative;
+  table-layout: auto;
+}
+
+.usuarios-table th {
+  background: linear-gradient(135deg, #f8f9fa 0%, #f0f8f0 100%);
+  padding: clamp(6px, 1.5vw, 10px) clamp(4px, 1vw, 8px);
+  text-align: center;
+  font-weight: 700;
+  color: #4CAF50;
+  text-transform: uppercase;
+  font-size: clamp(8px, 1.8vw, 10px);
+  letter-spacing: 0.3px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(224, 224, 224, 0.6);
+  white-space: nowrap;
+}
+
+/* Headers específicos */
+.usuarios-table th.col-id {
+  width: clamp(40px, 8%, 60px);
+  min-width: 40px;
+  font-size: clamp(7px, 1.2vw, 9px);
+  padding: clamp(8px, 1.5vw, 12px) clamp(2px, 0.5vw, 4px);
+}
+
+.usuarios-table th.col-nombre {
+  width: clamp(100px, 20%, 200px);
+  min-width: 100px;
+  text-align: left;
+  padding-left: clamp(8px, 2vw, 12px);
+  color: #4CAF50;
+  font-weight: 700;
+}
+
+.usuarios-table th.col-correo {
+  width: clamp(120px, 22%, 250px);
+  min-width: 120px;
+}
+
+.usuarios-table th.col-cargo {
+  width: clamp(80px, 15%, 150px);
+  min-width: 80px;
+}
+
+.usuarios-table th.col-supervisor {
+  width: clamp(80px, 15%, 150px);
+  min-width: 80px;
+}
+
+.usuarios-table th.col-fecha {
+  width: clamp(70px, 12%, 120px);
+  min-width: 70px;
+}
+
+.usuarios-table th.col-estado {
+  width: clamp(60px, 10%, 100px);
+  min-width: 60px;
+}
+
+.usuarios-table th.col-acciones {
+  width: clamp(120px, 15%, 160px);
+  min-width: 120px;
+}
+
+.usuarios-table td {
+  padding: clamp(6px, 1.5vw, 10px) clamp(4px, 1vw, 8px);
+  border-bottom: 1px solid rgba(224, 224, 224, 0.6);
+  font-size: clamp(10px, 1.8vw, 12px);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.usuarios-table td:nth-child(1) { /* ID - Más pequeño */
+  width: clamp(40px, 8%, 60px);
+  min-width: 40px;
+  text-align: center;
+}
+
+.usuarios-table td:nth-child(2) { /* Nombre - Ahora segunda columna */
+  width: clamp(100px, 20%, 200px);
+  min-width: 100px;
+  text-align: left;
+  padding-left: clamp(8px, 2vw, 12px);
+}
+
+.usuarios-table td:nth-child(3) { /* Correo */
+  width: clamp(120px, 22%, 250px);
+  min-width: 120px;
+  text-align: center;
+}
+
+.usuarios-table td:nth-child(4) { /* Cargo */
+  width: clamp(80px, 15%, 150px);
+  min-width: 80px;
+  text-align: center;
+}
+
+.usuarios-table td:nth-child(5) { /* Supervisor */
+  width: clamp(80px, 15%, 150px);
+  min-width: 80px;
+  text-align: center;
+}
+
+.usuarios-table td:nth-child(6) { /* Fecha */
+  width: clamp(70px, 12%, 120px);
+  min-width: 70px;
+  text-align: center;
+}
+
+.usuarios-table td:nth-child(7) { /* Estado */
+  width: clamp(60px, 10%, 100px);
+  min-width: 60px;
+  text-align: center;
+}
+
+.usuarios-table td:nth-child(8) { /* Acciones */
+  width: clamp(120px, 15%, 160px);
+  min-width: 120px;
+  text-align: center;
+  padding: clamp(4px, 1vw, 8px);
+  white-space: nowrap;
+}
+
+/* Contenedor de acciones */
+.actions-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: clamp(4px, 1vw, 8px);
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* Estilos específicos para columnas */
+.col-id {
+  width: 5% !important;
+  min-width: 40px;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #666;
+  font-size: clamp(9px, 1.5vw, 11px) !important;
+}
+
+.col-nombre {
+  width: 20% !important;
+  text-align: left !important;
+  padding-left: clamp(8px, 2vw, 12px) !important;
+}
+
+/* Estilo simple para el nombre (sin animaciones) */
+.nombre-normal {
+  display: inline-block;
+  color: #2E7D32;
+  font-weight: 700;
+  font-size: clamp(10px, 2vw, 13px);
+}
+
+.usuarios-table tbody tr {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+}
+
+.usuarios-table tbody tr:hover {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(76, 175, 80, 0.02) 100%);
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.1);
+}
+
+.usuarios-table tbody tr:hover td {
+  border-bottom-color: rgba(76, 175, 80, 0.2);
+}
+
+.status-badge {
+  padding: clamp(2px, 0.4vw, 3px) clamp(4px, 1vw, 6px);
+  border-radius: clamp(6px, 1.5vw, 9px);
+  font-size: clamp(6px, 1.2vw, 7px);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: clamp(28px, 5.5vw, 40px);
+  text-align: center;
+  max-width: 100%;
+}
+
+.status-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+
+.status-badge:hover::before {
+  left: 100%;
+}
+
+.status-badge.active {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 1px solid rgba(21, 87, 36, 0.2);
+  box-shadow: 0 2px 6px rgba(21, 87, 36, 0.2);
+}
+
+.status-badge.active:hover {
+  background: linear-gradient(135deg, #c3e6cb 0%, #b1dfbb 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(21, 87, 36, 0.3);
+}
+
+.status-badge.inactive {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border: 1px solid rgba(114, 28, 36, 0.2);
+  box-shadow: 0 2px 6px rgba(114, 28, 36, 0.2);
+}
+
+.btn-ver {
+  width: clamp(24px, 4vw, 28px);
+  height: clamp(24px, 4vw, 28px);
+  padding: 0;
+  background: linear-gradient(135deg, #4CAF50, #43A047);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.25);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-ver::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-ver:hover::before {
+  left: 100%;
+}
+
+.btn-ver:hover {
+  background: linear-gradient(135deg, #43A047, #388E3C);
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 
+    0 6px 16px rgba(76, 175, 80, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-ver:active {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+}
+
+.btn-ver svg {
+  width: clamp(14px, 3vw, 16px);
+  height: clamp(14px, 3vw, 16px);
+  transition: all 0.3s ease;
+}
+
+.btn-ver:hover svg {
+  transform: scale(1.1);
+}
+
+/* Estilos para contenedores de acciones */
+.actions-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Contenedor de acción individual */
+.action-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+/* Estilos para el botón de eliminar */
+.btn-eliminar {
+  width: clamp(24px, 4vw, 28px);
+  height: clamp(24px, 4vw, 28px);
+  padding: 0;
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 8px rgba(244, 67, 54, 0.25);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-eliminar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-eliminar:hover::before {
+  left: 100%;
+}
+
+.btn-eliminar:hover {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 
+    0 6px 16px rgba(244, 67, 54, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-eliminar:active {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 3px 10px rgba(244, 67, 54, 0.3);
+}
+
+.btn-eliminar svg {
+  width: clamp(14px, 3vw, 16px);
+  height: clamp(14px, 3vw, 16px);
+  transition: all 0.3s ease;
+}
+
+.btn-eliminar:hover svg {
+  transform: scale(1.1);
+}
+
+/* Estilos para el botón de editar */
+.btn-editar {
+  width: clamp(24px, 4vw, 28px);
+  height: clamp(24px, 4vw, 28px);
+  padding: 0;
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.25);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btn-editar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-editar:hover::before {
+  left: 100%;
+}
+
+.btn-editar:hover {
+  background: linear-gradient(135deg, #f57c00, #e65100);
+  transform: translateY(-2px) scale(1.1);
+  box-shadow: 
+    0 6px 16px rgba(255, 152, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-editar:active {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+}
+
+.btn-editar svg {
+  width: clamp(14px, 3vw, 16px);
+  height: clamp(14px, 3vw, 16px);
+  transition: all 0.3s ease;
+}
+
+.btn-editar:hover svg {
+  transform: scale(1.1);
+}
+
+/* Label para botón ver/detalles (verde) */
+.btn-label {
+  font-size: 10px;
+  color: #4CAF50;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.action-container:hover .btn-label {
+  opacity: 1;
+  color: #43A047;
+}
+
+/* Label para botón eliminar (rojo) */
+.btn-label-eliminar {
+  font-size: 10px;
+  color: #f44336;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.action-container:hover .btn-label-eliminar {
+  opacity: 1;
+  color: #d32f2f;
+}
+
+/* Label para botón editar (naranja) */
+.btn-label-editar {
+  font-size: 10px;
+  color: #ff9800;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.action-container:hover .btn-label-editar {
+  opacity: 1;
+  color: #f57c00;
+}
+
+/* Estilos para el modal de eliminación */
+.delete-modal {
+  max-width: 500px !important;
+}
+
+.delete-header {
+  background: linear-gradient(135deg, #ffebee, #fce4ec);
+  border-bottom: 2px solid #f44336;
+}
+
+.delete-icon {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+}
+
+.delete-confirmation {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.warning-icon {
+  margin: 0 auto 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.delete-confirmation h4 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.user-info-delete {
+  background: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.user-info-delete p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.warning-text {
+  color: #f44336;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 15px;
+  padding: 10px;
+  background: #ffebee;
+  border-radius: 6px;
+  border-left: 4px solid #f44336;
+}
+
+.modal-footer-delete {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.btn-cancel {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
+}
+
+.btn-delete {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: linear-gradient(135deg, #d32f2f, #b71c1c);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.btn-delete:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinner-small {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Estilos para el modal de edición */
+.edit-modal {
+  max-width: 600px !important;
+}
+
+.edit-header {
+  background: linear-gradient(135deg, #fff8e1, #ffecb3);
+  border-bottom: 2px solid #ff9800;
+}
+
+.edit-icon {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+}
+
+.edit-form {
+  padding: 20px 0;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.form-input {
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  background: white;
+  color: #333;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #ff9800;
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.form-input:hover:not(:focus) {
+  border-color: #bbb;
+}
+
+.form-input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.modal-footer-edit {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 30px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.btn-save {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f57c00, #e65100);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.btn-save:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Modal Moderno - Diseño Responsivo */
+.modal-overlay-modern {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: clamp(12px, 3vw, 20px);
+  backdrop-filter: blur(4px); /* Reducir la intensidad del filtro blur */
+  /* Eliminar animación */
+}
+
+.modal-content-modern {
+  background: linear-gradient(135deg, #ffffff 0%, #fdfdfd 100%);
+  border-radius: clamp(16px, 2.5vw, 24px);
+  max-width: clamp(320px, 90vw, 480px);
+  max-height: 90vh; /* Aumentar altura máxima para aprovechar más espacio en pantalla */
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column; /* Organizar contenido en columna para permitir scroll correcto */
+  box-shadow: 
+    0 25px 80px rgba(0, 0, 0, 0.15),
+    0 10px 40px rgba(0, 0, 0, 0.08);
+  border: 2px solid rgba(76, 175, 80, 0.08);
+  /* Eliminar animación costosa */
+}
+
+.modal-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(12px, 3vw, 18px) clamp(16px, 4vw, 24px);
+  border-bottom: 2px solid rgba(76, 175, 80, 0.1);
+  background: linear-gradient(135deg, 
+    rgba(76, 175, 80, 0.05) 0%, 
+    rgba(76, 175, 80, 0.02) 100%);
+  flex-shrink: 0; /* Evita que el encabezado se encoja cuando hay scroll */
+}
+
+.modal-title-section {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 2vw, 12px);
+}
+
+.modal-icon {
+  width: clamp(28px, 6vw, 36px);
+  height: clamp(28px, 6vw, 36px);
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.modal-title {
+  font-size: clamp(14px, 3.5vw, 18px);
+  font-weight: 700;
+  color: #2E7D32;
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.btn-close-modern {
+  width: clamp(28px, 6vw, 32px);
+  height: clamp(28px, 6vw, 32px);
+  background: rgba(244, 67, 54, 0.1);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #F44336;
+}
+
+.btn-close-modern:hover {
+  background: rgba(244, 67, 54, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+}
+
+.modal-body-modern {
+  padding: clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px) clamp(16px, 4vw, 24px);
+  flex: 1; /* Toma el espacio restante en el contenedor flex */
+  overflow-y: auto; /* Scroll vertical automático */
+  overscroll-behavior: contain; /* Mejora el comportamiento del scroll */
+  font-size: 14px; /* Reducir tamaño de fuente para mejor visualización */
+  min-height: 0; /* Fuerza el scroll en contenedor flex */
+}
+
+.modal-body-modern::-webkit-scrollbar {
+  width: 8px; /* Ancho más grande para mejor visibilidad y usabilidad */
+  height: 8px;
+}
+
+.modal-body-modern::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+  margin: 2px 0;
+}
+
+.modal-body-modern::-webkit-scrollbar-thumb {
+  background: #4CAF50;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.user-details-grid {
+  display: grid;
+  gap: clamp(6px, 1.5vw, 10px);
+  padding-right: 4px; /* Espacio para el scrollbar */
+  overflow-anchor: none; /* Mejora el comportamiento del scroll */
+}
+
+.detail-card {
+  background: linear-gradient(135deg, 
+    rgba(248, 255, 254, 0.6) 0%, 
+    rgba(240, 255, 240, 0.4) 100%);
+  border: 1px solid rgba(76, 175, 80, 0.15);
+  border-radius: clamp(6px, 1.5vw, 10px);
+  padding: clamp(6px, 1.5vw, 10px) clamp(8px, 2vw, 12px);
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(4px, 1vw, 8px);
+  transition: all 0.3s ease;
+  margin-bottom: 6px; /* Espacio reducido entre tarjetas */
+}
+
+.detail-card:hover {
+  background: linear-gradient(135deg, 
+    rgba(240, 255, 240, 0.8) 0%, 
+    rgba(232, 245, 232, 0.6) 100%);
+  border-color: rgba(76, 175, 80, 0.25);
+  transform: translateX(2px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+}
+
+.detail-icon {
+  width: clamp(24px, 5vw, 28px);
+  height: clamp(24px, 5vw, 28px);
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(76, 175, 80, 0.1));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4CAF50;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.status-icon {
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.15));
+}
+
+.detail-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-label {
+  display: block;
+  font-size: clamp(8px, 1.8vw, 10px);
+  font-weight: 600;
+  color: #4CAF50;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  margin-bottom: 2px;
+}
+
+.detail-value {
+  display: block;
+  font-size: clamp(10px, 2vw, 12px);
+  font-weight: 500;
+  color: #2E7D32;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.status-active {
+  color: #4CAF50 !important;
+  font-weight: 600;
+}
+
+/* Estilo especial para el campo de teléfono */
+.phone-value {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.5px;
+  color: #0277BD;
+  font-weight: 600; /* Más legible */
+  white-space: nowrap; /* Evitar saltos de línea en el número */
+  font-size: clamp(10px, 2vw, 12px); /* Tamaño consistente */
+}
+
+/* Estilos especiales para el campo de contraseña */
+.password-card {
+  border-color: rgba(255, 87, 34, 0.2);
+  background: linear-gradient(135deg, 
+    rgba(255, 243, 224, 0.4) 0%, 
+    rgba(255, 248, 225, 0.3) 100%);
+}
+
+.password-card:hover {
+  border-color: rgba(255, 87, 34, 0.3);
+  background: linear-gradient(135deg, 
+    rgba(255, 243, 224, 0.6) 0%, 
+    rgba(255, 248, 225, 0.5) 100%);
+}
+
+.password-card .detail-icon {
+  background: linear-gradient(135deg, rgba(255, 87, 34, 0.15), rgba(255, 87, 34, 0.1));
+  color: #FF5722;
+}
+
+.password-content {
+  width: 100%;
+}
+
+.password-display {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.5vw, 8px);
+  margin-top: clamp(4px, 1vw, 6px);
+}
+
+.password-value {
+  font-family: 'Courier New', 'Monaco', monospace;
+  font-size: clamp(10px, 2.2vw, 12px);
+  font-weight: 600;
+  color: #FF5722;
+  background: rgba(255, 255, 255, 0.8);
+  padding: clamp(4px, 1vw, 6px) clamp(6px, 1.5vw, 8px);
+  border-radius: clamp(4px, 1vw, 6px);
+  border: 1px solid rgba(255, 87, 34, 0.2);
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+}
+
+.password-toggle-btn {
+  width: clamp(22px, 4.5vw, 26px);
+  height: clamp(22px, 4.5vw, 26px);
+  background: linear-gradient(135deg, #FF5722, #FF7043);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(255, 87, 34, 0.3);
+}
+
+.password-toggle-btn:hover {
+  background: linear-gradient(135deg, #E64A19, #FF5722);
+  transform: scale(1.1);
+  box-shadow: 0 3px 9px rgba(255, 87, 34, 0.4);
+}
+
+.password-toggle-btn:active {
+  transform: scale(1.05);
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+  font-size: clamp(16px, 4vw, 20px);
+  font-weight: 700;
+  background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.btn-close {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px solid rgba(76, 175, 80, 0.2);
+  font-size: clamp(16px, 4vw, 20px);
+  cursor: pointer;
+  color: #666;
+  padding: clamp(6px, 1.5vw, 8px);
+  width: clamp(30px, 8vw, 36px);
+  height: clamp(30px, 8vw, 36px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  font-weight: 700;
+}
+
+.btn-close:hover {
+  background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+  border-color: #4CAF50;
+  color: #4CAF50;
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+}
+
+.modal-body {
+  padding: clamp(16px, 4vw, 24px) clamp(20px, 5vw, 28px);
+  overflow: auto;
+  max-height: calc(80vh - clamp(80px, 20vw, 120px));
+}
+
+.usuario-detalles div {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fff0 100%);
+  border-radius: 12px;
+  border-left: 4px solid #4CAF50;
+  transition: all 0.3s ease;
+}
+
+.usuario-detalles div:hover {
+  background: linear-gradient(135deg, #f0fff0 0%, #e8f5e8 100%);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+}
+
+.usuario-detalles div:last-child {
+  margin-bottom: 0;
+}
+
+.usuario-detalles strong {
+  color: #4CAF50;
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+/* Estilos para el campo de contraseña */
+.detalle-item {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8fffe 0%, #f0fff0 100%);
+  border-radius: 12px;
+  border-left: 4px solid #4CAF50;
+  transition: all 0.3s ease;
+}
+
+.detalle-item:hover {
+  background: linear-gradient(135deg, #f0fff0 0%, #e8f5e8 100%);
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+}
+
+.detalle-item:last-child {
+  margin-bottom: 0;
+}
+
+.password-field {
+  border-left-color: #FF5722;
+}
+
+.password-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.password-text {
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 2px solid rgba(76, 175, 80, 0.2);
+  font-size: 14px;
+  font-weight: 600;
+  color: #2E7D32;
+  letter-spacing: 1px;
+  flex: 1;
+  transition: all 0.3s ease;
+}
+
+.toggle-password-btn {
+  background: linear-gradient(135deg, #4CAF50, #66BB6A);
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.toggle-password-btn:hover {
+  background: linear-gradient(135deg, #43A047, #4CAF50);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.toggle-password-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(76, 175, 80, 0.3);
+}
+
+.estado-activo {
+  color: #4CAF50;
+  font-weight: 600;
+  background: rgba(76, 175, 80, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+/* Estilos de Paginación */
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  margin-top: clamp(12px, 1.5vw, 16px);
+  padding: clamp(10px, 1.2vw, 14px);
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
+  border-radius: clamp(8px, 1.2vw, 10px);
+  border: 1px solid #4CAF50;
+  box-shadow: 
+    0 2px 8px rgba(76, 175, 80, 0.12),
+    0 1px 4px rgba(76, 175, 80, 0.08);
+}
+
+.pagination-info {
+  font-size: clamp(9px, 1.1vw, 11px);
+  color: #2e7d32;
+  font-weight: 600;
+  margin-bottom: clamp(6px, 0.8vw, 8px);
+  text-align: center;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 0.6vw, 6px);
+}
+
+.pagination-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(24px, 3vw, 28px);
+  height: clamp(24px, 3vw, 28px);
+  border: 1px solid #4CAF50;
+  background: linear-gradient(135deg, #e8f5e8 0%, #f0fff0 100%);
+  color: #2e7d32;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: clamp(9px, 1.1vw, 11px);
+  font-weight: 700;
+  transition: all 0.3s ease;
+  box-shadow: 
+    0 1px 3px rgba(76, 175, 80, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4CAF50 0%, #43A047 100%);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 2px 6px rgba(76, 175, 80, 0.25),
+    0 1px 4px rgba(76, 175, 80, 0.15);
+  border-color: #43A047;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+  background: #f5f5f5;
+  color: #bdbdbd;
+  border-color: #e0e0e0;
+}
+
+.pagination-btn.active {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  color: white;
+  box-shadow: 
+    0 2px 6px rgba(76, 175, 80, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-color: #388E3C;
+  transform: scale(1.1);
+}
+
+.pagination-numbers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(3px, 0.5vw, 4px);
+}
+
+.pagination-dots {
+  padding: 0 clamp(4px, 0.6vw, 6px);
+  color: #4CAF50;
+  font-weight: bold;
+  font-size: clamp(9px, 1.1vw, 11px);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: clamp(120px, 12vw, 180px);
+    width: calc(100vw - clamp(120px, 12vw, 180px));
+  }
+
+  /* Tabla más compacta en tablets */
+  .usuarios-table {
+    min-width: clamp(280px, 95vw, 600px);
+  }
+
+  .usuarios-table th,
+  .usuarios-table td {
+    font-size: clamp(8px, 1.5vw, 10px);
+    padding: clamp(4px, 1vw, 6px) clamp(2px, 0.5vw, 4px);
+  }
+
+  /* Botones de acción más pequeños en tablets */
+  .btn-ver, .btn-eliminar, .btn-editar {
+    width: clamp(20px, 3.5vw, 24px);
+    height: clamp(20px, 3.5vw, 24px);
+  }
+
+  .btn-ver svg, .btn-eliminar svg, .btn-editar svg {
+    width: clamp(10px, 2.5vw, 14px);
+    height: clamp(10px, 2.5vw, 14px);
+  }
+
+  .actions-container {
+    gap: clamp(2px, 0.5vw, 4px);
+  }
+}
+  
+  .table-container {
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .usuarios-table {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(7px, 1.3vw, 9px);
+  }
+  
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: clamp(3px, 0.8vw, 5px) clamp(1px, 0.5vw, 3px);
+    font-size: clamp(7px, 1.3vw, 9px);
+    text-align: center;
+  }
+  
+  .btn-ver {
+    padding: clamp(2px, 0.4vw, 3px) clamp(3px, 0.6vw, 4px);
+    font-size: clamp(6px, 1vw, 7px);
+    min-width: clamp(30px, 6vw, 45px);
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .status-badge {
+    padding: clamp(1px, 0.3vw, 2px) clamp(3px, 0.6vw, 4px);
+    font-size: clamp(5px, 1vw, 6px);
+    min-width: clamp(24px, 4.5vw, 35px);
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .page-header {
+    padding: clamp(12px, 3vw, 20px);
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  /* Tabla ultra compacta en móviles */
+  .usuarios-table {
+    min-width: clamp(250px, 100vw, 400px);
+    font-size: clamp(7px, 2vw, 9px);
+  }
+
+  .usuarios-table th,
+  .usuarios-table td {
+    font-size: clamp(7px, 2vw, 9px);
+    padding: clamp(2px, 0.8vw, 4px) clamp(1px, 0.4vw, 2px);
+  }
+
+  /* Columnas más compactas en móviles */
+  .usuarios-table td:nth-child(1) { /* ID */
+    width: clamp(30px, 6%, 40px);
+    min-width: 30px;
+  }
+
+  .usuarios-table td:nth-child(2) { /* Nombre */
+    width: clamp(80px, 18%, 120px);
+    min-width: 80px;
+  }
+
+  .usuarios-table td:nth-child(3) { /* Correo */
+    width: clamp(100px, 20%, 150px);
+    min-width: 100px;
+  }
+
+  .usuarios-table td:nth-child(4) { /* Cargo */
+    width: clamp(60px, 12%, 100px);
+    min-width: 60px;
+  }
+
+  .usuarios-table td:nth-child(5) { /* Supervisor */
+    width: clamp(60px, 12%, 100px);
+    min-width: 60px;
+  }
+
+  .usuarios-table td:nth-child(6) { /* Fecha */
+    width: clamp(50px, 10%, 80px);
+    min-width: 50px;
+  }
+
+  .usuarios-table td:nth-child(7) { /* Estado */
+    width: clamp(40px, 8%, 70px);
+    min-width: 40px;
+  }
+
+  .usuarios-table td:nth-child(8) { /* Acciones */
+    width: clamp(100px, 14%, 120px);
+    min-width: 100px;
+  }
+
+  /* Headers en móviles */
+  .usuarios-table th.col-id {
+    width: clamp(30px, 6%, 40px);
+    min-width: 30px;
+  }
+
+  .usuarios-table th.col-nombre {
+    width: clamp(80px, 18%, 120px);
+    min-width: 80px;
+  }
+
+  .usuarios-table th.col-correo {
+    width: clamp(100px, 20%, 150px);
+    min-width: 100px;
+  }
+
+  .usuarios-table th.col-cargo {
+    width: clamp(60px, 12%, 100px);
+    min-width: 60px;
+  }
+
+  .usuarios-table th.col-supervisor {
+    width: clamp(60px, 12%, 100px);
+    min-width: 60px;
+  }
+
+  .usuarios-table th.col-fecha {
+    width: clamp(50px, 10%, 80px);
+    min-width: 50px;
+  }
+
+  .usuarios-table th.col-estado {
+    width: clamp(40px, 8%, 70px);
+    min-width: 40px;
+  }
+
+  .usuarios-table th.col-acciones {
+    width: clamp(100px, 14%, 120px);
+    min-width: 100px;
+  }
+
+  /* Botones ultra compactos en móviles */
+  .btn-ver, .btn-eliminar, .btn-editar {
+    width: clamp(18px, 4vw, 22px);
+    height: clamp(18px, 4vw, 22px);
+  }
+
+  .btn-ver svg, .btn-eliminar svg, .btn-editar svg {
+    width: clamp(8px, 2vw, 12px);
+    height: clamp(8px, 2vw, 12px);
+  }
+
+  .actions-container {
+    gap: clamp(1px, 0.3vw, 2px);
+    justify-content: space-around;
+  }
+
+  .status-badge {
+    font-size: clamp(5px, 1.5vw, 7px);
+    padding: clamp(1px, 0.2vw, 2px) clamp(2px, 0.5vw, 3px);
+    min-width: clamp(20px, 4vw, 30px);
+  }
+
+  .header-content {
+    gap: clamp(8px, 2vw, 12px);
+    align-items: flex-start;
+  }
+  
+  .header-main {
+    width: 100%;
+  }
+  
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .page-content {
+    padding: clamp(12px, 3vw, 20px);
+  }
+  
+  .search-box {
+    max-width: 100%;
+  }
+  
+  .table-container {
+    border-radius: clamp(6px, 1.5vw, 10px);
+    overflow: hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .usuarios-table {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(7px, 1.4vw, 10px);
+    table-layout: fixed;
+  }
+  
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: clamp(4px, 0.8vw, 6px) clamp(2px, 0.5vw, 4px);
+    font-size: clamp(7px, 1.4vw, 10px);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .usuarios-table td:nth-child(1) { /* ID */
+    width: 6%;
+  }
+  
+  .usuarios-table td:nth-child(2) { /* Correo */
+    width: 25%;
+  }
+  
+  .usuarios-table td:nth-child(3) { /* Nombre */
+    width: 20%;
+  }
+  
+  .usuarios-table td:nth-child(4) { /* Cargo */
+    width: 15%;
+  }
+  
+  .usuarios-table td:nth-child(5) { /* Supervisor */
+    width: 12%;
+  }
+  
+  .usuarios-table td:nth-child(6) { /* Fecha */
+    width: 10%;
+  }
+  
+  .usuarios-table td:nth-child(7) { /* Estado */
+    width: 8%;
+  }
+  
+  .usuarios-table td:nth-child(8) { /* Acciones */
+    width: 12%;
+  }
+  
+  .btn-ver {
+    padding: clamp(2px, 0.5vw, 4px) clamp(3px, 0.8vw, 5px);
+    font-size: clamp(6px, 1.2vw, 8px);
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: clamp(6px, 1.5vw, 10px);
+  }
+  
+  .status-badge {
+    padding: clamp(2px, 0.4vw, 3px) clamp(3px, 0.8vw, 5px);
+    font-size: clamp(6px, 1.2vw, 8px);
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: clamp(6px, 1.5vw, 10px);
+  }
+  
+  .modal-content {
+    margin: clamp(5px, 2vw, 10px);
+    max-width: calc(100vw - clamp(10px, 4vw, 20px));
+  }
+  
+  /* Estilos responsivos para modal de edición */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .edit-modal {
+    max-width: 90vw !important;
+  }
+  
+  .modal-footer-edit {
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .btn-save, .btn-cancel {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pagination-container {
+    padding: clamp(8px, 1.2vw, 12px);
+    gap: clamp(6px, 1.5vw, 8px);
+  }
+  
+  .pagination-info {
+    order: 2;
+    margin-bottom: 0;
+    font-size: clamp(8px, 1vw, 10px);
+  }
+  
+  .pagination-controls {
+    order: 1;
+    gap: clamp(3px, 0.5vw, 4px);
+  }
+}
+
+@media (max-width: 480px) {
+  .header-content {
+    align-items: center;
+    text-align: center;
+  }
+  
+  .header-main {
+    flex-direction: column;
+    gap: clamp(6px, 1.5vw, 10px);
+  }
+  
+  .table-container {
+    border-radius: clamp(4px, 1vw, 8px);
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .usuarios-table {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(6px, 1.2vw, 9px);
+    table-layout: fixed;
+  }
+  
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: clamp(3px, 0.6vw, 5px) clamp(1px, 0.3vw, 3px);
+    font-size: clamp(6px, 1.2vw, 9px);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .usuarios-table td:nth-child(1) { /* ID */
+    width: 5%;
+  }
+  
+  .usuarios-table td:nth-child(2) { /* Correo */
+    width: 28%;
+  }
+  
+  .usuarios-table td:nth-child(3) { /* Nombre */
+    width: 22%;
+  }
+  
+  .usuarios-table td:nth-child(4) { /* Cargo */
+    width: 13%;
+  }
+  
+  .usuarios-table td:nth-child(5) { /* Supervisor */
+    width: 10%;
+  }
+  
+  .usuarios-table td:nth-child(6) { /* Fecha */
+    width: 8%;
+  }
+  
+  .usuarios-table td:nth-child(7) { /* Estado */
+    width: 6%;
+  }
+  
+  .usuarios-table td:nth-child(8) { /* Acciones */
+    width: 8%;
+  }
+  
+  .btn-ver {
+    padding: clamp(1px, 0.3vw, 3px) clamp(2px, 0.5vw, 4px);
+    font-size: clamp(5px, 1vw, 7px);
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: clamp(4px, 1vw, 8px);
+  }
+  
+  .status-badge {
+    padding: clamp(1px, 0.3vw, 2px) clamp(2px, 0.5vw, 4px);
+    font-size: clamp(5px, 1vw, 7px);
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: clamp(4px, 1vw, 8px);
+  }
+  
+  .modal-content {
+    max-width: calc(100vw - 10px);
+    margin: 5px;
+  }
+  
+  .pagination-numbers {
+    gap: clamp(1px, 0.3vw, 2px);
+  }
+  
+  .pagination-btn {
+    width: clamp(20px, 2.8vw, 24px);
+    height: clamp(20px, 2.8vw, 24px);
+    font-size: clamp(8px, 0.9vw, 10px);
+    border-width: 1px;
+  }
+  
+  .pagination-numbers {
+    gap: clamp(2px, 0.4vw, 3px);
+  }
+}
+
+/* Media query específico para dispositivos ultra pequeños */
+@media (max-width: 360px) {
+  .table-container {
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  .usuarios-table {
+    width: 100%;
+    max-width: 100%;
+    font-size: clamp(5px, 1vw, 7px);
+    table-layout: fixed;
+  }
+  
+  .usuarios-table th,
+  .usuarios-table td {
+    padding: clamp(2px, 0.4vw, 3px) clamp(1px, 0.2vw, 2px);
+    font-size: clamp(5px, 1vw, 7px);
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .usuarios-table td:nth-child(1) { /* ID */
+    width: 4%;
+  }
+  
+  .usuarios-table td:nth-child(2) { /* Correo */
+    width: 30%;
+  }
+  
+  .usuarios-table td:nth-child(3) { /* Nombre */
+    width: 25%;
+  }
+  
+  .usuarios-table td:nth-child(4) { /* Cargo */
+    width: 12%;
+  }
+  
+  .usuarios-table td:nth-child(5) { /* Supervisor */
+    width: 9%;
+  }
+  
+  .usuarios-table td:nth-child(6) { /* Fecha */
+    width: 7%;
+  }
+  
+  .usuarios-table td:nth-child(7) { /* Estado */
+    width: 5%;
+  }
+  
+  .usuarios-table td:nth-child(8) { /* Acciones */
+    width: 8%;
+  }
+  
+  .btn-ver {
+    padding: 1px 2px;
+    font-size: clamp(4px, 0.8vw, 6px);
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 3px;
+  }
+  
+  .status-badge {
+    padding: 1px;
+    font-size: clamp(4px, 0.8vw, 6px);
+    min-width: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 3px;
+  }
+}
+
+/* Responsive para Modal Moderno */
+@media (max-width: 768px) {
+  .modal-content-modern {
+    max-width: 95vw;
+    max-height: 90vh;
+    margin: clamp(5px, 2vw, 10px);
+  }
+  
+  .modal-header-modern {
+    padding: clamp(10px, 2.5vw, 14px) clamp(14px, 3.5vw, 18px);
+  }
+  
+  .modal-title {
+    font-size: clamp(12px, 3vw, 16px);
+  }
+  
+  .modal-icon {
+    width: clamp(24px, 5vw, 30px);
+    height: clamp(24px, 5vw, 30px);
+  }
+  
+  .btn-close-modern {
+    width: clamp(24px, 5vw, 28px);
+    height: clamp(24px, 5vw, 28px);
+  }
+  
+  .modal-body-modern {
+    padding: clamp(6px, 1.5vw, 8px) clamp(14px, 3.5vw, 18px) clamp(14px, 3.5vw, 18px);
+  }
+  
+  .detail-card {
+    padding: clamp(6px, 1.5vw, 8px) clamp(8px, 2vw, 10px);
+    gap: clamp(4px, 1vw, 6px);
+  }
+  
+  .detail-icon {
+    width: clamp(20px, 4vw, 24px);
+    height: clamp(20px, 4vw, 24px);
+  }
+  
+  .detail-label {
+    font-size: clamp(8px, 1.8vw, 10px);
+  }
+  
+  .detail-value {
+    font-size: clamp(10px, 2.2vw, 12px);
+  }
+  
+  .password-value {
+    font-size: clamp(9px, 2vw, 11px);
+    padding: clamp(3px, 0.8vw, 4px) clamp(4px, 1vw, 6px);
+  }
+  
+  .password-toggle-btn {
+    width: clamp(18px, 3.5vw, 22px);
+    height: clamp(18px, 3.5vw, 22px);
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content-modern {
+    max-width: 98vw;
+    max-height: 95vh;
+    border-radius: clamp(12px, 2vw, 16px);
+  }
+  
+  .modal-header-modern {
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+  }
+  
+  .modal-title-section {
+    gap: clamp(6px, 1.5vw, 8px);
+  }
+  
+  .modal-title {
+    font-size: clamp(11px, 2.8vw, 14px);
+  }
+  
+  .modal-icon {
+    width: clamp(20px, 4.5vw, 26px);
+    height: clamp(20px, 4.5vw, 26px);
+  }
+  
+  .btn-close-modern {
+    width: clamp(20px, 4.5vw, 24px);
+    height: clamp(20px, 4.5vw, 24px);
+  }
+  
+  .detail-card {
+    padding: clamp(5px, 1.2vw, 7px) clamp(7px, 1.8vw, 9px);
+    gap: clamp(3px, 0.8vw, 5px);
+    border-radius: clamp(6px, 1.5vw, 8px);
+  }
+  
+  .detail-icon {
+    width: clamp(16px, 3.5vw, 20px);
+    height: clamp(16px, 3.5vw, 20px);
+  }
+  
+  .detail-label {
+    font-size: clamp(7px, 1.6vw, 9px);
+    margin-bottom: clamp(1px, 0.3vw, 2px);
+  }
+  
+  .detail-value {
+    font-size: clamp(9px, 2vw, 11px);
+  }
+  
+  .password-display {
+    gap: clamp(4px, 1vw, 6px);
+    margin-top: clamp(2px, 0.5vw, 4px);
+  }
+  
+  .password-value {
+    font-size: clamp(8px, 1.8vw, 10px);
+    padding: clamp(2px, 0.6vw, 3px) clamp(3px, 0.8vw, 4px);
+  }
+  
+  .password-toggle-btn {
+    width: clamp(16px, 3vw, 18px);
+    height: clamp(16px, 3vw, 18px);
+  }
+  
+  .password-toggle-btn svg {
+    width: clamp(10px, 2.2vw, 12px);
+    height: clamp(10px, 2.2vw, 12px);
+  }
+}
+
+/* Estilos para Modal de Éxito */
+.modal-overlay-success {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content-success {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 320px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e5e7eb;
+  animation: slideUp 0.3s ease-out;
+  text-align: center;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.success-icon {
+  width: 48px;
+  height: 48px;
+  background: #22c55e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: white;
+}
+
+.modal-content-success h3 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-content-success p {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.btn-success-ok {
+  background: #22c55e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.btn-success-ok:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+}
+
+.btn-success-ok:active {
+  transform: translateY(0);
+}
+
+/* Responsive para Modal de Éxito */
+@media (max-width: 768px) {
+  .modal-content-success {
+    width: 95%;
+    padding: 20px;
+    max-width: 280px;
+  }
+  
+  .success-icon {
+    width: 40px;
+    height: 40px;
+    margin-bottom: 12px;
+  }
+  
+  .success-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .modal-content-success h3 {
+    font-size: 16px;
+  }
+  
+  .modal-content-success p {
+    font-size: 13px;
+  }
+  
+  .btn-success-ok {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+}
+
+/* === ESTILOS PARA CONTADOR DE USUARIOS === */
+.users-stats-compact {
+  display: flex;
+  gap: clamp(0.5rem, 1.5vw, 1rem);
+  padding: 0;
+  background: transparent;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+.users-stats-compact .compact-stat-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(0.4rem, 1vw, 0.6rem);
+  padding: clamp(0.5rem, 1.2vw, 0.8rem) clamp(0.8rem, 2vw, 1.2rem);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border: 1px solid rgba(76, 175, 80, 0.15);
+  border-radius: clamp(8px, 2vw, 12px);
+  box-shadow: 
+    0 2px 12px rgba(76, 175, 80, 0.08),
+    0 1px 4px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  cursor: default;
+  min-width: clamp(120px, 15vw, 150px);
+  font-size: clamp(0.75rem, 1.4vw, 0.85rem);
+}
+
+.users-stats-compact .compact-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.08), transparent);
+  transition: left 0.8s ease;
+}
+
+.users-stats-compact .compact-stat-card:hover::before {
+  left: 100%;
+}
+
+.users-stats-compact .compact-stat-card:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 4px 20px rgba(76, 175, 80, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-color: rgba(76, 175, 80, 0.25);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(240, 255, 240, 0.95) 100%);
+}
+
+.users-stats-compact .compact-stat-icon {
+  position: relative;
+  width: clamp(28px, 3.5vw, 32px);
+  height: clamp(28px, 3.5vw, 32px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.8) 100%);
+  border: 2px solid rgba(76, 175, 80, 0.2);
+  border-radius: clamp(6px, 1.5vw, 8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+}
+
+.users-stats-compact .compact-stat-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.users-stats-compact .compact-stat-card:hover .compact-stat-icon {
+  transform: rotate(-3deg) scale(1.08);
+  box-shadow: 0 3px 12px rgba(76, 175, 80, 0.2);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(240, 255, 240, 0.9) 100%);
+  border-color: rgba(76, 175, 80, 0.4);
+}
+
+.users-stats-compact .compact-stat-card:hover .compact-stat-icon::before {
+  opacity: 1;
+}
+
+.users-stats-compact .compact-stat-icon svg {
+  width: clamp(14px, 2.2vw, 16px);
+  height: clamp(14px, 2.2vw, 16px);
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 1px 2px rgba(76, 175, 80, 0.3));
+}
+
+.users-stats-compact .compact-stat-card:hover .compact-stat-icon svg {
+  transform: scale(1.1);
+  filter: drop-shadow(0 2px 4px rgba(76, 175, 80, 0.4));
+}
+
+.users-stats-compact .compact-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.1rem, 0.3vw, 0.15rem);
+  flex: 1;
+  min-width: 0;
+}
+
+.users-stats-compact .compact-stat-value {
+  font-size: clamp(0.95rem, 2.2vw, 1.15rem);
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #2c3e50 0%, #4CAF50 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: all 0.3s ease;
+}
+
+.users-stats-compact .compact-stat-card:hover .compact-stat-value {
+  transform: scale(1.03);
+  background: linear-gradient(135deg, #4CAF50 0%, #43A047 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.users-stats-compact .compact-stat-label {
+  font-size: clamp(0.55rem, 1.1vw, 0.65rem);
+  font-weight: 500;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
+  transition: all 0.3s ease;
+}
+
+.users-stats-compact .compact-stat-card:hover .compact-stat-label {
+  color: #4CAF50;
+  transform: translateX(1px);
+}
+
+/* Responsive para contador de usuarios */
+@media (max-width: 768px) {
+  .controls-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .controls-left {
+    width: 100%;
+  }
+  
+  .controls-right {
+    margin-left: 0;
+    margin-top: clamp(0.5rem, 1vw, 0.75rem);
+    justify-content: center;
+  }
+  
+  .users-stats-compact {
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0;
+    justify-content: center;
+  }
+  
+  .users-stats-compact .compact-stat-card {
+    min-width: 110px;
+    padding: 0.6rem 0.8rem;
+    gap: 0.5rem;
+  }
+  
+  .users-stats-compact .compact-stat-icon {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .users-stats-compact .compact-stat-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .users-stats-compact .compact-stat-value {
+    font-size: 1rem;
+  }
+  
+  .users-stats-compact .compact-stat-label {
+    font-size: 0.58rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .controls-right .users-stats-compact {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .users-stats-compact .compact-stat-card {
+    min-width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .users-stats-compact .compact-stat-icon {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .users-stats-compact .compact-stat-icon svg {
+    width: 13px;
+    height: 13px;
+  }
+  
+  .users-stats-compact .compact-stat-value {
+    font-size: 0.95rem;
+  }
+  
+  .users-stats-compact .compact-stat-label {
+    font-size: 0.55rem;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+</style>
