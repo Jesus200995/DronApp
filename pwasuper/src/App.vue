@@ -233,36 +233,73 @@ function logout() {
             <!-- Dron estático en círculo azul suave -->
             <div class="relative w-8 h-8 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 rounded-full shadow-md border border-blue-200 overflow-hidden flex items-center justify-center mr-3">
               <svg viewBox="0 0 100 100" class="w-6 h-6">
-                <!-- Cuerpo principal del dron -->
-                <ellipse cx="50" cy="50" rx="16" ry="6" fill="#1e40af" stroke="#3b82f6" stroke-width="1"/>
+                <!-- Cuerpo principal del dron con gradiente -->
+                <defs>
+                  <linearGradient id="droneBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#3b82f6"/>
+                    <stop offset="50%" style="stop-color:#1e40af"/>
+                    <stop offset="100%" style="stop-color:#1e3a8a"/>
+                  </linearGradient>
+                  <linearGradient id="propeller" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#60a5fa"/>
+                    <stop offset="100%" style="stop-color:#3b82f6"/>
+                  </linearGradient>
+                </defs>
                 
-                <!-- Hélices giratorias (solo giran, sin bounce) -->
-                <g class="animate-spin origin-center" style="animation-duration: 0.4s;">
+                <!-- Sombra del dron -->
+                <ellipse cx="52" cy="52" rx="16" ry="6" fill="#000" opacity="0.1"/>
+                
+                <!-- Cuerpo principal del dron -->
+                <ellipse cx="50" cy="50" rx="16" ry="6" fill="url(#droneBody)" stroke="#1e40af" stroke-width="0.5"/>
+                
+                <!-- Hélices giratorias con animación suave -->
+                <g class="animate-spin origin-center" style="animation-duration: 0.8s; animation-timing-function: linear;">
                   <!-- Hélice superior izquierda -->
-                  <circle cx="32" cy="38" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
-                  <line x1="26" y1="38" x2="38" y2="38" stroke="#3b82f6" stroke-width="1.5"/>
+                  <g opacity="0.8">
+                    <circle cx="32" cy="38" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
+                    <ellipse cx="32" cy="38" rx="8" ry="2" fill="#60a5fa" opacity="0.3"/>
+                    <line x1="24" y1="38" x2="40" y2="38" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
                   
                   <!-- Hélice superior derecha -->
-                  <circle cx="68" cy="38" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
-                  <line x1="62" y1="38" x2="74" y2="38" stroke="#3b82f6" stroke-width="1.5"/>
+                  <g opacity="0.8">
+                    <circle cx="68" cy="38" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
+                    <ellipse cx="68" cy="38" rx="8" ry="2" fill="#60a5fa" opacity="0.3"/>
+                    <line x1="60" y1="38" x2="76" y2="38" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
                   
                   <!-- Hélice inferior izquierda -->
-                  <circle cx="32" cy="62" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
-                  <line x1="32" y1="56" x2="32" y2="68" stroke="#3b82f6" stroke-width="1.5"/>
+                  <g opacity="0.8">
+                    <circle cx="32" cy="62" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
+                    <ellipse cx="32" cy="62" rx="2" ry="8" fill="#60a5fa" opacity="0.3"/>
+                    <line x1="32" y1="54" x2="32" y2="70" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
                   
                   <!-- Hélice inferior derecha -->
-                  <circle cx="68" cy="62" r="6" fill="none" stroke="#60a5fa" stroke-width="1" opacity="0.6"/>
-                  <line x1="68" y1="56" x2="68" y2="68" stroke="#3b82f6" stroke-width="1.5"/>
+                  <g opacity="0.8">
+                    <circle cx="68" cy="62" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
+                    <ellipse cx="68" cy="62" rx="2" ry="8" fill="#60a5fa" opacity="0.3"/>
+                    <line x1="68" y1="54" x2="68" y2="70" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  </g>
                 </g>
                 
-                <!-- Brazos del dron -->
-                <line x1="34" y1="48" x2="32" y2="38" stroke="#1e40af" stroke-width="1.5"/>
-                <line x1="66" y1="48" x2="68" y2="38" stroke="#1e40af" stroke-width="1.5"/>
-                <line x1="34" y1="52" x2="32" y2="62" stroke="#1e40af" stroke-width="1.5"/>
-                <line x1="66" y1="52" x2="68" y2="62" stroke="#1e40af" stroke-width="1.5"/>
+                <!-- Brazos del dron con mejores proporciones -->
+                <line x1="34" y1="48" x2="32" y2="38" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
+                <line x1="66" y1="48" x2="68" y2="38" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
+                <line x1="34" y1="52" x2="32" y2="62" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
+                <line x1="66" y1="52" x2="68" y2="62" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
                 
-                <!-- Luz LED central suave -->
-                <circle cx="50" cy="50" r="2" fill="#ef4444" opacity="0.8"/>
+                <!-- Detalle central del dron -->
+                <rect x="47" y="47" width="6" height="6" rx="1" fill="#1e3a8a" opacity="0.8"/>
+                
+                <!-- Luz LED central con pulso suave -->
+                <circle cx="50" cy="50" r="2" fill="#ef4444" opacity="0.9" class="animate-pulse" style="animation-duration: 2s;"/>
+                
+                <!-- Luces LED en los motores -->
+                <circle cx="32" cy="38" r="1" fill="#10b981" opacity="0.7" class="animate-pulse" style="animation-delay: 0.5s; animation-duration: 1.5s;"/>
+                <circle cx="68" cy="38" r="1" fill="#10b981" opacity="0.7" class="animate-pulse" style="animation-delay: 1s; animation-duration: 1.5s;"/>
+                <circle cx="32" cy="62" r="1" fill="#f59e0b" opacity="0.7" class="animate-pulse" style="animation-delay: 1.5s; animation-duration: 1.5s;"/>
+                <circle cx="68" cy="62" r="1" fill="#f59e0b" opacity="0.7" class="animate-pulse" style="animation-delay: 2s; animation-duration: 1.5s;"/>
               </svg>
             </div>
             <div>
