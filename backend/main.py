@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException
+from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordRequestForm
@@ -20,9 +20,52 @@ import io
 app = FastAPI()
 
 # Permitir requests desde el frontend
+# Middleware para logging de peticiones
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    # Loggear la petición entrante
+    print(f"🌐 === PETICIÓN ENTRANTE ===")
+    print(f"🔗 URL: {request.url}")
+    print(f"📝 Método: {request.method}")
+    print(f"🏠 Cliente: {request.client}")
+    print(f"📋 Headers: {dict(request.headers)}")
+    
+    # Loggear el User-Agent específicamente
+    user_agent = request.headers.get("user-agent", "No User-Agent")
+    print(f"🖥️ User-Agent: {user_agent}")
+    
+    # Intentar leer el body si es POST
+    if request.method == "POST":
+        try:
+            body = await request.body()
+            if body:
+                print(f"📦 Body size: {len(body)} bytes")
+                # Intentar decodificar como JSON para logging
+                try:
+                    if body:
+                        body_str = body.decode('utf-8')
+                        print(f"📄 Body content: {body_str[:500]}...")  # Primeros 500 chars
+                except:
+                    print(f"📄 Body: [binary data]")
+        except Exception as e:
+            print(f"❌ Error leyendo body: {e}")
+    
+    print(f"🌐 === FIN PETICIÓN ENTRANTE ===")
+    
+    # Procesar la petición
+    response = await call_next(request)
+    
+    # Loggear la respuesta
+    print(f"📤 === RESPUESTA SALIENTE ===")
+    print(f"📊 Status: {response.status_code}")
+    print(f"📋 Headers: {dict(response.headers)}")
+    print(f"📤 === FIN RESPUESTA SALIENTE ===")
+    
+    return response
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3003", "http://127.0.0.1:3003", "*"],
+    allow_origins=["*"],  # Permitir todos los orígenes temporalmente para debug
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -288,74 +331,148 @@ class NotificacionResponse(BaseModel):
 # Montar carpeta de fotos para servir estáticamente
 app.mount("/fotos", StaticFiles(directory="fotos"), name="fotos")
 
+# ==================== ENDPOINT DE HEALTH CHECK ====================
+
+@app.get("/")
+async def health_check():
+    """Endpoint básico para verificar que el servidor esté funcionando"""
+    return {
+        "status": "ok",
+        "mensaje": "Servidor funcionando correctamente",
+        "timestamp": datetime.now().isoformat()
+    }
+
+@app.get("/health")
+async def health_detailed():
+    """Health check detallado"""
+    db_status = "ok" if verificar_conexion_db() else "error"
+    return {
+        "status": "ok",
+        "database": db_status,
+        "timestamp": datetime.now().isoformat(),
+        "version": "1.0.0"
+    }
+
 # ==================== NUEVOS ENDPOINTS DE TÉRMINOS ====================
 
 @app.post("/usuarios")
 async def crear_usuario(usuario: UserCreate):
     """Crear usuario y automáticamente registrar aceptación de términos"""
     try:
-        if not conn:
+        # Debug logging mejorado
+        print(f"🔍 === INICIO CREACIÓN USUARIO ===")
+        print(f"📧 Correo: {usuario.correo}")
+        print(f"👤 Nombre: {usuario.nombre}")
+        print(f"💼 Puesto: {usuario.puesto}")
+        print(f"👥 Supervisor: {usuario.supervisor}")
+        print(f"🆔 CURP: {usuario.curp}")
+        print(f"📞 Teléfono: {usuario.telefono}")
+        print(f"🔒 Contraseña length: {len(usuario.contrasena) if usuario.contrasena else 'None'}")
+        
+        # Verificar conexión a la base de datos
+        if not verificar_conexion_db():
+            print(f"❌ Error de conexión a la base de datos")
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
             
-        print(f"👤 Creando usuario: {usuario.correo}")
+        print(f"✅ Conexión a base de datos verificada")
         
         # Validación de CURP obligatoria
         if not usuario.curp or not usuario.curp.strip():
+            print(f"❌ CURP faltante o vacía")
             raise HTTPException(status_code=400, detail="La CURP es obligatoria")
         
         # Convertir CURP a mayúsculas y validar
         curp_upper = usuario.curp.upper().strip()
+        print(f"🔄 CURP procesada: {curp_upper}")
+        
         if len(curp_upper) != 18:
+            print(f"❌ CURP longitud incorrecta: {len(curp_upper)} chars")
             raise HTTPException(status_code=400, detail="La CURP debe tener exactamente 18 caracteres")
         
         # Validación básica de formato CURP
         if not re.match(r'^[A-Z0-9]{18}$', curp_upper):
+            print(f"❌ CURP formato inválido")
             raise HTTPException(status_code=400, detail="La CURP debe contener solo letras mayúsculas y números")
         
         # Validación de teléfono obligatorio
         if not usuario.telefono or not usuario.telefono.strip():
+            print(f"❌ Teléfono faltante o vacío")
             raise HTTPException(status_code=400, detail="El número de teléfono es obligatorio")
         
+        telefono_clean = usuario.telefono.strip()
+        print(f"📞 Teléfono procesado: {telefono_clean}")
+        
         # Validación básica de formato de teléfono (permitir números, +, espacios y -)
-        if not re.match(r'^[0-9\+\s\-]+$', usuario.telefono):
+        if not re.match(r'^[0-9\+\s\-]+$', telefono_clean):
+            print(f"❌ Teléfono contiene caracteres inválidos")
             raise HTTPException(status_code=400, detail="El número de teléfono contiene caracteres no válidos")
             
         # Validar que el formato general sea correcto (al menos debe tener un + y números)
-        if not re.match(r'^\+[0-9]+\s*[0-9]+$', usuario.telefono.strip()):
+        if not re.match(r'^\+[0-9]+\s*[0-9]+$', telefono_clean):
+            print(f"❌ Formato de teléfono inválido")
             raise HTTPException(status_code=400, detail="El formato del teléfono debe incluir código de país con + y números")
+        
+        print(f"✅ Validaciones pasadas, verificando duplicados...")
         
         # Comprobar si el correo ya existe
         cursor.execute("SELECT id FROM usuarios WHERE correo = %s", (usuario.correo,))
         if cursor.fetchone():
+            print(f"❌ Correo ya registrado: {usuario.correo}")
             raise HTTPException(status_code=400, detail="El correo ya está registrado")
         
         # Comprobar si la CURP ya existe
         cursor.execute("SELECT id FROM usuarios WHERE curp = %s", (curp_upper,))
         if cursor.fetchone():
+            print(f"❌ CURP ya registrada: {curp_upper}")
             raise HTTPException(status_code=400, detail="La CURP ya está registrada")
+        
+        print(f"✅ No hay duplicados, procediendo a insertar...")
+        
+        # Preparar datos para inserción
+        insert_data = (
+            usuario.correo, 
+            usuario.nombre, 
+            usuario.puesto, 
+            usuario.supervisor, 
+            usuario.contrasena, 
+            curp_upper, 
+            telefono_clean
+        )
+        
+        print(f"📝 Datos para insertar: {insert_data}")
         
         # Insertar usuario (contraseña sin encriptar como especificaste)
         cursor.execute(
             "INSERT INTO usuarios (correo, nombre, puesto, supervisor, contrasena, curp, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, usuario.contrasena, curp_upper, usuario.telefono)
+            insert_data
         )
         
         user_id = cursor.fetchone()[0]
         print(f"✅ Usuario creado con ID: {user_id}")
         
         conn.commit()
+        print(f"✅ Transacción confirmada")
         
-        return {
+        result = {
             "id": user_id, 
             "mensaje": "Usuario creado exitosamente", 
             "curp": curp_upper
         }
         
+        print(f"🎉 Respuesta exitosa: {result}")
+        print(f"🔍 === FIN CREACIÓN USUARIO ===")
+        
+        return result
+        
     except HTTPException:
+        print(f"🔄 HTTPException capturada, reenvío")
         raise
     except Exception as e:
         conn.rollback()
-        print(f"❌ Error completo: {str(e)}")
+        print(f"❌ Error inesperado completo: {str(e)}")
+        print(f"❌ Tipo de error: {type(e).__name__}")
+        import traceback
+        print(f"🔍 Traceback completo: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error al crear usuario: {str(e)}")
 
 @app.post("/login")
