@@ -1,7 +1,7 @@
 {
-  "name": "Sembrando Vida: CONTROL",
+  "name": "Sembrando Vida: DRONES",
   "short_name": "Sembrando Vida",
-  "description": "Sistema de registro de asistencia y actividades con funcionalidad offline",
+  "description": "Sistema de seguimiento y control de drones con funcionalidad offline",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -26,10 +26,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Marcar Entrada",
-      "short_name": "Entrada",
-      "description": "Registrar entrada rápidamente",
-      "url": "/?action=entrada",
+      "name": "Seguimiento Drones",
+      "short_name": "Seguimiento",
+      "description": "Ver seguimiento de drones en tiempo real",
+      "url": "/?action=seguimiento",
       "icons": [
         {
           "src": "/pwa-192x192.png",
@@ -38,10 +38,10 @@
       ]
     },
     {
-      "name": "Marcar Salida", 
-      "short_name": "Salida",
-      "description": "Registrar salida rápidamente",
-      "url": "/?action=salida",
+      "name": "Control de Vuelo", 
+      "short_name": "Control",
+      "description": "Panel de control de vuelos de drones",
+      "url": "/?action=control",
       "icons": [
         {
           "src": "/pwa-192x192.png",
@@ -52,7 +52,7 @@
     {
       "name": "Ver Historial",
       "short_name": "Historial",
-      "description": "Ver historial de registros",
+      "description": "Ver historial de vuelos y registros",
       "url": "/historial",
       "icons": [
         {
