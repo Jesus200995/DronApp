@@ -1131,7 +1131,7 @@ export default {
           detalles = registro.detalles
         }
         
-        const baseUrl = 'https://apipwa.sembrandodatos.com'
+        const baseUrl = 'https://apidron.sembrandodatos.com'
         
         if (detalles.foto_url) {
           // Si ya tiene el protocolo, usarla directamente

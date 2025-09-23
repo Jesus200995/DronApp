@@ -491,7 +491,7 @@ import healthCheckService from '../services/healthCheckService.js'
 mapboxgl.accessToken = 'pk.eyJ1IjoibWFyaWVsMDgiLCJhIjoiY202emV3MDhhMDN6YjJscHVqaXExdGpjMyJ9.F_ACoKzS_4e280lD0XndEw';
 
 const router = useRouter()
-const API_URL = 'https://apipwa.sembrandodatos.com'
+const API_URL = 'https://apidron.sembrandodatos.com'
 
 // Estado de conexión
 const isOnline = ref(navigator.onLine)
@@ -1579,7 +1579,7 @@ const esUbicacionReciente = (fechaStr) => {
 
 // Función auxiliar para obtener la URL de imagen correcta
 const obtenerUrlImagen = (props) => {
-  const API_BASE_URL = 'https://apipwa.sembrandodatos.com';
+  const API_BASE_URL = 'https://apidron.sembrandodatos.com';
   
   console.log('🔍 Obteniendo imagen para props:', props);
   
@@ -1813,7 +1813,7 @@ const onImageError = (event) => {
 
 // Función para obtener URL de imagen alternativa
 const obtenerImagenAlternativa = (props, urlFallida) => {
-  const API_BASE_URL = 'https://apipwa.sembrandodatos.com';
+  const API_BASE_URL = 'https://apidron.sembrandodatos.com';
   
   // Lista de campos alternativos para probar
   const camposAlternativos = [

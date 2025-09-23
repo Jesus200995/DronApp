@@ -27,7 +27,7 @@ Panel de administración moderno construido con Vue.js 3 y Vite para gestionar l
    ```
 
 2. **Configurar la API:**
-   - El proyecto está configurado para usar: `https://apipwa.sembrandodatos.com`
+   - El proyecto está configurado para usar: `https://apidron.sembrandodatos.com`
    - Si necesitas cambiar la URL, edita la constante `API_URL` en los archivos de Vue
 
 ## 🔧 Comandos Disponibles
@@ -115,7 +115,7 @@ server: {
 ### Variables de Entorno
 Puedes crear un archivo `.env` para configuraciones:
 ```
-VITE_API_URL=https://apipwa.sembrandodatos.com
+VITE_API_URL=https://apidron.sembrandodatos.com
 ```
 
 Y usarlo en el código:

@@ -1,7 +1,7 @@
 // Configuración de API para diferentes entornos
 const API_CONFIGS = {
   production: {
-    baseURL: 'https://apipwa.sembrandodatos.com',
+    baseURL: 'https://apidron.sembrandodatos.com',
     endpoints: {
       adminLogin: '/admin/login',
       authMe: '/auth/me',

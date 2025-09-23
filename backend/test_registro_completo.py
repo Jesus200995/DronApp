@@ -10,7 +10,7 @@ import hashlib
 import time
 
 # URL de la API
-API_URL = "https://apipwa.sembrandodatos.com"
+API_URL = "https://apidron.sembrandodatos.com"
 
 def crear_usuario_prueba_terminos():
     """Crear un usuario de prueba y verificar que se registren los términos automáticamente"""

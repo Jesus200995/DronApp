@@ -2,7 +2,7 @@
 console.log('🧪 Probando endpoints de usuarios después de agregar GET...');
 
 async function probarEndpoints() {
-    const baseUrl = 'https://apipwa.sembrandodatos.com';
+    const baseUrl = 'https://apidron.sembrandodatos.com';
     
     console.log('\n1️⃣ Probando GET /usuarios (obtener todos los usuarios)...');
     try {

@@ -1,7 +1,7 @@
 // Script de prueba para verificar la API
 // Ejecutar desde la consola del navegador
 
-const API_URL = 'https://apipwa.sembrandodatos.com';
+const API_URL = 'https://apidron.sembrandodatos.com';
 
 // Función para probar endpoints
 async function probarAPI() {

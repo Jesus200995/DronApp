@@ -10,7 +10,7 @@ import psycopg2
 from datetime import datetime
 
 # Configuración
-API_URL = "https://apipwa.sembrandodatos.com"
+API_URL = "https://apidron.sembrandodatos.com"
 DB_HOST = "31.97.8.51"
 DB_NAME = "app_registros"
 DB_USER = "jesus"

@@ -2,7 +2,7 @@
 console.log('🧪 Iniciando pruebas del sistema de historial...');
 
 // Probar conectividad con usuarios
-fetch('https://apipwa.sembrandodatos.com/usuarios')
+fetch('https://apidron.sembrandodatos.com/usuarios')
   .then(response => response.json())
   .then(data => {
     console.log('✅ Usuarios obtenidos:', data);
@@ -12,7 +12,7 @@ fetch('https://apipwa.sembrandodatos.com/usuarios')
       console.log('🧪 Probando historial para usuario:', primerUsuario.id);
       
       // Probar historial del primer usuario
-      return fetch(`https://apipwa.sembrandodatos.com/historial/${primerUsuario.id}`);
+      return fetch(`https://apidron.sembrandodatos.com/historial/${primerUsuario.id}`);
     } else {
       throw new Error('No hay usuarios disponibles');
     }
@@ -27,7 +27,7 @@ fetch('https://apipwa.sembrandodatos.com/usuarios')
   });
 
 // Probar endpoint de historial general
-fetch('https://apipwa.sembrandodatos.com/historial')
+fetch('https://apidron.sembrandodatos.com/historial')
   .then(response => response.json())
   .then(data => {
     console.log('✅ Historial general obtenido:', data);

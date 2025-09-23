@@ -18,7 +18,7 @@
 
 ### Paso 1: Subir el Backend Actualizado
 
-El archivo `main_para_servidor.py` debe subirse al servidor de producción `https://apipwa.sembrandodatos.com`.
+El archivo `main_para_servidor.py` debe subirse al servidor de producción `https://apidron.sembrandodatos.com`.
 
 #### Cambios específicos en main_para_servidor.py:
 
@@ -49,7 +49,7 @@ Después de subir el archivo, reiniciar el servicio FastAPI en el servidor de pr
 
 ### Paso 3: Verificar que Funciona
 
-1. Probar el endpoint: `GET https://apipwa.sembrandodatos.com/usuarios`
+1. Probar el endpoint: `GET https://apidron.sembrandodatos.com/usuarios`
 2. Verificar que la respuesta incluya el campo `contrasena` para cada usuario
 3. Probar el frontend en la aplicación web
 
@@ -57,13 +57,13 @@ Después de subir el archivo, reiniciar el servicio FastAPI en el servidor de pr
 
 ```bash
 # Probar endpoint de usuarios
-curl https://apipwa.sembrandodatos.com/usuarios
+curl https://apidron.sembrandodatos.com/usuarios
 
 # Probar endpoint individual
-curl https://apipwa.sembrandodatos.com/usuarios/1
+curl https://apidron.sembrandodatos.com/usuarios/1
 
 # Probar endpoint de exportación
-curl https://apipwa.sembrandodatos.com/usuarios/exportacion-completa
+curl https://apidron.sembrandodatos.com/usuarios/exportacion-completa
 ```
 
 ## Estado Actual

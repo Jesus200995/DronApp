@@ -17,7 +17,7 @@
   - `POST /usuarios/aceptar_terminos`
   - `GET /usuarios/{user_id}/terminos`
 - [ ] Reiniciar servicio backend en producción
-- [ ] Probar endpoint: `GET https://apipwa.sembrandodatos.com/usuarios/1/terminos`
+- [ ] Probar endpoint: `GET https://apidron.sembrandodatos.com/usuarios/1/terminos`
 
 #### 2. Frontend
 - [ ] Verificar que `Register.vue` tiene el aviso de privacidad

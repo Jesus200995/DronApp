@@ -38,7 +38,7 @@ pm2 restart backend
 
 ### PASO 4: Verificar
 ```bash
-curl -X GET "https://apipwa.sembrandodatos.com/test/terminos"
+curl -X GET "https://apidron.sembrandodatos.com/test/terminos"
 ```
 
 **Respuesta esperada:**
@@ -71,7 +71,7 @@ curl -X GET "https://apipwa.sembrandodatos.com/test/terminos"
 
 Este `main.py` funciona **igual** en:
 - ✅ **Local**: `http://127.0.0.1:8000`
-- ✅ **Producción**: `https://apipwa.sembrandodatos.com`
+- ✅ **Producción**: `https://apidron.sembrandodatos.com`
 
 **No necesita cambios de configuración** - usa la misma base de datos PostgreSQL en ambos casos.
 

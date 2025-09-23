@@ -1,7 +1,7 @@
 // Script para obtener la documentación OpenAPI y ver todos los endpoints
 import axios from 'axios'
 
-const API_URL = 'https://apipwa.sembrandodatos.com'
+const API_URL = 'https://apidron.sembrandodatos.com'
 
 async function obtenerDocumentacionAPI() {
   try {

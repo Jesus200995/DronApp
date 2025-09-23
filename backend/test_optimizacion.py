@@ -8,7 +8,7 @@ import time
 import json
 
 # Configuración
-API_URL = "https://apipwa.sembrandodatos.com"
+API_URL = "https://apidron.sembrandodatos.com"
 
 def test_endpoint_optimizado():
     """Probar el nuevo endpoint optimizado"""

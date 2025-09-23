@@ -730,7 +730,7 @@ async function marcarEntrada() {
   mensajeAsistencia.value = '';
   
   try {
-    const response = await fetch('https://apipwa.sembrandodatos.com/asistencia/entrada', {
+    const response = await fetch('https://apidron.sembrandodatos.com/asistencia/entrada', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -787,7 +787,7 @@ async function marcarSalida() {
   mensajeAsistencia.value = '';
   
   try {
-    const response = await fetch('https://apipwa.sembrandodatos.com/asistencia/salida', {
+    const response = await fetch('https://apidron.sembrandodatos.com/asistencia/salida', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

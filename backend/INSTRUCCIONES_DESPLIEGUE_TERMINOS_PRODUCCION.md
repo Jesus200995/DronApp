@@ -2,7 +2,7 @@
 
 **Fecha:** 7 de agosto de 2025  
 **Sistema:** PWASuper - Aviso de Privacidad y Términos  
-**Servidor:** https://apipwa.sembrandodatos.com  
+**Servidor:** https://apidron.sembrandodatos.com  
 
 ## ⚠️ IMPORTANTE - LEER ANTES DE PROCEDER
 
@@ -152,10 +152,10 @@ CREATE TABLE usuarios_terminos (
 
 ```bash
 # Test 1: Endpoint de prueba
-curl -X GET "https://apipwa.sembrandodatos.com/test/terminos"
+curl -X GET "https://apidron.sembrandodatos.com/test/terminos"
 
 # Test 2: Crear usuario nuevo
-curl -X POST "https://apipwa.sembrandodatos.com/usuarios" \
+curl -X POST "https://apidron.sembrandodatos.com/usuarios" \
   -H "Content-Type: application/json" \
   -d '{
     "correo": "test@example.com",
@@ -166,7 +166,7 @@ curl -X POST "https://apipwa.sembrandodatos.com/usuarios" \
   }'
 
 # Test 3: Verificar términos del usuario creado
-curl -X GET "https://apipwa.sembrandodatos.com/usuarios/{ID_USUARIO}/terminos"
+curl -X GET "https://apidron.sembrandodatos.com/usuarios/{ID_USUARIO}/terminos"
 ```
 
 ### 2. Verificar Usuarios Existentes

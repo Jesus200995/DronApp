@@ -11,7 +11,7 @@ def test_admin_login():
     # URLs para probar
     urls = [
         'http://localhost:8000/admin/login',
-        'https://apipwa.sembrandodatos.com/admin/login'
+        'https://apidron.sembrandodatos.com/admin/login'
     ]
     
     # Datos de login para probar

@@ -73,7 +73,7 @@ CREATE TABLE usuarios_terminos (
 
 ### 🌐 INTEGRACIÓN CON API DE PRODUCCIÓN
 
-- ✅ **URL configurada**: `https://apipwa.sembrandodatos.com`
+- ✅ **URL configurada**: `https://apidron.sembrandodatos.com`
 - ✅ **Fallback automático** a servidor local si hay problemas
 - ✅ **Detección inteligente** del mejor servidor disponible
 - ✅ **Indicador visual** del servidor en uso

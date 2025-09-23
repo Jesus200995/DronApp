@@ -10,7 +10,7 @@ def test_backend_tipos_actividad():
     """Prueba que el backend esté enviando correctamente los tipos de actividad"""
     
     # URLs del backend
-    BASE_URL = 'https://apipwa.sembrandodatos.com'
+    BASE_URL = 'https://apidron.sembrandodatos.com'
     
     endpoints = [
         '/registros',

@@ -2,7 +2,7 @@
 // Ejecutar en la consola del navegador
 
 async function probarEndpoints() {
-  const API_URL = 'https://apipwa.sembrandodatos.com';
+  const API_URL = 'https://apidron.sembrandodatos.com';
   const token = localStorage.getItem('admin_token');
   
   if (!token) {

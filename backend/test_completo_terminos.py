@@ -15,7 +15,7 @@ from datetime import datetime
 
 # Configuración
 BASE_URL_LOCAL = "http://127.0.0.1:8000"
-BASE_URL_PROD = "https://apipwa.sembrandodatos.com"
+BASE_URL_PROD = "https://apidron.sembrandodatos.com"
 
 def print_header(titulo):
     print(f"\n{'='*60}")

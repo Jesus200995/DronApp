@@ -2,7 +2,7 @@ import requests
 import json
 
 # Configuración de la API
-API_BASE_URL = "https://apipwa.sembrandodatos.com"
+API_BASE_URL = "https://apidron.sembrandodatos.com"
 
 def test_notificaciones_usuario():
     """
@@ -86,7 +86,7 @@ def test_varios_usuarios():
 
 if __name__ == "__main__":
     print("🚀 Iniciando pruebas del endpoint de notificaciones de usuario")
-    print("🌐 Probando con API de producción: https://apipwa.sembrandodatos.com")
+    print("🌐 Probando con API de producción: https://apidron.sembrandodatos.com")
     print("=" * 60)
     
     # Test 1: Endpoint básico

@@ -764,7 +764,7 @@ const router = useRouter()
 // Estado de conexión
 const isOnline = ref(navigator.onLine)
 
-const API_URL = 'https://apipwa.sembrandodatos.com'
+const API_URL = 'https://apidron.sembrandodatos.com'
 const usuarios = ref([])
 const usuariosFiltrados = ref([])
 const loading = ref(false)

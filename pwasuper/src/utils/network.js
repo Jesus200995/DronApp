@@ -21,11 +21,11 @@ export function getOfflineMessage() {
 // Configuración de URLs de API
 const API_URLS = {
   development: ["http://localhost:8000", "http://localhost:8001"],
-  production: "https://apipwa.sembrandodatos.com"
+  production: "https://apidron.sembrandodatos.com"
 };
 
 // URL de la API de producción para notificaciones (según requerimientos)
-export const API_URL = "https://apipwa.sembrandodatos.com";
+export const API_URL = "https://apidron.sembrandodatos.com";
 
 // Función para detectar automáticamente el entorno
 function detectEnvironment() {

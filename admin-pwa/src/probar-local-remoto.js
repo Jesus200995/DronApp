@@ -24,7 +24,7 @@ async function probarEndpoint(baseUrl, descripcion) {
 
 async function probarAmbos() {
     await probarEndpoint('http://localhost:8000', 'Servidor Local');
-    await probarEndpoint('https://apipwa.sembrandodatos.com', 'Servidor Remoto');
+    await probarEndpoint('https://apidron.sembrandodatos.com', 'Servidor Remoto');
 }
 
 probarAmbos().then(() => {

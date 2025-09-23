@@ -617,7 +617,7 @@ import { estadisticasService } from '../services/estadisticasService.js'
 
 const router = useRouter()
 
-const API_URL = 'https://apipwa.sembrandodatos.com'
+const API_URL = 'https://apidron.sembrandodatos.com'
 const adminUser = ref(localStorage.getItem('admin_user') || 'Admin')
 const isOnline = ref(navigator.onLine)
 

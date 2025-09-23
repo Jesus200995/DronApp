@@ -8,7 +8,7 @@ import requests
 import json
 
 # URL de la API de producción
-API_URL = "https://apipwa.sembrandodatos.com"
+API_URL = "https://apidron.sembrandodatos.com"
 
 def test_connection():
     """Probar la conexión básica con la API"""

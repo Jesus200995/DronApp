@@ -43,7 +43,7 @@
                 v-model="apiConfig.url" 
                 type="url" 
                 class="form-input"
-                placeholder="https://apipwa.sembrandodatos.com"
+                placeholder="https://apidron.sembrandodatos.com"
               >
             </div>
             
@@ -327,7 +327,7 @@ const eliminandoAsistencias = ref(false)
 const descargandoBD = ref(false)
 
 const apiConfig = reactive({
-  url: 'https://apipwa.sembrandodatos.com',
+  url: 'https://apidron.sembrandodatos.com',
   timeout: 30
 })
 

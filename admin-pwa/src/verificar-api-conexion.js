@@ -1,7 +1,7 @@
 // Script para verificar que la configuración de la API está funcionando correctamente
 console.log('🔍 Verificando conexión con la API de producción...');
 
-const API_URL = 'https://apipwa.sembrandodatos.com';
+const API_URL = 'https://apidron.sembrandodatos.com';
 
 async function verificarEndpoints() {
   const endpoints = [

@@ -8,7 +8,7 @@ import json
 from datetime import datetime
 
 # URL de la API
-API_URL = "https://apipwa.sembrandodatos.com"
+API_URL = "https://apidron.sembrandodatos.com"
 
 def verificar_registros_gabinete():
     """Verificar registros de gabinete usando la API"""

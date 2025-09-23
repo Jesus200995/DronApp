@@ -1,7 +1,7 @@
 // Script para probar endpoints de usuarios en la API
 import axios from 'axios'
 
-const API_URL = 'https://apipwa.sembrandodatos.com'
+const API_URL = 'https://apidron.sembrandodatos.com'
 
 async function probarEndpointsUsuarios() {
   console.log('🔍 Probando endpoints de usuarios...')

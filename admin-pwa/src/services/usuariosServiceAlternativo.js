@@ -1,7 +1,7 @@
 // Servicio de usuarios alternativo usando endpoints existentes
 // SOLO USAR SI NO SE PUEDE DESPLEGAR EL BACKEND ACTUALIZADO
 
-const API_BASE = 'https://apipwa.sembrandodatos.com';
+const API_BASE = 'https://apidron.sembrandodatos.com';
 
 class UsuariosServiceAlternativo {
   constructor() {

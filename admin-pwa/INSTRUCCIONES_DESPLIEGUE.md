@@ -4,7 +4,7 @@
 ## 🎯 Lo que necesitas hacer:
 
 ### 1. Subir el archivo main.py actualizado
-Copia el archivo `backend/main.py` (que tiene los nuevos endpoints GET) a tu servidor donde está corriendo `apipwa.sembrandodatos.com`
+Copia el archivo `backend/main.py` (que tiene los nuevos endpoints GET) a tu servidor donde está corriendo `apidron.sembrandodatos.com`
 
 ### 2. Instalar dependencias en el servidor remoto
 ```bash

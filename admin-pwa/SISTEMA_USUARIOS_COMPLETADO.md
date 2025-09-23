@@ -40,7 +40,7 @@ El sistema ahora muestra **5 usuarios reales** de la base de datos:
 - **GET /usuarios** → ✅ FUNCIONANDO - Devuelve usuarios reales
 - **GET /usuarios/{id}** → ✅ FUNCIONANDO - Devuelve usuario específico
 
-### Servidor Remoto (https://apipwa.sembrandodatos.com) ⚠️
+### Servidor Remoto (https://apidron.sembrandodatos.com) ⚠️
 - **GET /usuarios** → ❌ 405 Method Not Allowed (endpoint no desplegado)
 - **Requiere despliegue** del código actualizado del backend
 
@@ -49,7 +49,7 @@ El sistema ahora muestra **5 usuarios reales** de la base de datos:
 ```javascript
 // usuariosService.js - Línea 2
 const API_BASE = 'http://localhost:8000'; // TEMPORAL - Servidor local
-// Cambiar a: 'https://apipwa.sembrandodatos.com' cuando se despliegue
+// Cambiar a: 'https://apidron.sembrandodatos.com' cuando se despliegue
 ```
 
 ## 📝 Próximos Pasos

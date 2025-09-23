@@ -2,7 +2,7 @@
 console.log('🧪 Testing servicios de Usuarios e Historial...');
 
 // Simulamos la importación de los servicios (en el navegador esto estaría disponible)
-const API_BASE = 'https://apipwa.sembrandodatos.com';
+const API_BASE = 'https://apidron.sembrandodatos.com';
 
 async function testUsuariosService() {
   console.log('\n📊 Testing UsuariosService...');
