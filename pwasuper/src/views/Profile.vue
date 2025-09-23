@@ -1,10 +1,10 @@
 <template>
-  <div class="fixed inset-0 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 overflow-hidden" style="z-index: 0;">
+  <div class="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50 overflow-hidden" style="z-index: 0;">
     <!-- Elementos decorativos para mejorar el efecto de vidrio -->
     <div class="absolute inset-0">
-      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
-      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-emerald-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
+      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
+      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
     </div>
 
     <div class="absolute inset-0 overflow-y-auto pt-16 sm:pt-20 pb-3" style="z-index: 1;">
@@ -17,10 +17,10 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 class="text-base font-bold text-gray-800 modern-title">{{ user.nombre_completo }}</h1>
-          <div class="green-line mx-auto mb-2"></div>
-          <p class="text-xs text-gray-600">{{ user.cargo }}</p>
-          <p class="text-xs text-gray-500 mt-1">{{ user.correo || user.email }}</p>
+          <h1 class="text-base font-bold text-gray-800 modern-title">{{ user.nombre }}</h1>
+          <div class="blue-line mx-auto mb-2"></div>
+          <p class="text-xs text-gray-600">{{ user.puesto }}</p>
+          <p class="text-xs text-gray-500 mt-1">{{ user.correo }}</p>
         </div>
       </div>
 
@@ -39,22 +39,22 @@
             </svg>
           </button>
         </div>
-        <div class="green-line mb-2"></div>
+        <div class="blue-line mb-2"></div>
         
         <div class="space-y-2">
           <div class="glass-info-row flex justify-between items-center py-1">
-            <span class="text-xs font-medium text-gray-600">Nombre completo:</span>
-            <span class="text-xs text-gray-800 font-semibold">{{ user.nombre_completo || 'No disponible' }}</span>
+            <span class="text-xs font-medium text-gray-600">Nombre:</span>
+            <span class="text-xs text-gray-800 font-semibold">{{ user.nombre || 'No disponible' }}</span>
           </div>
           
           <div class="glass-info-row flex justify-between items-center py-1">
             <span class="text-xs font-medium text-gray-600">Email:</span>
-            <span class="text-xs text-gray-800 font-semibold">{{ user.correo || user.email || 'No disponible' }}</span>
+            <span class="text-xs text-gray-800 font-semibold">{{ user.correo || 'No disponible' }}</span>
           </div>
           
           <div class="glass-info-row flex justify-between items-center py-1">
-            <span class="text-xs font-medium text-gray-600">Cargo:</span>
-            <span class="text-xs text-gray-800 font-semibold">{{ user.cargo || 'No disponible' }}</span>
+            <span class="text-xs font-medium text-gray-600">Puesto:</span>
+            <span class="text-xs text-gray-800 font-semibold">{{ user.puesto || 'No disponible' }}</span>
           </div>
           
           <div class="glass-info-row flex justify-between items-center py-1">
@@ -87,7 +87,7 @@
           </svg>
           Cambiar Contraseña
         </h2>
-        <div class="green-line mb-2"></div>
+        <div class="blue-line mb-2"></div>
         <form @submit.prevent="changePassword" class="space-y-3">
         <!-- Mensaje de error general -->
         <div v-if="errors.general" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-2 rounded-lg" role="alert">
@@ -140,13 +140,13 @@
       <div v-if="showSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3" style="z-index: 60;">
         <div class="glass-card max-w-xs w-full mx-3">
           <div class="text-center">
-            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 glass-success-icon">
-              <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 glass-success-icon">
+              <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
               </svg>
             </div>
             <h3 class="text-base font-semibold text-gray-900 mb-2 modern-title">¡Contraseña cambiada!</h3>
-            <div class="green-line mx-auto mb-2"></div>
+            <div class="blue-line mx-auto mb-2"></div>
             <p class="text-xs text-gray-600 mb-3">Tu contraseña ha sido actualizada exitosamente.</p>
             <button @click="showSuccessModal = false" class="glass-button w-full">
               Entendido
@@ -160,10 +160,10 @@
     <transition name="fade">
       <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3" style="z-index: 9999;">
         <div class="bg-white rounded-2xl max-w-xs w-full mx-3 max-h-[85vh] overflow-y-auto edit-modal">
-          <div class="sticky top-0 bg-white rounded-t-2xl border-b border-green-100 p-3">
+          <div class="sticky top-0 bg-white rounded-t-2xl border-b border-blue-100 p-3">
             <div class="flex justify-between items-center">
               <h3 class="text-sm font-bold text-gray-800 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
                 Editar Información
@@ -184,16 +184,16 @@
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Nombre completo</label>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Nombre</label>
                 <input
-                  v-model="editForm.nombre_completo"
+                  v-model="editForm.nombre"
                   type="text"
                   class="edit-input-small w-full"
-                  :class="{ 'border-red-500': editErrors.nombre_completo }"
-                  placeholder="Ingresa tu nombre completo"
+                  :class="{ 'border-red-500': editErrors.nombre }"
+                  placeholder="Ingresa tu nombre"
                   required
                 />
-                <p v-if="editErrors.nombre_completo" class="text-red-500 text-xs mt-1">{{ editErrors.nombre_completo }}</p>
+                <p v-if="editErrors.nombre" class="text-red-500 text-xs mt-1">{{ editErrors.nombre }}</p>
               </div>
 
               <div>
@@ -210,16 +210,16 @@
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Cargo</label>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Puesto</label>
                 <input
-                  v-model="editForm.cargo"
+                  v-model="editForm.puesto"
                   type="text"
                   class="edit-input-small w-full"
-                  :class="{ 'border-red-500': editErrors.cargo }"
-                  placeholder="Ingresa tu cargo"
+                  :class="{ 'border-red-500': editErrors.puesto }"
+                  placeholder="Ingresa tu puesto"
                   required
                 />
-                <p v-if="editErrors.cargo" class="text-red-500 text-xs mt-1">{{ editErrors.cargo }}</p>
+                <p v-if="editErrors.puesto" class="text-red-500 text-xs mt-1">{{ editErrors.puesto }}</p>
               </div>
 
               <div>
@@ -275,7 +275,7 @@
                           type="text"
                           v-model="countrySearch"
                           placeholder="Buscar país..."
-                          class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                           @click="$event.stopPropagation()"
                         />
                       </div>
@@ -324,7 +324,7 @@
                 <button
                   type="submit"
                   :disabled="isUpdatingUser"
-                  class="flex-1 px-3 py-1.5 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg text-xs font-medium hover:from-green-600 hover:to-green-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  class="flex-1 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-xs font-medium hover:from-blue-600 hover:to-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
                   <svg v-if="isUpdatingUser" class="animate-spin h-3 w-3 mr-2" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -343,14 +343,14 @@
     <transition name="fade">
       <div v-if="showEditSuccessModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3" style="z-index: 70;">
         <div class="bg-white rounded-2xl max-w-xs w-full mx-3 p-6 text-center">
-          <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
           </div>
           <h3 class="text-lg font-bold text-gray-900 mb-2">¡Información actualizada!</h3>
           <p class="text-sm text-gray-600 mb-4">Tus datos personales han sido actualizados correctamente.</p>
-          <button @click="showEditSuccessModal = false" class="w-full px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-medium hover:from-green-600 hover:to-green-700 transition-all">
+          <button @click="showEditSuccessModal = false" class="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all">
             Entendido
           </button>
         </div>
@@ -381,9 +381,9 @@ const showEditSuccessModal = ref(false)
 const isUpdatingUser = ref(false)
 const editErrors = ref({})
 const editForm = ref({
-  nombre_completo: '',
+  nombre: '',
   correo: '',
-  cargo: '',
+  puesto: '',
   supervisor: '',
   curp: '',
   telefono: '',
@@ -640,9 +640,9 @@ const openEditModal = () => {
   
   // Cargar los datos actuales en el formulario
   editForm.value = {
-    nombre_completo: user.value.nombre_completo || '',
+    nombre: user.value.nombre || '',
     correo: user.value.correo || '',
-    cargo: user.value.cargo || '',
+    puesto: user.value.puesto || '',
     supervisor: user.value.supervisor || '',
     curp: user.value.curp || '',
     telefono: user.value.telefono || '',
@@ -662,9 +662,9 @@ const closeEditModal = () => {
   showCountrySelector.value = false
   countrySearch.value = ''
   editForm.value = {
-    nombre_completo: '',
+    nombre: '',
     correo: '',
-    cargo: '',
+    puesto: '',
     supervisor: '',
     curp: '',
     telefono: '',
@@ -683,8 +683,8 @@ const updateUserInfo = async () => {
     editErrors.value = {}
     
     // Validaciones
-    if (!editForm.value.nombre_completo?.trim()) {
-      editErrors.value.nombre_completo = 'El nombre completo es obligatorio'
+    if (!editForm.value.nombre?.trim()) {
+      editErrors.value.nombre = 'El nombre completo es obligatorio'
       return
     }
     
@@ -700,8 +700,8 @@ const updateUserInfo = async () => {
       return
     }
     
-    if (!editForm.value.cargo?.trim()) {
-      editErrors.value.cargo = 'El cargo es obligatorio'
+    if (!editForm.value.puesto?.trim()) {
+      editErrors.value.puesto = 'El puesto es obligatorio'
       return
     }
     
@@ -729,9 +729,9 @@ const updateUserInfo = async () => {
       `${editForm.value.codigoPais}${editForm.value.telefonoDigitos.trim()}` : null
     
     const response = await axios.patch(`${API_URL}/usuarios/${storedUser.id}/info`, {
-      nombre_completo: editForm.value.nombre_completo.trim(),
+      nombre: editForm.value.nombre.trim(),
       correo: editForm.value.correo.trim(),
-      cargo: editForm.value.cargo.trim(),
+      puesto: editForm.value.puesto.trim(),
       supervisor: editForm.value.supervisor?.trim() || null,
       curp: editForm.value.curp?.trim() || null,
       telefono: telefonoCompleto
@@ -752,9 +752,9 @@ const updateUserInfo = async () => {
       // Actualizar los datos del usuario en el estado local
       user.value = {
         ...user.value,
-        nombre_completo: editForm.value.nombre_completo,
+        nombre: editForm.value.nombre,
         correo: editForm.value.correo,
-        cargo: editForm.value.cargo,
+        puesto: editForm.value.puesto,
         supervisor: editForm.value.supervisor,
         curp: editForm.value.curp,
         telefono: telefonoCompleto
@@ -763,9 +763,9 @@ const updateUserInfo = async () => {
       // Actualizar localStorage
       const updatedUser = { 
         ...storedUser, 
-        nombre_completo: editForm.value.nombre_completo,
+        nombre: editForm.value.nombre,
         correo: editForm.value.correo,
-        cargo: editForm.value.cargo,
+        puesto: editForm.value.puesto,
         supervisor: editForm.value.supervisor,
         curp: editForm.value.curp,
         telefono: telefonoCompleto
@@ -884,10 +884,10 @@ const validatePhoneEdit = () => {
 
 .glass-input:focus {
   outline: none;
-  border: 1px solid rgba(76, 175, 80, 0.4);
+  border: 1px solid rgba(59, 130, 246, 0.4);
   background: rgba(255, 255, 255, 0.2);
   box-shadow: 
-    0 0 0 3px rgba(76, 175, 80, 0.1),
+    0 0 0 3px rgba(59, 130, 246, 0.1),
     0 8px 25px 0 rgba(31, 38, 135, 0.15),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
   transform: translateY(-1px);
@@ -900,10 +900,10 @@ const validatePhoneEdit = () => {
 .glass-button {
   padding: 0.625rem 1rem;
   border-radius: 10px;
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.3);
   background: linear-gradient(135deg, 
-    rgba(76, 175, 80, 0.8) 0%, 
-    rgba(56, 142, 60, 0.8) 100%);
+    rgba(59, 130, 246, 0.8) 0%, 
+    rgba(37, 99, 235, 0.8) 100%);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   color: white;
@@ -914,7 +914,7 @@ const validatePhoneEdit = () => {
   position: relative;
   overflow: hidden;
   box-shadow: 
-    0 3px 15px 0 rgba(76, 175, 80, 0.3),
+    0 3px 15px 0 rgba(59, 130, 246, 0.3),
     0 0 0 1px rgba(255, 255, 255, 0.1),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -923,18 +923,18 @@ const validatePhoneEdit = () => {
 .glass-button:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 
-    0 8px 30px 0 rgba(76, 175, 80, 0.4),
+    0 8px 30px 0 rgba(59, 130, 246, 0.4),
     0 0 0 1px rgba(255, 255, 255, 0.2),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
   background: linear-gradient(135deg, 
-    rgba(76, 175, 80, 0.9) 0%, 
-    rgba(56, 142, 60, 0.9) 100%);
+    rgba(59, 130, 246, 0.9) 0%, 
+    rgba(37, 99, 235, 0.9) 100%);
 }
 
 .glass-button:active:not(:disabled) {
   transform: translateY(0px);
   box-shadow: 
-    0 4px 15px 0 rgba(76, 175, 80, 0.3),
+    0 4px 15px 0 rgba(59, 130, 246, 0.3),
     inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
 }
 
@@ -963,16 +963,16 @@ const validatePhoneEdit = () => {
   -webkit-backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.2);
   box-shadow: 
-    0 8px 32px 0 rgba(76, 175, 80, 0.3),
+    0 8px 32px 0 rgba(59, 130, 246, 0.3),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
 }
 
 .glass-success-icon {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 2px solid rgba(34, 197, 94, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.2);
   box-shadow: 
-    0 8px 32px 0 rgba(34, 197, 94, 0.2),
+    0 8px 32px 0 rgba(59, 130, 246, 0.2),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -1015,10 +1015,10 @@ const validatePhoneEdit = () => {
   position: relative;
 }
 
-.green-line {
+.blue-line {
   width: 40px;
   height: 1.5px;
-  background: linear-gradient(90deg, #16a34a, #22c55e, #16a34a);
+  background: linear-gradient(90deg, #2563eb, #3b82f6, #2563eb);
   border-radius: 1px;
   animation: line-glow 2s ease-in-out infinite alternate;
 }
@@ -1034,11 +1034,11 @@ const validatePhoneEdit = () => {
 
 @keyframes line-glow {
   0% {
-    box-shadow: 0 0 5px rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
     opacity: 0.8;
   }
   100% {
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
     opacity: 1;
   }
 }
@@ -1343,9 +1343,9 @@ const validatePhoneEdit = () => {
 
 .edit-input:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #3b82f6;
   background-color: white;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .edit-input.border-red-500 {
@@ -1369,9 +1369,9 @@ const validatePhoneEdit = () => {
 
 .edit-input-small:focus {
   outline: none;
-  border-color: #10b981;
+  border-color: #3b82f6;
   background-color: white;
-  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
 }
 
 .edit-input-small.border-red-500 {
@@ -1400,9 +1400,9 @@ const validatePhoneEdit = () => {
 }
 
 .glass-edit-button:hover {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
-  color: #10b981;
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
   transform: scale(1.05);
 }
 
