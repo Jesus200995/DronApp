@@ -1037,134 +1037,178 @@ async def obtener_solicitud_detalle(solicitud_id: int):
 
 # ==================== ENDPOINTS DE HISTORIAL DE SOLICITUDES ====================
 
+@app.get("/debug/usuario/{usuario_id}")
+async def debug_usuario(usuario_id: int):
+    """Endpoint de debug para verificar datos del usuario"""
+    try:
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar usuario
+        cursor.execute("SELECT id, correo, nombre FROM usuarios WHERE id = %s", (usuario_id,))
+        usuario = cursor.fetchone()
+        
+        # Contar solicitudes
+        cursor.execute("SELECT COUNT(*) FROM solicitudes_dron WHERE usuario_id = %s", (usuario_id,))
+        count_solicitudes = cursor.fetchone()[0]
+        
+        # Contar historial
+        cursor.execute("SELECT COUNT(*) FROM historial_solicitudes WHERE usuario_id = %s", (usuario_id,))
+        count_historial = cursor.fetchone()[0]
+        
+        # Últimas solicitudes
+        cursor.execute("""
+            SELECT id, tipo, estado, fecha_hora 
+            FROM solicitudes_dron 
+            WHERE usuario_id = %s 
+            ORDER BY fecha_hora DESC 
+            LIMIT 5
+        """, (usuario_id,))
+        solicitudes_recientes = cursor.fetchall()
+        
+        return {
+            "usuario": {
+                "id": usuario[0] if usuario else None,
+                "correo": usuario[1] if usuario else None,
+                "nombre": usuario[2] if usuario else None,
+                "existe": bool(usuario)
+            },
+            "estadisticas": {
+                "total_solicitudes": count_solicitudes,
+                "total_historial": count_historial
+            },
+            "solicitudes_recientes": [
+                {
+                    "id": s[0],
+                    "tipo": s[1], 
+                    "estado": s[2],
+                    "fecha": s[3].isoformat() if s[3] else None
+                } 
+                for s in solicitudes_recientes
+            ]
+        }
+        
+    except Exception as e:
+        print(f"❌ Error en debug: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/historial/{usuario_id}")
 async def obtener_historial_usuario(
     usuario_id: int,
     limit: Optional[int] = 100
 ):
     """Obtener historial completo de solicitudes de un usuario específico"""
-    global use_sqlite
-    
     try:
-        print(f"📋 Consultando historial para usuario {usuario_id} ({'SQLite' if use_sqlite else 'PostgreSQL'})")
+        print(f"📋 Consultando historial para usuario {usuario_id}")
         
         # Verificar conexión
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="No se pudo establecer conexión a la base de datos")
-            
-        # Verificar que el usuario existe (query compatible con ambas BD)
-        if use_sqlite:
-            cursor.execute("SELECT id, nombre FROM usuarios WHERE id = ?", (usuario_id,))
-        else:
-            cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
-            
-        usuario = cursor.fetchone()
-        if not usuario:
+        
+        # Verificar que el usuario existe
+        usuario_result = ejecutar_consulta_segura(
+            "SELECT id, nombre FROM usuarios WHERE id = %s", 
+            (usuario_id,), 
+            fetch_type='one'
+        )
+        
+        if not usuario_result:
+            print(f"❌ Usuario {usuario_id} no encontrado en la base de datos")
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
+        print(f"✅ Usuario encontrado: ID={usuario_result[0]}, Nombre={usuario_result[1] if len(usuario_result) > 1 else 'N/A'}")
+        
         # Obtener historial completo con datos de la solicitud
-        if use_sqlite:
-            query = """
-                SELECT 
-                    h.id as historial_id,
-                    h.solicitud_id,
-                    h.accion,
-                    h.fecha_hora,
-                    h.cambios,
-                    h.estado_final,
-                    s.tipo_actividad,
-                    s.ubicacion,
-                    s.estado as estado_actual_solicitud,
-                    s.observaciones,
-                    s.fecha_solicitud
-                FROM historial_solicitudes h
-                LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
-                WHERE h.usuario_id = ?
-                ORDER BY h.fecha_hora DESC
-                LIMIT ?
-            """
-            cursor.execute(query, (usuario_id, limit))
-        else:
-            query = """
-                SELECT 
-                    h.id as historial_id,
-                    h.solicitud_id,
-                    h.accion,
-                    h.fecha_hora,
-                    h.cambios,
-                    h.estado_final,
-                    COALESCE(s.tipo, 'desconocido') as tipo,
-                    COALESCE(s.observaciones, '') as observaciones_solicitud,
-                    COALESCE(s.estado, h.estado_final) as estado_actual_solicitud
-                FROM historial_solicitudes h
-                LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
-                WHERE h.usuario_id = %s
-                ORDER BY h.fecha_hora DESC
-                LIMIT %s
-            """
-            cursor.execute(query, (usuario_id, limit))
+        # Simplificamos la consulta para evitar problemas
+        query = """
+            SELECT 
+                h.id as historial_id,
+                h.solicitud_id,
+                h.accion,
+                h.fecha_hora,
+                h.cambios,
+                h.estado_final,
+                s.tipo,
+                s.observaciones,
+                s.estado
+            FROM historial_solicitudes h
+            LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
+            WHERE h.usuario_id = %s
+            ORDER BY h.fecha_hora DESC
+            LIMIT %s
+        """
         
-        resultados = cursor.fetchall()
+        resultados = ejecutar_consulta_segura(query, (usuario_id, limit), fetch_type='all')
+        print(f"🔍 Query ejecutada. Resultados obtenidos: {len(resultados) if resultados else 0}")
         
-        # Commit para limpiar transacción (solo PostgreSQL)
-        if not use_sqlite:
-            conn.commit()
+        if not resultados:
+            print("⚠️ No se encontraron resultados en la consulta de historial")
+            # Verificar si el usuario tiene solicitudes
+            count_result = ejecutar_consulta_segura(
+                "SELECT COUNT(*) FROM solicitudes_dron WHERE usuario_id = %s", 
+                (usuario_id,), 
+                fetch_type='one'
+            )
+            count_solicitudes = count_result[0] if count_result else 0
+            print(f"   📋 Solicitudes del usuario: {count_solicitudes}")
+            
+            # Verificar registros en historial
+            count_hist_result = ejecutar_consulta_segura(
+                "SELECT COUNT(*) FROM historial_solicitudes WHERE usuario_id = %s", 
+                (usuario_id,), 
+                fetch_type='one'
+            )
+            count_historial = count_hist_result[0] if count_hist_result else 0
+            print(f"   📚 Registros en historial: {count_historial}")
         
         historial = []
-        for row in resultados:
-            # Procesar cambios JSON
-            cambios_data = {}
-            cambios_field = row[4] if row[4] else "{}"
-            
-            try:
-                if isinstance(cambios_field, str):
-                    cambios_data = json.loads(cambios_field)
-                else:
-                    cambios_data = cambios_field  # Ya es un dict
-            except (json.JSONDecodeError, TypeError):
-                print(f"⚠️ Error decodificando JSON de cambios: {cambios_field}")
+        if resultados:
+            for row in resultados:
+                # Procesar cambios JSON de manera segura
                 cambios_data = {}
-            
-            # Adaptación para diferentes esquemas de BD
-            if use_sqlite:
+                if row[4]:  # cambios field
+                    try:
+                        if isinstance(row[4], str):
+                            cambios_data = json.loads(row[4])
+                        else:
+                            cambios_data = row[4]
+                    except (json.JSONDecodeError, TypeError) as e:
+                        print(f"⚠️ Error decodificando JSON de cambios: {e}")
+                        cambios_data = {}
+                
+                # Crear el registro del historial
                 registro = {
                     "historial_id": row[0],
                     "solicitud_id": row[1],
                     "tipo_accion": row[2],
-                    "fecha_accion": row[3],
+                    "fecha_accion": row[3].isoformat() if row[3] and hasattr(row[3], 'isoformat') else str(row[3]) if row[3] else None,
                     "cambios": cambios_data,
                     "estado_final": row[5],
                     "solicitud": {
-                        "tipo": row[6],
-                        "observaciones": row[7],
-                        "estado_actual": row[8]
+                        "tipo": row[6] if row[6] else "desconocido",
+                        "observaciones": row[7] if row[7] else "",
+                        "estado_actual": row[8] if row[8] else row[5]
                     }
                 }
-            else:
-                registro = {
-                    "historial_id": row[0],
-                    "solicitud_id": row[1],
-                    "tipo_accion": row[2],
-                    "fecha_accion": row[3].isoformat() if row[3] else None,
-                    "cambios": cambios_data,
-                    "estado_final": row[5],
-                    "solicitud": {
-                        "tipo": row[6],
-                        "observaciones": row[7],
-                        "estado_actual": row[8]
-                    }
-                }
-            historial.append(registro)
+                historial.append(registro)
         
-        print(f"✅ Encontrados {len(historial)} registros de historial para usuario {usuario_id}")
+        print(f"✅ Procesados {len(historial)} registros de historial para usuario {usuario_id}")
         
         # Debug: imprimir los primeros registros
         if historial:
-            print("📋 Primeros registros encontrados:")
-            for i, reg in enumerate(historial[:3]):
+            print("📋 Primeros registros procesados:")
+            for i, reg in enumerate(historial[:2]):
                 print(f"  {i+1}. Solicitud {reg['solicitud_id']}, Acción: {reg['tipo_accion']}, Estado: {reg['estado_final']}")
         
-        return historial
+        # Devolver la estructura esperada por el frontend
+        return {
+            "historial": historial,
+            "total": len(historial),
+            "usuario": {
+                "id": usuario_result[0],
+                "nombre": usuario_result[1] if len(usuario_result) > 1 else "Usuario"
+            }
+        }
         
     except HTTPException:
         raise  # Re-lanzar HTTPExceptions sin modificar
