@@ -244,53 +244,47 @@
                 class="text-xs">✓ Completado</span>
             </div>
             
-            <!-- Botón de ubicación circular con diseño moderno -->
-            <div class="location-container-circular">
+            <!-- Botón de ubicación moderno y compacto -->
+            <div class="location-container-modern">
               <button
                 type="button"
                 @click="getUbicacion"
                 :disabled="obteniendoUbicacion"
-                class="location-button-circular relative flex flex-col items-center justify-center w-28 h-28 sm:w-32 sm:h-32 font-medium text-white rounded-full shadow-2xl transform transition-all duration-500 hover:scale-110 active:scale-95"
+                class="location-button-modern relative flex items-center justify-center px-4 py-2 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95"
                 :class="{
                   'opacity-50 cursor-not-allowed': obteniendoUbicacion,
-                  'location-button-success-circular': latitud && longitud && !obteniendoUbicacion
+                  'location-button-success-modern': latitud && longitud && !obteniendoUbicacion
                 }"
               >
                 <!-- Spinner de carga -->
-                <div v-if="obteniendoUbicacion" class="flex flex-col items-center">
-                  <div class="animate-spin rounded-full h-6 w-6 border-t-3 border-b-3 border-white mb-1"></div>
-                  <span class="text-xs font-normal tracking-normal text-center leading-tight">Ubicando...</span>
+                <div v-if="obteniendoUbicacion" class="flex items-center space-x-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  <span class="text-sm font-medium text-white">Ubicando...</span>
                 </div>
                 
                 <!-- Estado completado -->
-                <div v-else-if="latitud && longitud" class="flex flex-col items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1 text-emerald-800 glass-icon-circular" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div v-else-if="latitud && longitud" class="flex items-center space-x-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span class="text-xs font-medium tracking-normal glass-text-circular text-center leading-tight">Ubicación Obtenida</span>
+                  <span class="text-sm font-medium text-white">Ubicación OK</span>
                 </div>
                 
                 <!-- Estado inicial -->
-                <div v-else class="flex flex-col items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1 text-white location-icon-circular" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div v-else class="flex items-center space-x-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  <span class="text-xs font-medium tracking-normal text-white location-text-circular text-center leading-tight">Obtener Ubicación</span>
+                  <span class="text-sm font-medium text-white">Obtener Ubicación</span>
                 </div>
               </button>
 
-              <!-- Coordenadas pegadas al botón circular -->
-              <div v-if="latitud && longitud" class="coordinates-display-circular">
-                <div class="coordinates-grid-circular">
-                  <div class="coordinate-item-circular">
-                    <span class="coordinate-label-circular">Lat:</span>
-                    <span class="coordinate-value-circular">{{ latitud }}</span>
-                  </div>
-                  <div class="coordinate-item-circular">
-                    <span class="coordinate-label-circular">Lon:</span>
-                    <span class="coordinate-value-circular">{{ longitud }}</span>
-                  </div>
+              <!-- Coordenadas compactas -->
+              <div v-if="latitud && longitud" class="coordinates-display-modern mt-2">
+                <div class="text-xs text-gray-600 font-mono">
+                  <div>Lat: {{ latitud }}</div>
+                  <div>Lon: {{ longitud }}</div>
                 </div>
               </div>
             </div>
@@ -551,74 +545,52 @@
       </div>
 
       <form @submit.prevent="enviarRegistro" :class="{ 'opacity-50 pointer-events-none': !entradaMarcada || salidaMarcada }">
-        <!-- Botón para obtener ubicación circular para actividades -->
-        <div class="location-container-circular mb-3 flex justify-center">
+        <!-- Botón para obtener ubicación moderno para actividades -->
+        <div class="location-container-modern mb-3 flex flex-col items-center">
           <button
             type="button"
             @click="getUbicacionRegistro"
             :disabled="!entradaMarcada || salidaMarcada"
-            class="location-button-circular relative flex flex-col items-center justify-center w-28 h-28 sm:w-32 sm:h-32 font-medium text-white rounded-full shadow-2xl transform transition-all duration-500 hover:scale-110 active:scale-95"
+            class="location-button-modern relative flex items-center justify-center px-4 py-2 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95"
             :class="{
-              'location-button-success-circular': latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada,
+              'location-button-success-modern': latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada,
               'opacity-50 cursor-not-allowed': !entradaMarcada || salidaMarcada
             }"
           >
             <!-- Estado completado -->
-            <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="flex flex-col items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1 text-emerald-800 glass-icon-circular" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span class="text-xs font-medium tracking-normal glass-text-circular text-center leading-tight">Ubicación Obtenida</span>
+              <span class="text-sm font-medium text-white">Ubicación OK</span>
             </div>
             
             <!-- Estado bloqueado -->
-            <div v-else-if="!entradaMarcada || salidaMarcada" class="flex flex-col items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 mb-1 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div v-else-if="!entradaMarcada || salidaMarcada" class="flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m0 0v2m0-2h2m-2 0H9m12-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span class="text-xs font-medium text-gray-400 text-center leading-tight">
+              <span class="text-sm font-medium text-gray-400">
                 <span v-if="!entradaMarcada">Marca Entrada Primero</span>
-                <span v-else>Actividades Bloqueadas</span>
+                <span v-else>Bloqueado</span>
               </span>
             </div>
             
             <!-- Estado inicial -->
-            <div v-else class="flex flex-col items-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-7 w-7 mb-1 text-white location-icon-circular"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                />
+            <div v-else class="flex items-center space-x-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              <span class="text-xs font-medium tracking-normal text-white location-text-circular text-center leading-tight">Obtener Ubicación</span>
+              <span class="text-sm font-medium text-white">Obtener Ubicación</span>
             </div>
           </button>
 
-          <!-- Coordenadas pegadas al botón circular -->
-          <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="coordinates-display-circular">
-            <div class="coordinates-grid-circular">
-              <div class="coordinate-item-circular">
-                <span class="coordinate-label-circular">Lat:</span>
-                <span class="coordinate-value-circular">{{ latitudRegistro }}</span>
-              </div>
-              <div class="coordinate-item-circular">
-                <span class="coordinate-label-circular">Lon:</span>
-                <span class="coordinate-value-circular">{{ longitudRegistro }}</span>
-              </div>
+          <!-- Coordenadas compactas -->
+          <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="coordinates-display-modern mt-2">
+            <div class="text-xs text-gray-600 font-mono text-center">
+              <div>Lat: {{ latitudRegistro }}</div>
+              <div>Lon: {{ longitudRegistro }}</div>
             </div>
           </div>
         </div>
@@ -1085,9 +1057,7 @@ function iniciarSolicitud(tipo) {
   error.value = null;
   mensajeAsistencia.value = '';
   
-  // Obtener ubicación automáticamente al iniciar el proceso de solicitud
-  console.log(`� Iniciando solicitud de ${tipo} de dron, obteniendo ubicación automáticamente...`);
-  getUbicacion();
+  console.log(`📱 Iniciando solicitud de ${tipo} de dron`);
 }
 
 function limpiarDatosSolicitud() {
@@ -4000,5 +3970,171 @@ watch([entradaMarcada, salidaMarcada], () => {
 
 .grid button:not(:disabled):active {
   transform: scale(0.98);
+}
+
+/* Estilos para botones de ubicación modernos y compactos */
+.location-container-modern {
+  position: relative;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.location-button-modern {
+  background: linear-gradient(135deg, 
+    rgba(236, 72, 153, 1) 0%,        /* Pink moderno */
+    rgba(147, 51, 234, 1) 50%,       /* Purple */
+    rgba(79, 70, 229, 1) 100%        /* Indigo */
+  );
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 
+    0 4px 15px 0 rgba(147, 51, 234, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  min-width: 160px;
+}
+
+.location-button-modern:hover:not(:disabled) {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 
+    0 8px 25px 0 rgba(147, 51, 234, 0.5),
+    inset 0 2px 0 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, 
+    rgba(251, 113, 133, 1) 0%,       /* Pink más claro */
+    rgba(168, 85, 247, 1) 50%,       /* Purple más claro */
+    rgba(99, 102, 241, 1) 100%       /* Indigo más claro */
+  );
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.location-button-modern:active:not(:disabled) {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 
+    0 4px 15px 0 rgba(147, 51, 234, 0.3),
+    inset 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* Estado de éxito para botones modernos */
+.location-button-success-modern {
+  background: linear-gradient(135deg, 
+    rgba(34, 197, 94, 1) 0%,         /* Green moderno */
+    rgba(16, 185, 129, 1) 50%,       /* Emerald */
+    rgba(59, 130, 246, 1) 100%       /* Blue */
+  ) !important;
+  border: 2px solid rgba(34, 197, 94, 0.6) !important;
+  box-shadow: 
+    0 4px 15px 0 rgba(34, 197, 94, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+    0 0 0 2px rgba(34, 197, 94, 0.2) !important;
+  animation: success-glow 2s ease-in-out infinite alternate;
+}
+
+.location-button-success-modern:hover:not(:disabled) {
+  background: linear-gradient(135deg, 
+    rgba(22, 163, 74, 1) 0%,
+    rgba(5, 150, 105, 1) 50%,
+    rgba(37, 99, 235, 1) 100%
+  ) !important;
+  box-shadow: 
+    0 8px 25px 0 rgba(34, 197, 94, 0.5),
+    inset 0 2px 0 0 rgba(255, 255, 255, 0.4),
+    0 0 0 3px rgba(34, 197, 94, 0.3) !important;
+}
+
+/* Animación de brillo sutil para el estado de éxito */
+@keyframes success-glow {
+  0% {
+    box-shadow: 
+      0 4px 15px 0 rgba(34, 197, 94, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      0 0 0 2px rgba(34, 197, 94, 0.2);
+  }
+  100% {
+    box-shadow: 
+      0 6px 20px 0 rgba(34, 197, 94, 0.6),
+      inset 0 2px 0 0 rgba(255, 255, 255, 0.4),
+      0 0 0 3px rgba(34, 197, 94, 0.3);
+  }
+}
+
+/* Efecto de brillo para botones modernos */
+.location-button-modern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.location-button-modern:hover::before {
+  left: 100%;
+}
+
+/* Estilos para las coordenadas modernas */
+.coordinates-display-modern {
+  background: linear-gradient(135deg, 
+    rgba(147, 51, 234, 0.1) 0%,
+    rgba(79, 70, 229, 0.15) 100%
+  );
+  border: 1px solid rgba(147, 51, 234, 0.3);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 
+    0 2px 8px 0 rgba(147, 51, 234, 0.2),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  animation: fade-in-up 0.3s ease-out;
+  min-width: 140px;
+}
+
+/* Animación para la aparición de coordenadas */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive para botones modernos */
+@media (max-width: 480px) {
+  .location-button-modern {
+    min-width: 140px;
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .location-button-modern span {
+    font-size: 0.8rem;
+  }
+  
+  .location-button-modern svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .coordinates-display-modern {
+    padding: 0.375rem 0.5rem;
+    min-width: 120px;
+  }
 }
 </style>
