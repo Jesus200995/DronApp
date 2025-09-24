@@ -25,8 +25,7 @@ const API_URLS = {
 };
 
 // URL de la API de producción para notificaciones (según requerimientos)
-// TEMPORAL: Usando servidor local para pruebas de historial
-export const API_URL = "http://localhost:8000";
+export const API_URL = "https://apidron.sembrandodatos.com";
 
 // Función para detectar automáticamente el entorno
 function detectEnvironment() {

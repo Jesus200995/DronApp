@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.responses import StreamingResponse, HTMLResponse
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import sqlite3
 from datetime import datetime
 from pydantic import BaseModel
 from jose import jwt
@@ -35,19 +36,25 @@ app.add_middleware(
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = "cambia-esto-por-una-clave-muy-larga-y-unica-para-admin-2025"
 
-# Conexión a PostgreSQL con manejo robusto
+# Configuración de base de datos
 DB_HOST = "31.97.8.51"
 DB_NAME = "app_dron"
 DB_USER = "jesus"
 DB_PASS = "2025"
 
+# Base de datos local SQLite
+SQLITE_DB_PATH = "db_local/app_dron_local.db"
+
 # Variables globales para la conexión
 conn = None
 cursor = None
+use_sqlite = False
 
 def conectar_base_datos():
     """Función para establecer/reestablecer conexión a la base de datos"""
-    global conn, cursor
+    global conn, cursor, use_sqlite
+    
+    # Primero intentar PostgreSQL (producción)
     try:
         if conn:
             conn.close()
@@ -57,28 +64,47 @@ def conectar_base_datos():
             database=DB_NAME, 
             user=DB_USER, 
             password=DB_PASS,
-            # Configuraciones para mejor manejo de conexiones
-            connect_timeout=10,
-            keepalives=1,
-            keepalives_idle=30,
-            keepalives_interval=5,
-            keepalives_count=5
+            connect_timeout=5  # Timeout más corto para fallar rápido
         )
         cursor = conn.cursor()
-        print("✅ Conexión a la base de datos exitosa")
+        print("✅ Conexión a PostgreSQL exitosa (PRODUCCIÓN)")
+        use_sqlite = False
         return True
+        
     except Exception as e:
-        print(f"❌ Error conectando a la base de datos: {e}")
+        print(f"⚠️  PostgreSQL no disponible: {e}")
+        
+        # Intentar SQLite local como fallback
+        try:
+            if os.path.exists(SQLITE_DB_PATH):
+                conn = sqlite3.connect(SQLITE_DB_PATH)
+                conn.row_factory = sqlite3.Row  # Para diccionarios como PostgreSQL
+                cursor = conn.cursor()
+                print("✅ Conexión a SQLite exitosa (DESARROLLO LOCAL)")
+                use_sqlite = True
+                return True
+            else:
+                print(f"❌ Base de datos SQLite no encontrada en: {SQLITE_DB_PATH}")
+                
+        except Exception as sqlite_e:
+            print(f"❌ Error conectando a SQLite: {sqlite_e}")
+        
         conn = None
         cursor = None
+        use_sqlite = False
         return False
 
 def verificar_conexion_db():
     """Verificar y reestablecer conexión si es necesario"""
-    global conn, cursor
+    global conn, cursor, use_sqlite
     try:
-        if not conn or conn.closed:
-            print("🔄 Reestableciendo conexión cerrada...")
+        if not conn:
+            print("🔄 Estableciendo nueva conexión...")
+            return conectar_base_datos()
+        
+        # Para PostgreSQL, verificar si está cerrada
+        if not use_sqlite and conn.closed:
+            print("🔄 Reestableciendo conexión PostgreSQL cerrada...")
             return conectar_base_datos()
         
         # Test de conexión simple
@@ -87,6 +113,19 @@ def verificar_conexion_db():
         return True
     except (psycopg2.Error, psycopg2.OperationalError, AttributeError):
         print("🔄 Conexión perdida, reestableciendo...")
+        return conectar_base_datos()
+
+def limpiar_transaccion():
+    """Limpiar cualquier transacción pendiente o en estado de error"""
+    global conn, cursor
+    try:
+        if conn and cursor:
+            conn.rollback()
+            print("🔄 Transacción limpiada")
+            return True
+    except Exception as e:
+        print(f"⚠️ Error limpiando transacción: {e}")
+        # Si falla, reconectar completamente
         return conectar_base_datos()
 
 def ejecutar_consulta_segura(query, params=None, fetch_type='all'):
@@ -1007,71 +1046,123 @@ async def obtener_historial_usuario(
     limit: Optional[int] = 100
 ):
     """Obtener historial completo de solicitudes de un usuario específico"""
+    global use_sqlite
+    
     try:
-        print(f"📋 Consultando historial para usuario {usuario_id}")
+        print(f"📋 Consultando historial para usuario {usuario_id} ({'SQLite' if use_sqlite else 'PostgreSQL'})")
         
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
-        
-        # Verificar que el usuario existe
-        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
+        # Verificar conexión
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No se pudo establecer conexión a la base de datos")
+            
+        # Verificar que el usuario existe (query compatible con ambas BD)
+        if use_sqlite:
+            cursor.execute("SELECT id, nombre FROM usuarios WHERE id = ?", (usuario_id,))
+        else:
+            cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
+            
         usuario = cursor.fetchone()
         if not usuario:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
         # Obtener historial completo con datos de la solicitud
-        query = """
-            SELECT 
-                h.id as historial_id,
-                h.solicitud_id,
-                h.accion,
-                h.fecha_hora,
-                h.cambios,
-                h.estado_final,
-                s.tipo,
-                s.observaciones as observaciones_solicitud,
-                s.estado as estado_actual_solicitud,
-                s.comentarios_supervisor,
-                s.fecha_respuesta
-            FROM historial_solicitudes h
-            LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
-            WHERE h.usuario_id = %s
-            ORDER BY h.fecha_hora DESC
-            LIMIT %s
-        """
+        if use_sqlite:
+            query = """
+                SELECT 
+                    h.id as historial_id,
+                    h.solicitud_id,
+                    h.accion,
+                    h.fecha_hora,
+                    h.cambios,
+                    h.estado_final,
+                    s.tipo_actividad,
+                    s.ubicacion,
+                    s.estado as estado_actual_solicitud,
+                    s.observaciones,
+                    s.fecha_solicitud
+                FROM historial_solicitudes h
+                LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
+                WHERE h.usuario_id = ?
+                ORDER BY h.fecha_hora DESC
+                LIMIT ?
+            """
+            cursor.execute(query, (usuario_id, limit))
+        else:
+            query = """
+                SELECT 
+                    h.id as historial_id,
+                    h.solicitud_id,
+                    h.accion,
+                    h.fecha_hora,
+                    h.cambios,
+                    h.estado_final,
+                    s.tipo,
+                    s.observaciones as observaciones_solicitud,
+                    s.estado as estado_actual_solicitud,
+                    s.comentarios_supervisor,
+                    s.fecha_respuesta
+                FROM historial_solicitudes h
+                LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
+                WHERE h.usuario_id = %s
+                ORDER BY h.fecha_hora DESC
+                LIMIT %s
+            """
+            cursor.execute(query, (usuario_id, limit))
         
-        cursor.execute(query, (usuario_id, limit))
         resultados = cursor.fetchall()
+        
+        # Commit para limpiar transacción (solo PostgreSQL)
+        if not use_sqlite:
+            conn.commit()
         
         historial = []
         for row in resultados:
             # Procesar cambios JSON
             cambios_data = {}
-            if row[4]:  # Si hay cambios
-                try:
-                    if isinstance(row[4], str):
-                        cambios_data = json.loads(row[4])
-                    else:
-                        cambios_data = row[4]  # Ya es un dict si es JSONB
-                except json.JSONDecodeError:
-                    print(f"⚠️ Error decodificando JSON de cambios: {row[4]}")
-                    cambios_data = {}
+            cambios_field = row[4] if row[4] else "{}"
             
-            registro = {
-                "historial_id": row[0],
-                "solicitud_id": row[1],
-                "tipo_accion": row[2],  # Mapear accion -> tipo_accion para el frontend
-                "fecha_accion": row[3].isoformat() if row[3] else None,  # Mapear fecha_hora -> fecha_accion
-                "cambios": cambios_data,
-                "estado_final": row[5],
-                "solicitud": {
-                    "tipo": row[6],
-                    "observaciones": row[7],
-                    "estado_actual": row[8],
-                    "comentarios_supervisor": row[9],
-                    "fecha_respuesta": row[10].isoformat() if row[10] else None
+            try:
+                if isinstance(cambios_field, str):
+                    cambios_data = json.loads(cambios_field)
+                else:
+                    cambios_data = cambios_field  # Ya es un dict
+            except (json.JSONDecodeError, TypeError):
+                print(f"⚠️ Error decodificando JSON de cambios: {cambios_field}")
+                cambios_data = {}
+            
+            # Adaptación para diferentes esquemas de BD
+            if use_sqlite:
+                registro = {
+                    "historial_id": row[0],
+                    "solicitud_id": row[1],
+                    "tipo_accion": row[2],
+                    "fecha_accion": row[3],
+                    "cambios": cambios_data,
+                    "estado_final": row[5],
+                    "solicitud": {
+                        "tipo": row[6],  # tipo_actividad en SQLite
+                        "observaciones": row[9],  # observaciones
+                        "estado_actual": row[8],
+                        "ubicacion": row[7],
+                        "fecha_respuesta": row[10]
+                    }
                 }
-            }
+            else:
+                registro = {
+                    "historial_id": row[0],
+                    "solicitud_id": row[1],
+                    "tipo_accion": row[2],
+                    "fecha_accion": row[3].isoformat() if row[3] else None,
+                    "cambios": cambios_data,
+                    "estado_final": row[5],
+                    "solicitud": {
+                        "tipo": row[6],
+                        "observaciones": row[7],
+                        "estado_actual": row[8],
+                        "comentarios_supervisor": row[9],
+                        "fecha_respuesta": row[10].isoformat() if row[10] else None
+                    }
+                }
             historial.append(registro)
         
         print(f"✅ Encontrados {len(historial)} registros de historial para usuario {usuario_id}")
@@ -1081,42 +1172,17 @@ async def obtener_historial_usuario(
             print("📋 Primeros registros encontrados:")
             for i, reg in enumerate(historial[:3]):
                 print(f"  {i+1}. Solicitud {reg['solicitud_id']}, Acción: {reg['tipo_accion']}, Estado: {reg['estado_final']}")
-        else:
-            print("📋 No hay registros de historial para este usuario")
-            
-            # Verificar si existen solicitudes para este usuario
-            cursor.execute("SELECT COUNT(*) FROM solicitudes_dron WHERE usuario_id = %s", (usuario_id,))
-            count_solicitudes = cursor.fetchone()[0]
-            print(f"📊 Usuario tiene {count_solicitudes} solicitudes totales")
-            
-            # Verificar si existe la tabla historial_solicitudes
-            cursor.execute("""
-                SELECT EXISTS (
-                    SELECT FROM information_schema.tables 
-                    WHERE table_schema = 'public' 
-                    AND table_name = 'historial_solicitudes'
-                )
-            """)
-            tabla_existe = cursor.fetchone()[0]
-            print(f"📊 Tabla historial_solicitudes existe: {tabla_existe}")
         
-        return {
-            "historial": historial,
-            "usuario": {
-                "id": usuario[0],
-                "nombre": usuario[1]
-            },
-            "total": len(historial)
-        }
+        return historial
         
     except HTTPException:
-        raise
+        raise  # Re-lanzar HTTPExceptions sin modificar
     except Exception as e:
-        print(f"❌ Error al obtener historial: {e}")
-        print(f"❌ Tipo de error: {type(e).__name__}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error al obtener historial: {str(e)}")
+        print(f"❌ Error obteniendo historial para usuario {usuario_id}: {e}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Error interno del servidor: {str(e)}"
+        )
 
 @app.delete("/solicitudes/{solicitud_id}")
 async def eliminar_solicitud(
@@ -1301,6 +1367,27 @@ async def editar_solicitud(
 
 # ==================== MAIN ====================
 
+# ==================== INICIALIZACIÓN DEL SERVIDOR ====================
+
+@app.on_event("startup")
+async def startup_event():
+    """Conectar a la base de datos al iniciar el servidor"""
+    print("🚀 Iniciando servidor FastAPI...")
+    if conectar_base_datos():
+        print(f"🎯 Servidor listo - usando {'SQLite (desarrollo)' if use_sqlite else 'PostgreSQL (producción)'}")
+    else:
+        print("⚠️ Servidor iniciado SIN base de datos - algunos endpoints fallarán")
+
 if __name__ == "__main__":
     import uvicorn
+    # Conectar a la base de datos antes de iniciar el servidor
+    print("=" * 60)
+    print("🏁 INICIANDO SERVIDOR DE DESARROLLO")
+    print("=" * 60)
+    conectar_base_datos()
+    print(f"🎯 Base de datos: {'SQLite (desarrollo)' if use_sqlite else 'PostgreSQL (producción)'}")
+    print("🌐 Servidor en: http://localhost:8000")
+    print("📚 Documentación: http://localhost:8000/docs")
+    print("📋 Test historial: http://localhost:8000/historial/1")
+    print("=" * 60)
     uvicorn.run(app, host="0.0.0.0", port=8000)

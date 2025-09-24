@@ -257,7 +257,13 @@ async function cargarHistorial() {
         error.value = 'No se encontraron registros de historial para este usuario.';
         historial.value = []; // Asegurar que esté vacío
       } else if (err.response.status === 500) {
-        error.value = `Error del servidor: ${err.response.data?.detail || 'Problema interno del servidor'}`;
+        // Error del servidor - mostrar mensaje específico para base de datos
+        const detalle = err.response.data?.detail || 'Problema interno del servidor';
+        if (detalle.includes('current transaction is aborted') || detalle.includes('connection')) {
+          error.value = 'La base de datos no está disponible temporalmente. Por favor, contacta al administrador del sistema.';
+        } else {
+          error.value = `Error del servidor: ${detalle}`;
+        }
       } else {
         error.value = `Error ${err.response.status}: ${err.response.data?.detail || err.response.statusText}`;
       }
