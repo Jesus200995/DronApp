@@ -238,7 +238,10 @@ try:
             accion VARCHAR(20) NOT NULL CHECK (accion IN ('creacion','edicion','eliminacion','revision')),
             fecha_hora TIMESTAMPTZ NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Mexico_City'),
             cambios JSONB,
-            estado_final VARCHAR(20) CHECK (estado_final IN ('pendiente','aprobado','rechazado'))
+            estado_final VARCHAR(20) CHECK (estado_final IN ('pendiente','aprobado','rechazado')),
+            tipo VARCHAR(20) NOT NULL DEFAULT 'entrada' CHECK (tipo IN ('entrada','salida')),
+            foto_equipo TEXT,
+            observaciones TEXT
         )
     """, fetch_type='none')
     
@@ -766,9 +769,9 @@ async def crear_solicitud_dron(
         
         cursor.execute("""
             INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (solicitud_id, usuario_id, 'creacion', fecha_hora, json.dumps(cambios_creacion), 'pendiente'))
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (solicitud_id, usuario_id, 'creacion', fecha_hora, json.dumps(cambios_creacion), 'pendiente', tipo, ruta_archivo, observaciones))
         
         conn.commit()
         
@@ -947,12 +950,19 @@ async def actualizar_solicitud(
         cursor.execute("SELECT usuario_id FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
         usuario_solicitante = cursor.fetchone()[0]
         
+        # Obtener datos de la solicitud original para incluir en historial
+        cursor.execute("SELECT tipo, foto_equipo, observaciones FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        solicitud_data = cursor.fetchone()
+        
         cursor.execute("""
             INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (solicitud_id, usuario_solicitante, 'revision', datetime.now(CDMX_TZ), 
-              json.dumps(cambios_revision), nuevo_estado))
+              json.dumps(cambios_revision), nuevo_estado, 
+              solicitud_data[0] if solicitud_data else 'entrada',
+              solicitud_data[1] if solicitud_data else None,
+              solicitud_data[2] if solicitud_data else None))
         
         conn.commit()
         
@@ -1118,8 +1128,7 @@ async def obtener_historial_usuario(
         
         print(f"✅ Usuario encontrado: ID={usuario_result[0]}, Nombre={usuario_result[1] if len(usuario_result) > 1 else 'N/A'}")
         
-        # Obtener historial completo con datos de la solicitud
-        # Simplificamos la consulta para evitar problemas
+        # Obtener historial completo con datos de la solicitud y los nuevos campos
         query = """
             SELECT 
                 h.id as historial_id,
@@ -1128,9 +1137,12 @@ async def obtener_historial_usuario(
                 h.fecha_hora,
                 h.cambios,
                 h.estado_final,
-                s.tipo,
-                s.observaciones,
-                s.estado
+                h.tipo as historial_tipo,
+                h.foto_equipo as historial_foto_equipo,
+                h.observaciones as historial_observaciones,
+                s.tipo as solicitud_tipo,
+                s.observaciones as solicitud_observaciones,
+                s.estado as solicitud_estado
             FROM historial_solicitudes h
             LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
             WHERE h.usuario_id = %s
@@ -1176,7 +1188,7 @@ async def obtener_historial_usuario(
                         print(f"⚠️ Error decodificando JSON de cambios: {e}")
                         cambios_data = {}
                 
-                # Crear el registro del historial
+                # Crear el registro del historial con los nuevos campos
                 registro = {
                     "historial_id": row[0],
                     "solicitud_id": row[1],
@@ -1184,10 +1196,13 @@ async def obtener_historial_usuario(
                     "fecha_accion": row[3].isoformat() if row[3] and hasattr(row[3], 'isoformat') else str(row[3]) if row[3] else None,
                     "cambios": cambios_data,
                     "estado_final": row[5],
+                    "tipo": row[6] if row[6] else (row[9] if row[9] else "entrada"),  # historial_tipo o solicitud_tipo
+                    "foto_equipo": row[7] if row[7] else None,  # historial_foto_equipo
+                    "observaciones": row[8] if row[8] else (row[10] if row[10] else ""),  # historial_observaciones o solicitud_observaciones
                     "solicitud": {
-                        "tipo": row[6] if row[6] else "desconocido",
-                        "observaciones": row[7] if row[7] else "",
-                        "estado_actual": row[8] if row[8] else row[5]
+                        "tipo": row[9] if row[9] else (row[6] if row[6] else "entrada"),  # solicitud_tipo o historial_tipo
+                        "observaciones": row[10] if row[10] else (row[8] if row[8] else ""),  # solicitud_observaciones o historial_observaciones
+                        "estado_actual": row[11] if row[11] else row[5]  # solicitud_estado o estado_final
                     }
                 }
                 historial.append(registro)
@@ -1267,10 +1282,10 @@ async def eliminar_solicitud(
         
         cursor.execute("""
             INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, observaciones)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """, (solicitud_id, usuario_id, 'eliminacion', datetime.now(CDMX_TZ), 
-              json.dumps(cambios_eliminacion), solicitud[1]))
+              json.dumps(cambios_eliminacion), solicitud[1], solicitud[2], solicitud[4]))
         
         # Eliminar la solicitud (el historial se mantiene por la FK)
         cursor.execute("DELETE FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
@@ -1371,12 +1386,19 @@ async def editar_solicitud(
         # Registrar en historial la edición
         cambios_realizados["motivo"] = "Edición por técnico"
         
+        # Obtener datos actuales de la solicitud para el historial
+        cursor.execute("SELECT tipo, foto_equipo, observaciones FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        solicitud_actualizada = cursor.fetchone()
+        
         cursor.execute("""
             INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
-            VALUES (%s, %s, %s, %s, %s, %s)
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
         """, (solicitud_id, datos.usuario_id, 'edicion', datetime.now(CDMX_TZ), 
-              json.dumps(cambios_realizados), 'pendiente'))
+              json.dumps(cambios_realizados), 'pendiente',
+              solicitud_actualizada[0] if solicitud_actualizada else 'entrada',
+              solicitud_actualizada[1] if solicitud_actualizada else None,
+              solicitud_actualizada[2] if solicitud_actualizada else None))
         
         conn.commit()
         

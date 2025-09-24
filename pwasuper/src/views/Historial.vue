@@ -79,12 +79,20 @@
                   <div class="flex justify-between items-start mb-2">
                     <div>
                       <h3 class="text-lg font-bold text-gray-800">Solicitud #{{ item.solicitud_id }}</h3>
-                      <p :class="[
-                        'text-sm font-semibold',
-                        getActionColor(item.tipo_accion).text
-                      ]">
-                        {{ getActionLabel(item.tipo_accion) }}
-                      </p>
+                      <div class="flex items-center gap-2 mb-1">
+                        <p :class="[
+                          'text-sm font-semibold',
+                          getActionColor(item.tipo_accion).text
+                        ]">
+                          {{ getActionLabel(item.tipo_accion) }}
+                        </p>
+                        <span :class="[
+                          'px-2 py-0.5 rounded-full text-xs font-medium',
+                          getTipoColor(item.tipo || item.solicitud?.tipo)
+                        ]">
+                          {{ formatTipo(item.tipo || item.solicitud?.tipo) }}
+                        </span>
+                      </div>
                     </div>
                     <div class="text-right">
                       <p class="text-sm font-semibold text-gray-700">{{ formatFechaCompleta(item.fecha_accion) }}</p>
@@ -102,6 +110,35 @@
                       ]">
                         {{ formatStatus(item.estado_final) }}
                       </span>
+                    </div>
+                    
+                    <!-- Foto del equipo si existe -->
+                    <div v-if="item.foto_equipo" class="mb-2">
+                      <div class="flex items-center gap-2 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700">Foto del equipo:</span>
+                      </div>
+                      <div class="relative inline-block">
+                        <img :src="getPhotoUrl(item.foto_equipo)" 
+                             @click="verImagen(getPhotoUrl(item.foto_equipo))"
+                             class="w-16 h-16 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform shadow-md" 
+                             :alt="`Foto equipo solicitud ${item.solicitud_id}`" 
+                             loading="lazy" />
+                        <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity rounded-lg pointer-events-none"></div>
+                      </div>
+                    </div>
+                    
+                    <!-- Observaciones específicas del historial -->
+                    <div v-if="item.observaciones" class="mb-2">
+                      <div class="flex items-center gap-2 mb-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span class="text-sm font-medium text-gray-700">Observaciones:</span>
+                      </div>
+                      <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-2">{{ item.observaciones }}</p>
                     </div>
                     
                     <div v-if="item.cambios" class="bg-gray-50 rounded-lg p-3">
@@ -387,6 +424,18 @@ function getStatusColor(estado) {
   }
 }
 
+// Función para obtener colores según el tipo de solicitud
+function getTipoColor(tipo) {
+  switch (tipo?.toLowerCase()) {
+    case 'entrada':
+      return 'bg-green-100 text-green-800 border border-green-200';
+    case 'salida':
+      return 'bg-blue-100 text-blue-800 border border-blue-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border border-gray-200';
+  }
+}
+
 // Función para formatear el estado
 function formatStatus(estado) {
   if (!estado) return 'Sin estado';
@@ -399,6 +448,38 @@ function formatStatus(estado) {
   };
   
   return estados[estado.toLowerCase()] || estado;
+}
+
+// Función para formatear el tipo de solicitud
+function formatTipo(tipo) {
+  if (!tipo) return 'N/A';
+  
+  const tipos = {
+    'entrada': 'Entrada',
+    'salida': 'Salida'
+  };
+  
+  return tipos[tipo.toLowerCase()] || tipo;
+}
+
+// Función para obtener URL de foto
+function getPhotoUrl(fotoPath) {
+  if (!fotoPath) return '';
+  
+  // Si es una ruta completa, usar directamente
+  if (fotoPath.startsWith('http')) {
+    return fotoPath;
+  }
+  
+  // Si es solo un nombre de archivo, construir URL con API
+  if (fotoPath.includes('/') || fotoPath.includes('\\')) {
+    // Es una ruta de archivo, extraer solo el nombre
+    const fileName = fotoPath.split(/[/\\]/).pop();
+    return `${API_URL}/fotos/${fileName}`;
+  } else {
+    // Es solo un nombre de archivo
+    return `${API_URL}/fotos/${fotoPath}`;
+  }
 }
 
 // Función para formatear los cambios JSON
