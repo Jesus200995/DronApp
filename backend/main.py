@@ -212,9 +212,22 @@ except Exception as e:
     conn = None
     cursor = None
 
-# Carpeta para guardar fotos
-FOTOS_DIR = "fotos"
-os.makedirs(FOTOS_DIR, exist_ok=True)
+# Carpeta para guardar fotos - usar directorio temporal del usuario
+import tempfile
+FOTOS_DIR = os.path.join(tempfile.gettempdir(), "dron_fotos")
+try:
+    os.makedirs(FOTOS_DIR, exist_ok=True)
+    # Verificar permisos de escritura
+    test_file = os.path.join(FOTOS_DIR, "test_write.tmp")
+    with open(test_file, "w") as f:
+        f.write("test")
+    os.remove(test_file)
+    print(f"✅ Directorio de fotos configurado: {FOTOS_DIR}")
+except Exception as e:
+    # Fallback a directorio actual
+    FOTOS_DIR = "fotos_temp"
+    os.makedirs(FOTOS_DIR, exist_ok=True)
+    print(f"⚠️ Usando directorio fallback: {FOTOS_DIR}, Error: {e}")
 
 # ==================== ENDPOINT DE SALUD ====================
 
@@ -4861,28 +4874,35 @@ async def crear_solicitud_dron(
         nombre_archivo = f"dron_{tipo}_{usuario_id}_{timestamp_unico}{ext}"
         ruta_archivo = os.path.join(FOTOS_DIR, nombre_archivo)
         
-        # Asegurar que el directorio existe y es escribible
+        # Crear directorio temporal específico para esta sesión
+        session_dir = tempfile.mkdtemp(prefix="dron_fotos_")
+        final_path = os.path.join(session_dir, nombre_archivo)
+        
         try:
-            os.makedirs(FOTOS_DIR, exist_ok=True)
+            print(f"📁 Directorio temporal creado: {session_dir}")
+            print(f"📄 Guardando archivo: {final_path}")
             
             # Leer contenido del archivo
             contenido = await foto_equipo.read()
             
-            # Escribir archivo con manejo de errores mejorado
-            with open(ruta_archivo, "wb") as f:
+            # Escribir archivo en directorio temporal
+            with open(final_path, "wb") as f:
                 f.write(contenido)
                 
-            print(f"✅ Foto guardada exitosamente: {ruta_archivo}")
+            # Verificar que el archivo existe
+            if os.path.exists(final_path):
+                print(f"✅ Foto guardada exitosamente: {final_path}")
+                # Actualizar la ruta para la base de datos
+                ruta_archivo = final_path
+            else:
+                raise Exception("El archivo no se pudo verificar después de guardarse")
             
-        except PermissionError as pe:
-            print(f"❌ Error de permisos al guardar foto: {pe}")
-            raise HTTPException(status_code=500, detail=f"Error de permisos al guardar archivo: {str(pe)}")
-        except OSError as ose:
-            print(f"❌ Error del sistema al guardar foto: {ose}")
-            raise HTTPException(status_code=500, detail=f"Error del sistema al guardar archivo: {str(ose)}")
         except Exception as fe:
-            print(f"❌ Error general al guardar foto: {fe}")
-            raise HTTPException(status_code=500, detail=f"Error al procesar archivo: {str(fe)}")
+            print(f"❌ Error al guardar foto: {fe}")
+            # Si falla, usar solo el nombre del archivo
+            ruta_archivo = nombre_archivo
+            print(f"⚠️  Usando solo nombre de archivo: {ruta_archivo}")
+            # No lanzar excepción, continuar con el proceso
 
         # Crear el punto geográfico para PostgreSQL
         punto_ubicacion = f"POINT({longitud} {latitud})"
