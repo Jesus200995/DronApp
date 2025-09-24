@@ -12,7 +12,7 @@
       <div v-if="!modoAsistencia" class="glass-card">
         <div class="text-center mb-3">
           <h1 class="text-xl font-bold text-gray-800 mb-2 modern-title">Panel de Registro</h1>
-          <div class="blue-line mx-auto mb-2"></div>
+          <div class="green-line mx-auto mb-2"></div>
           <p class="text-xs text-gray-500 mb-3">Selecciona el tipo de registro que deseas realizar</p>
           
           <!-- Botones de navegación entre secciones -->
@@ -70,14 +70,6 @@
           </svg>
         </button>
         
-        <div class="text-center mb-2">
-          <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title">🚁 Gestión de Drones</h2>
-          <div class="blue-line mx-auto mb-1"></div>
-          <p class="text-xs text-gray-500">
-            {{ modoAsistencia ? 'Completa la solicitud de ' + (tipoAsistencia === 'entrada' ? 'ENTRADA' : 'SALIDA') + ' del dron' : 'Crear solicitudes de entrada o salida del equipo' }}
-          </p>
-        </div>
-
         <!-- Botones de Solicitudes de Drones (solo visibles cuando no está en modo solicitud) -->
         <div v-if="!modoAsistencia" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
           <!-- Botón Entrada de Dron -->
@@ -208,9 +200,9 @@
         <!-- Formulario de Asistencia (solo visible en modo asistencia) -->
         <div v-if="modoAsistencia" class="mt-6 border-t border-gray-200 pt-6">
           <div class="text-center mb-4">
-            <h2 class="text-lg font-bold text-gray-800 mb-2"
-                :class="tipoAsistencia === 'entrada' ? 'entrada-title' : 'salida-title'">
-              {{ tipoAsistencia === 'entrada' ? 'ENTRADA' : 'SALIDA' }}
+            <h2 class="text-base font-normal mb-2"
+                :class="tipoAsistencia === 'entrada' ? 'text-green-600' : 'text-red-600'">
+              {{ tipoAsistencia === 'entrada' ? 'SOLICITUD ENTRADA' : 'SOLICITUD SALIDA' }}
             </h2>
             <p class="text-xs text-gray-500">Completa todos los datos requeridos</p>
           </div>
@@ -218,19 +210,21 @@
           <!-- Info del usuario -->
           <div class="bg-primary/10 rounded-lg p-2 mb-6">
             <div class="flex items-center">
-              <div class="relative w-8 h-8 bg-gradient-to-br from-green-700 via-green-800 to-green-900 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-2">
-                <!-- Efecto vidrio en círculo de iniciales -->
+              <div class="relative w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-2">
+                <!-- Efecto vidrio en círculo -->
                 <div class="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/10 pointer-events-none rounded-full"></div>
                 
                 <!-- Reflejo superior del círculo -->
                 <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-full"></div>
                 
-                <!-- Iniciales con efecto mejorado -->
-                <span class="text-white text-xs font-bold drop-shadow-lg filter brightness-110 relative z-10">{{ getUserInitials }}</span>
+                <!-- Ícono de usuario -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white drop-shadow-lg relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </div>
               <div>
-                <p class="font-medium text-primary text-sm">{{ user.nombre_completo }}</p>
-                <p class="text-xs text-gray-500">{{ user.cargo }}</p>
+                <p class="font-bold text-green-600 text-sm">{{ user.cargo || 'Sin cargo asignado' }}</p>
+                <p class="font-normal text-gray-600 text-xs">{{ user.nombre_completo || 'Usuario' }}</p>
               </div>
             </div>
           </div>
@@ -240,8 +234,7 @@
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">1. Ubicación</h3>
               <div v-if="latitud && longitud" 
-                class="modern-status-badge completed-badge"
-                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+                class="modern-status-badge completed-badge entrada-theme"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -301,8 +294,7 @@
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">2. Foto</h3>
               <div v-if="foto" 
-                class="modern-status-badge completed-badge"
-                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+                class="modern-status-badge completed-badge entrada-theme"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -338,8 +330,7 @@
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">3. Checklist del Equipo</h3>
               <div v-if="Object.keys(checklist).length > 0" 
-                class="modern-status-badge completed-badge"
-                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+                class="modern-status-badge completed-badge entrada-theme"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -414,8 +405,7 @@
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">4. Observaciones</h3>
               <div v-if="descripcion.trim()" 
-                class="modern-status-badge completed-badge"
-                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+                class="modern-status-badge completed-badge entrada-theme"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
@@ -551,19 +541,21 @@
       <!-- Info del usuario -->
       <div class="bg-primary/10 rounded-lg p-2 mb-6">
         <div class="flex items-center">
-          <div class="relative w-8 h-8 bg-gradient-to-br from-green-700 via-green-800 to-green-900 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-2">
-            <!-- Efecto vidrio en círculo de iniciales -->
+          <div class="relative w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-2">
+            <!-- Efecto vidrio en círculo -->
             <div class="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/10 pointer-events-none rounded-full"></div>
             
             <!-- Reflejo superior del círculo -->
             <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-full"></div>
             
-            <!-- Iniciales con efecto mejorado -->
-            <span class="text-white text-xs font-bold drop-shadow-lg filter brightness-110 relative z-10">{{ getUserInitials }}</span>
+            <!-- Ícono de usuario -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white drop-shadow-lg relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
           </div>
           <div>
-            <p class="font-medium text-primary text-sm">{{ user.nombre_completo }}</p>
-            <p class="text-xs text-gray-500">{{ user.cargo }}</p>
+            <p class="font-bold text-green-600 text-sm">{{ user.cargo || 'Sin cargo asignado' }}</p>
+            <p class="font-normal text-gray-600 text-xs">{{ user.nombre_completo || 'Usuario' }}</p>
           </div>
         </div>
       </div>
@@ -1027,7 +1019,17 @@ const user = computed(() => {
     router.push("/login");
     return {};
   }
-  return JSON.parse(storedUser);
+  const userData = JSON.parse(storedUser);
+  
+  // 🔧 DEBUGGING: Verificar qué datos tenemos del usuario
+  console.log('🔍 Datos del usuario desde localStorage:', userData);
+  
+  // 🔧 Mapear los campos del backend a los esperados por el frontend
+  return {
+    ...userData,
+    nombre_completo: userData.nombre_completo || userData.nombre || 'Usuario sin nombre',
+    cargo: userData.cargo || userData.puesto || 'Sin cargo asignado'
+  };
 });
 
 // Determinar si el mensaje es de tipo información (sin conexión) o error
