@@ -607,7 +607,17 @@ function getChecklistFromChanges(cambiosStr) {
       checklist = cambios.checklist_nuevo;
     }
     
-    // Si encontramos un checklist, normalizarlo para incluir todos los campos
+    // Verificar si es el nuevo formato con instantánea (v2.0+)
+    if (checklist && checklist.version && checklist.elementos) {
+      // Nuevo formato: extraer solo los valores de los elementos
+      const checklistSimple = {};
+      for (const [campo, datos] of Object.entries(checklist.elementos)) {
+        checklistSimple[campo] = datos.valor;
+      }
+      return normalizeChecklist(checklistSimple);
+    }
+    
+    // Formato antiguo: normalizar directamente
     if (checklist) {
       return normalizeChecklist(checklist);
     }
@@ -615,6 +625,38 @@ function getChecklistFromChanges(cambiosStr) {
     return null;
   } catch (e) {
     console.error('Error al extraer checklist:', e);
+    return null;
+  }
+}
+
+// Función para obtener información de la versión del checklist
+function getChecklistVersion(cambiosStr) {
+  try {
+    if (!cambiosStr) return null;
+    
+    let cambios = typeof cambiosStr === 'string' ? JSON.parse(cambiosStr) : cambiosStr;
+    let checklist = cambios.checklist || cambios.checklist_nuevo;
+    
+    if (checklist && checklist.version && checklist.fecha_version) {
+      return {
+        version: checklist.version,
+        fecha: checklist.fecha_version,
+        totalElementos: checklist.metadatos?.total_elementos || 0,
+        completados: checklist.metadatos?.elementos_marcados || 0,
+        porcentaje: checklist.metadatos?.porcentaje_completado || 0
+      };
+    }
+    
+    // Para registros antiguos, retornar información básica
+    return {
+      version: 'v1.0',
+      fecha: 'Legacy',
+      totalElementos: 4,
+      completados: 0,
+      porcentaje: 0
+    };
+  } catch (e) {
+    console.error('Error al obtener versión del checklist:', e);
     return null;
   }
 }

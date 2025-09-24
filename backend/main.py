@@ -286,15 +286,113 @@ except Exception as e:
 # Define el timezone de CDMX
 CDMX_TZ = pytz.timezone("America/Mexico_City")
 
-def normalizar_checklist(checklist_data):
+def crear_instantanea_checklist(checklist_data):
     """
-    Normaliza un checklist para incluir todos los campos obligatorios.
+    Crea una instantánea completa del checklist con metadatos para preservar 
+    la estructura exacta en el momento del registro.
     
     Args:
-        checklist_data (dict): Datos del checklist que pueden estar incompletos
+        checklist_data (dict): Datos del checklist enviados por el usuario
         
     Returns:
-        dict: Checklist completo con todos los campos
+        dict: Instantánea completa del checklist con metadatos
+    """
+    # Definición actual del checklist con etiquetas legibles
+    definicion_actual = {
+        "inspeccion_visual_drone": {
+            "label": "INSPECCIÓN VISUAL DRONE",
+            "descripcion": "Chequear ajustes de tornillería, tren de aterrizaje, gimbal y accesorios.",
+            "orden": 1
+        },
+        "inspeccion_visual_helices": {
+            "label": "INSPECCIÓN VISUAL HÉLICES",
+            "descripcion": "Chequear que no estén fisuradas, rajadas y la rosca o traba esté sana.",
+            "orden": 2
+        },
+        "inspeccion_baterias": {
+            "label": "INSPECCIÓN BATERÍAS",
+            "descripcion": "Chequear carga y estado físico de todas las baterías a utilizar.",
+            "orden": 3
+        },
+        "inspeccion_motores": {
+            "label": "INSPECCIÓN DE MOTORES", 
+            "descripcion": "Girar los motores y notar su libre giro o que no suenen raro o trabados.",
+            "orden": 4
+        },
+        "control_remoto": {
+            "label": "CONTROL REMOTO",
+            "descripcion": "Chequear posición de comandos y encender, verificar carga del control.",
+            "orden": 5
+        },
+        "inspeccion_movil_tablet": {
+            "label": "INSPECCIÓN MÓVIL o TABLET",
+            "descripcion": "Cargar la batería completa del celular o tableta a utilizar para la aplicación.",
+            "orden": 6
+        },
+        "tarjeta_memoria": {
+            "label": "TARJETA DE MEMORIA",
+            "descripcion": "Verificar esté insertada la tarjeta de memoria en la cámara o equipo drone. Verificar contenido o formato.",
+            "orden": 7
+        },
+        "inspeccion_imu": {
+            "label": "INSPECCIÓN IMU",
+            "descripcion": "Chequear los parámetros de la IMU que estén dentro de los valores normales, de lo contrario calibrar.",
+            "orden": 8
+        },
+        "mapas_offline": {
+            "label": "MAPAS OFFLINE",
+            "descripcion": "Bajar los mapas de la zona a realizar el vuelo antes de ir al destino si en este no hay internet.",
+            "orden": 9
+        },
+        "proteccion_gimbal": {
+            "label": "PROTECCIÓN GIMBAL",
+            "descripcion": "Verificar la protección del gimbal para el transporte.",
+            "orden": 10
+        },
+        "analisis_clima": {
+            "label": "ANÁLISIS DEL CLIMA",
+            "descripcion": "Analizar factores climáticos, tormentas solares, vientos, etc.",
+            "orden": 11
+        }
+    }
+    
+    # Crear la instantánea con la estructura completa
+    instantanea = {
+        "version": "v2.0",  # Versión del checklist
+        "fecha_version": "2025-09-24",  # Fecha de esta versión del checklist
+        "elementos": {},
+        "metadatos": {
+            "total_elementos": len(definicion_actual),
+            "elementos_marcados": 0,
+            "porcentaje_completado": 0
+        }
+    }
+    
+    elementos_marcados = 0
+    
+    # Procesar cada elemento del checklist
+    for campo, definicion in definicion_actual.items():
+        valor = checklist_data.get(campo, False)
+        if valor:
+            elementos_marcados += 1
+            
+        instantanea["elementos"][campo] = {
+            "valor": valor,
+            "label": definicion["label"],
+            "descripcion": definicion["descripcion"],
+            "orden": definicion["orden"]
+        }
+    
+    # Actualizar metadatos
+    instantanea["metadatos"]["elementos_marcados"] = elementos_marcados
+    instantanea["metadatos"]["porcentaje_completado"] = round((elementos_marcados / len(definicion_actual)) * 100, 1)
+    
+    return instantanea
+
+def normalizar_checklist(checklist_data):
+    """
+    Función de compatibilidad que mantiene la estructura simple para procesos que la requieren.
+    Para nuevos registros, usar crear_instantanea_checklist() en su lugar.
     """
     campos_obligatorios = [
         "inspeccion_visual_drone",
@@ -739,11 +837,11 @@ async def crear_solicitud_dron(
         # Usar timestamp personalizado si viene de offline, sino usar tiempo actual
         fecha, fecha_hora, timestamp_for_filename = obtener_fecha_hora_cdmx(timestamp_offline)
 
-        # Validar JSON del checklist y normalizar con todos los campos
+        # Validar JSON del checklist y crear instantánea completa
         try:
             checklist_json = json.loads(checklist)
-            checklist_completo = normalizar_checklist(checklist_json)
-            print(f"📋 Checklist normalizado: {checklist_completo}")
+            instantanea_checklist = crear_instantanea_checklist(checklist_json)
+            print(f"📋 Instantánea de checklist creada: v{instantanea_checklist['version']} - {instantanea_checklist['metadatos']['elementos_marcados']}/{instantanea_checklist['metadatos']['total_elementos']} elementos completados")
             
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
@@ -787,7 +885,7 @@ async def crear_solicitud_dron(
             (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
             VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
             RETURNING id
-        """, (tipo, usuario_id, fecha_hora, ruta_archivo, json.dumps(checklist_completo), 
+        """, (tipo, usuario_id, fecha_hora, ruta_archivo, json.dumps(instantanea_checklist), 
               observaciones, punto_ubicacion, 'pendiente'))
         
         solicitud_id = cursor.fetchone()[0]
@@ -795,7 +893,7 @@ async def crear_solicitud_dron(
         # Registrar en historial la creación de la solicitud
         cambios_creacion = {
             "tipo": tipo,
-            "checklist": checklist_completo,
+            "checklist": instantanea_checklist,
             "observaciones": observaciones,
             "foto_equipo": nombre_archivo
         }
@@ -1395,14 +1493,14 @@ async def editar_solicitud(
         if datos.checklist:
             try:
                 checklist_json = json.loads(datos.checklist)
-                checklist_completo = normalizar_checklist(checklist_json)
+                instantanea_checklist = crear_instantanea_checklist(checklist_json)
                 
                 campos_actualizar.append("checklist = %s")
-                valores.append(json.dumps(checklist_completo))
+                valores.append(json.dumps(instantanea_checklist))
                 cambios_realizados["checklist_anterior"] = json.loads(solicitud[5]) if solicitud[5] else {}
-                cambios_realizados["checklist_nuevo"] = checklist_completo
+                cambios_realizados["checklist_nuevo"] = instantanea_checklist
                 
-                print(f"📋 Checklist editado y normalizado: {checklist_completo}")
+                print(f"📋 Instantánea de checklist actualizada: v{instantanea_checklist['version']} - {instantanea_checklist['metadatos']['elementos_marcados']}/{instantanea_checklist['metadatos']['total_elementos']} elementos completados")
                 
             except json.JSONDecodeError:
                 raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
