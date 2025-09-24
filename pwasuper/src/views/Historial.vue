@@ -137,11 +137,11 @@
                         </svg>
                         <span class="text-sm font-semibold text-gray-800">Checklist del Equipo</span>
                       </div>
-                      <div class="checklist-container bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div class="checklist-container bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                           <div v-for="(valor, campo) in getChecklistFromChanges(item.cambios)" :key="campo" 
                                :class="[
-                                 'checklist-item flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
+                                 'checklist-item flex items-center gap-2 p-2 rounded-lg border transition-all duration-200',
                                  valor ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                                ]">
                             <div :class="[
@@ -157,9 +157,9 @@
                             </div>
                             <div class="flex-1 min-w-0">
                               <div class="flex items-center justify-between">
-                                <span class="text-sm font-semibold text-gray-800 truncate">{{ formatChecklistItem(campo) }}</span>
+                                <span class="text-xs font-semibold text-gray-800 truncate">{{ formatChecklistItem(campo) }}</span>
                                 <span :class="[
-                                  'text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ml-2',
+                                  'text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ml-2',
                                   valor ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 border border-gray-200'
                                 ]">
                                   {{ valor ? '✓ Sí' : '✗ No' }}
@@ -569,7 +569,19 @@ function getPhotoUrl(fotoPath) {
 
 // Función para normalizar checklist con todos los campos
 function normalizeChecklist(checklist) {
-  const camposObligatorios = ['bateria', 'helices', 'gps', 'camara'];
+  const camposObligatorios = [
+    'inspeccion_visual_drone',
+    'inspeccion_visual_helices', 
+    'inspeccion_baterias',
+    'inspeccion_motores',
+    'control_remoto',
+    'inspeccion_movil_tablet',
+    'tarjeta_memoria',
+    'inspeccion_imu',
+    'mapas_offline',
+    'proteccion_gimbal',
+    'analisis_clima'
+  ];
   const checklistCompleto = {};
   
   camposObligatorios.forEach(campo => {
@@ -627,18 +639,20 @@ function hasOtherChanges(cambiosStr) {
 // Función para formatear elementos del checklist
 function formatChecklistItem(item) {
   const traducciones = {
-    'bateria': 'Batería',
-    'helices': 'Hélices', 
-    'camara': 'Cámara',
-    'gps': 'GPS',
-    'sensores': 'Sensores',
-    'memoria': 'Memoria SD',
-    'estructura': 'Estructura',
-    'motor': 'Motores',
-    'control': 'Control remoto'
+    'inspeccion_visual_drone': 'Inspección Visual Drone',
+    'inspeccion_visual_helices': 'Inspección Visual Hélices',
+    'inspeccion_baterias': 'Inspección Baterías',
+    'inspeccion_motores': 'Inspección de Motores',
+    'control_remoto': 'Control Remoto',
+    'inspeccion_movil_tablet': 'Inspección Móvil/Tablet',
+    'tarjeta_memoria': 'Tarjeta de Memoria',
+    'inspeccion_imu': 'Inspección IMU',
+    'mapas_offline': 'Mapas Offline',
+    'proteccion_gimbal': 'Protección Gimbal',
+    'analisis_clima': 'Análisis del Clima'
   };
   
-  return traducciones[item.toLowerCase()] || item.charAt(0).toUpperCase() + item.slice(1);
+  return traducciones[item.toLowerCase()] || item.charAt(0).toUpperCase() + item.slice(1).replace(/_/g, ' ');
 }
 
 // Función para obtener resumen del checklist

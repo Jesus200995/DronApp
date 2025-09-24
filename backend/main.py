@@ -296,7 +296,19 @@ def normalizar_checklist(checklist_data):
     Returns:
         dict: Checklist completo con todos los campos
     """
-    campos_obligatorios = ["bateria", "helices", "gps", "camara"]
+    campos_obligatorios = [
+        "inspeccion_visual_drone",
+        "inspeccion_visual_helices", 
+        "inspeccion_baterias",
+        "inspeccion_motores",
+        "control_remoto",
+        "inspeccion_movil_tablet",
+        "tarjeta_memoria",
+        "inspeccion_imu",
+        "mapas_offline",
+        "proteccion_gimbal",
+        "analisis_clima"
+    ]
     checklist_completo = {}
     
     for campo in campos_obligatorios:

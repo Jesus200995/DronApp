@@ -339,63 +339,192 @@
               </div>
             </div>
             
-            <div class="space-y-3 p-3 bg-gray-50 rounded-lg">
-              <!-- Batería -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <span class="text-sm font-medium text-gray-700">Batería</span>
+            <div class="grid grid-cols-1 gap-2 p-3 bg-gray-50 rounded-lg max-h-80 overflow-y-auto">
+              <!-- 1. Inspección Visual Drone -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">1.</span>
+                      <span class="text-xs font-medium text-gray-700">INSPECCIÓN VISUAL DRONE</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Chequear ajustes de tornillería, tren de aterrizaje, gimbal y accesorios.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.inspeccion_visual_drone" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+                  </label>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" v-model="checklist.bateria" class="sr-only peer">
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
-                </label>
               </div>
 
-              <!-- Hélices -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <span class="text-sm font-medium text-gray-700">Hélices</span>
+              <!-- 2. Inspección Visual Hélices -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">2.</span>
+                      <span class="text-xs font-medium text-gray-700">INSPECCIÓN VISUAL HÉLICES</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Chequear que no estén fisuradas, rajadas y la rosca o traba esté sana.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.inspeccion_visual_helices" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                  </label>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" v-model="checklist.helices" class="sr-only peer">
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
               </div>
 
-              <!-- GPS -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span class="text-sm font-medium text-gray-700">GPS</span>
+              <!-- 3. Inspección Baterías -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">3.</span>
+                      <span class="text-xs font-medium text-gray-700">INSPECCIÓN BATERÍAS</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Chequear carga y estado físico de todas las baterías a utilizar.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.inspeccion_baterias" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+                  </label>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" v-model="checklist.gps" class="sr-only peer">
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
-                </label>
               </div>
 
-              <!-- Cámara -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span class="text-sm font-medium text-gray-700">Cámara</span>
+              <!-- 4. Inspección de Motores -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">4.</span>
+                      <span class="text-xs font-medium text-gray-700">INSPECCIÓN DE MOTORES</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Girar los motores y notar su libre giro o que no suenen raro o trabados.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.inspeccion_motores" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                  </label>
                 </div>
-                <label class="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" v-model="checklist.camara" class="sr-only peer">
-                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
-                </label>
+              </div>
+
+              <!-- 5. Control Remoto -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">5.</span>
+                      <span class="text-xs font-medium text-gray-700">CONTROL REMOTO</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Chequear posición de comandos y encender, verificar carga del control.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.control_remoto" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 6. Inspección Móvil o Tablet -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">6.</span>
+                      <span class="text-xs font-medium text-gray-700">INSPECCIÓN MÓVIL o TABLET</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Cargar la batería completa del celular o tableta a utilizar para la aplicación.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.inspeccion_movil_tablet" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 7. Tarjeta de Memoria -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">7.</span>
+                      <span class="text-xs font-medium text-gray-700">TARJETA DE MEMORIA</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Verificar esté insertada la tarjeta de memoria en la cámara o equipo drone. Verificar contenido o formato.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.tarjeta_memoria" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 8. Inspección IMU -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">8.</span>
+                      <span class="text-xs font-medium text-gray-700">INSPECCIÓN IMU</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Chequear los parámetros de la IMU que estén dentro de los valores normales, de lo contrario calibrar.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.inspeccion_imu" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 9. Mapas Offline -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">9.</span>
+                      <span class="text-xs font-medium text-gray-700">MAPAS OFFLINE</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Bajar los mapas de la zona a realizar el vuelo antes de ir al destino si en este no hay internet.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.mapas_offline" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 10. Protección Gimbal -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">10.</span>
+                      <span class="text-xs font-medium text-gray-700">PROTECCIÓN GIMBAL</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Verificar la protección del gimbal para el transporte.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.proteccion_gimbal" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- 11. Análisis del Clima -->
+              <div class="bg-white p-2 rounded border">
+                <div class="flex items-center justify-between">
+                  <div class="flex-1">
+                    <div class="flex items-center mb-1">
+                      <span class="text-xs font-semibold text-gray-800 mr-2">11.</span>
+                      <span class="text-xs font-medium text-gray-700">ANÁLISIS DEL CLIMA</span>
+                    </div>
+                    <p class="text-xs text-gray-600">Analizar factores climáticos, tormentas solares, vientos, etc.</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                    <input type="checkbox" v-model="checklist.analisis_clima" class="sr-only peer">
+                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-600"></div>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
