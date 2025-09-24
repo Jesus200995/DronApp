@@ -64,8 +64,10 @@
           </svg>
         </button>
         
-        <!-- Botones de Solicitudes de Drones (solo visibles cuando no está en modo solicitud) -->
-        <div v-if="!modoAsistencia" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
+        <!-- Botones de Solicitudes de Equipos (solo visibles cuando no está en modo solicitud) -->
+        <div v-if="!modoAsistencia" class="space-y-4 mb-2">
+          <!-- Fila de botones principales: Solicitar y Entregar (siempre lado a lado) -->
+          <div class="grid grid-cols-2 gap-3">
           <!-- Botón Solicitar Dron -->
           <button
             @click="iniciarSolicitud('entrada')"
@@ -111,10 +113,9 @@
               <span class="text-xs opacity-80 font-medium">Finalizar operación</span>
             </div>
           </button>
-        </div>
-
-        <!-- Botón de Historial -->
-        <div v-if="!modoAsistencia" class="mb-2">
+          </div>
+          
+          <!-- Botón de Historial (en su propia fila debajo) -->
           <button
             @click="$router.push('/historial')"
             class="modern-drone-button historial-button group relative overflow-hidden rounded-2xl min-h-[90px] w-full flex flex-col items-center justify-center p-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
