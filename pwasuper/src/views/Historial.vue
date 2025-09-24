@@ -8,7 +8,7 @@
     </div>
     
     <div class="absolute inset-0 overflow-y-auto pt-16 sm:pt-20 pb-4">
-      <div class="page-container relative z-10 px-2 sm:px-3 md:px-4 lg:px-6 xl:px-8 py-3 sm:py-4 lg:py-5 min-h-full max-w-full">
+      <div class="page-container relative z-10 px-1 sm:px-2 md:px-3 lg:px-4 xl:px-5 py-3 sm:py-4 lg:py-5 min-h-full max-w-full">
     <!-- Historial de solicitudes de drones -->
     <div class="glass-card mb-2">
       <!-- Título centralizado para Historial de Drones -->
@@ -38,10 +38,10 @@
 
       <!-- Lista de historial de solicitudes -->
       <div v-if="historial.length > 0">
-        <div class="mb-4 text-sm text-gray-600">
+        <div class="mb-3 text-sm text-gray-600">
           Total de registros: <span class="font-semibold text-blue-700">{{ historial.length }}</span>
         </div>
-        <div class="space-y-3">
+        <div class="space-y-2">
           <div v-for="(item, index) in historial" :key="index" 
                :class="[
                  'historial-card relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg',
@@ -61,25 +61,8 @@
               getActionColor(item.tipo_accion).border
             ]"></div>
             
-            <div class="relative z-10 p-4">
-              <div class="flex gap-4">
-                <!-- Icono de acción -->
-                <div :class="[
-                  'w-10 h-10 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 hover:scale-105',
-                  getActionColor(item.tipo_accion).bg
-                ]">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <!-- Icono de dron para creación -->
-                    <path v-if="item.tipo_accion === 'creacion'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    <!-- Icono de check para revisión -->
-                    <path v-else-if="item.tipo_accion === 'revision'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    <!-- Icono de información para otros -->
-                    <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                
-                <div class="flex-1 min-w-0">
-                  <!-- Header con información principal -->
+            <div class="relative z-10 p-3">
+                <!-- Header con información principal -->
                   <div class="flex justify-between items-start mb-2">
                     <div>
                       <h3 class="text-lg font-bold text-gray-800">Solicitud #{{ item.solicitud_id }}</h3>
@@ -138,28 +121,28 @@
                         <span class="text-sm font-semibold text-gray-800">Checklist del Equipo</span>
                       </div>
                       <div class="checklist-container bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-3">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
                           <div v-for="(valor, campo) in getChecklistFromChanges(item.cambios)" :key="campo" 
                                :class="[
-                                 'checklist-item flex items-center gap-2 p-2 rounded-lg border transition-all duration-200',
+                                 'checklist-item flex items-center gap-2 p-1.5 rounded-lg border transition-all duration-200',
                                  valor ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                                ]">
                             <div :class="[
-                              'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200',
+                              'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200',
                               valor ? 'bg-green-500 border-green-500 shadow-lg shadow-green-200' : 'bg-gray-200 border-gray-300'
                             ]">
-                              <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                              <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                               </svg>
-                              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </div>
                             <div class="flex-1 min-w-0">
                               <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold text-gray-800 truncate">{{ formatChecklistItem(campo) }}</span>
+                                <span class="text-xs font-medium text-gray-800 truncate">{{ formatChecklistItem(campo) }}</span>
                                 <span :class="[
-                                  'text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ml-2',
+                                  'text-xs px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ml-1',
                                   valor ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 border border-gray-200'
                                 ]">
                                   {{ valor ? '✓ Sí' : '✗ No' }}
@@ -170,17 +153,17 @@
                         </div>
                         
                         <!-- Resumen del checklist -->
-                        <div class="mt-4 pt-3 border-t border-gray-200">
+                        <div class="mt-3 pt-2 border-t border-gray-200">
                           <div class="flex items-center justify-between text-sm">
                             <div class="flex items-center gap-2">
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 2 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                               </svg>
                               <span class="font-medium text-gray-600">Resumen:</span>
                             </div>
                             <div class="flex items-center gap-4">
                               <span :class="[
-                                'text-xs px-3 py-1 rounded-full font-semibold bg-gray-700 text-white border border-gray-600'
+                                'text-xs px-2 py-1 rounded-full font-semibold bg-gray-700 text-white border border-gray-600'
                               ]">
                                 <span class="font-bold">{{ getChecklistSummary(getChecklistFromChanges(item.cambios)).completed }}/{{ getChecklistSummary(getChecklistFromChanges(item.cambios)).total }}</span> Completado
                               </span>
@@ -234,7 +217,6 @@
                       Eliminar
                     </button>
                   </div>
-                </div>
               </div>
             </div>
           </div>
@@ -272,7 +254,6 @@
           <img :src="imagenSeleccionada" class="w-full h-auto object-contain max-h-[85vh]" alt="Imagen ampliada" />
         </div>
       </div>
-    </div>
   </div>
 </template>
 
