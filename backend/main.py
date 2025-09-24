@@ -1045,12 +1045,24 @@ async def obtener_historial_usuario(
         
         historial = []
         for row in resultados:
+            # Procesar cambios JSON
+            cambios_data = {}
+            if row[4]:  # Si hay cambios
+                try:
+                    if isinstance(row[4], str):
+                        cambios_data = json.loads(row[4])
+                    else:
+                        cambios_data = row[4]  # Ya es un dict si es JSONB
+                except json.JSONDecodeError:
+                    print(f"⚠️ Error decodificando JSON de cambios: {row[4]}")
+                    cambios_data = {}
+            
             registro = {
                 "historial_id": row[0],
                 "solicitud_id": row[1],
-                "accion": row[2],
-                "fecha_hora": row[3].isoformat() if row[3] else None,
-                "cambios": json.loads(row[4]) if row[4] else {},
+                "tipo_accion": row[2],  # Mapear accion -> tipo_accion para el frontend
+                "fecha_accion": row[3].isoformat() if row[3] else None,  # Mapear fecha_hora -> fecha_accion
+                "cambios": cambios_data,
                 "estado_final": row[5],
                 "solicitud": {
                     "tipo": row[6],
@@ -1062,7 +1074,31 @@ async def obtener_historial_usuario(
             }
             historial.append(registro)
         
-        print(f"✅ Encontrados {len(historial)} registros de historial")
+        print(f"✅ Encontrados {len(historial)} registros de historial para usuario {usuario_id}")
+        
+        # Debug: imprimir los primeros registros
+        if historial:
+            print("📋 Primeros registros encontrados:")
+            for i, reg in enumerate(historial[:3]):
+                print(f"  {i+1}. Solicitud {reg['solicitud_id']}, Acción: {reg['tipo_accion']}, Estado: {reg['estado_final']}")
+        else:
+            print("📋 No hay registros de historial para este usuario")
+            
+            # Verificar si existen solicitudes para este usuario
+            cursor.execute("SELECT COUNT(*) FROM solicitudes_dron WHERE usuario_id = %s", (usuario_id,))
+            count_solicitudes = cursor.fetchone()[0]
+            print(f"📊 Usuario tiene {count_solicitudes} solicitudes totales")
+            
+            # Verificar si existe la tabla historial_solicitudes
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'historial_solicitudes'
+                )
+            """)
+            tabla_existe = cursor.fetchone()[0]
+            print(f"📊 Tabla historial_solicitudes existe: {tabla_existe}")
         
         return {
             "historial": historial,
@@ -1077,6 +1113,9 @@ async def obtener_historial_usuario(
         raise
     except Exception as e:
         print(f"❌ Error al obtener historial: {e}")
+        print(f"❌ Tipo de error: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error al obtener historial: {str(e)}")
 
 @app.delete("/solicitudes/{solicitud_id}")
