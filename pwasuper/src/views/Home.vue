@@ -66,44 +66,50 @@
         
         <!-- Botones de Solicitudes de Drones (solo visibles cuando no está en modo solicitud) -->
         <div v-if="!modoAsistencia" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-          <!-- Botón Entrada de Dron -->
+          <!-- Botón Solicitar Dron -->
           <button
             @click="iniciarSolicitud('entrada')"
             :disabled="enviandoAsistencia"
-            class="relative overflow-hidden rounded-xl transition-all duration-300 transform min-h-[80px] w-full flex flex-col items-center justify-center p-2 text-white shadow-lg hover:scale-105 active:scale-95"
-            style="background-color: rgb(34, 197, 94); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);"
-            @mouseover="$event.target.style.backgroundColor = 'rgb(22, 163, 74)'"
-            @mouseout="$event.target.style.backgroundColor = 'rgb(34, 197, 94)'"
+            class="modern-drone-button entrada-button group relative overflow-hidden rounded-2xl min-h-[90px] w-full flex flex-col items-center justify-center p-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
           >
-            <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
-              <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
+            <!-- Efecto de resplandor animado -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            
+            <!-- Elementos decorativos flotantes -->
+            <div class="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-pulse"></div>
+            <div class="absolute bottom-3 left-3 w-1.5 h-1.5 bg-white/20 rounded-full animate-ping" style="animation-delay: 0.5s;"></div>
+            
+            <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white/20 flex items-center justify-center rounded-2xl backdrop-blur-sm">
+              <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-current"></div>
             </div>
             
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-            </svg>
-            <span class="font-semibold text-sm">Entrada de Dron</span>
-            <span class="text-xs opacity-90">Solicitar entrada del equipo</span>
+            <div class="relative z-10 flex flex-col items-center space-y-1">
+              <span class="font-bold text-base tracking-wide">Solicitar Equipo</span>
+              <span class="text-xs opacity-80 font-medium">Iniciar operación</span>
+            </div>
           </button>
 
-          <!-- Botón Salida de Dron -->
+          <!-- Botón Entrega de Dron -->
           <button
             @click="iniciarSolicitud('salida')"
             :disabled="enviandoAsistencia"
-            class="relative overflow-hidden rounded-xl transition-all duration-300 transform min-h-[80px] w-full flex flex-col items-center justify-center p-2 text-white shadow-lg hover:scale-105 active:scale-95"
-            style="background-color: rgb(239, 68, 68); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
-            @mouseover="$event.target.style.backgroundColor = 'rgb(220, 38, 38)'"
-            @mouseout="$event.target.style.backgroundColor = 'rgb(239, 68, 68)'"
+            class="modern-drone-button salida-button group relative overflow-hidden rounded-2xl min-h-[90px] w-full flex flex-col items-center justify-center p-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
           >
-            <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
-              <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
+            <!-- Efecto de resplandor animado -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+            
+            <!-- Elementos decorativos flotantes -->
+            <div class="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-pulse" style="animation-delay: 0.3s;"></div>
+            <div class="absolute bottom-3 left-3 w-1.5 h-1.5 bg-white/20 rounded-full animate-ping" style="animation-delay: 0.8s;"></div>
+            
+            <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white/20 flex items-center justify-center rounded-2xl backdrop-blur-sm">
+              <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-current"></div>
             </div>
             
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span class="font-semibold text-sm">Salida de Dron</span>
-            <span class="text-xs opacity-90">Solicitar salida del equipo</span>
+            <div class="relative z-10 flex flex-col items-center space-y-1">
+              <span class="font-bold text-base tracking-wide">Entregar Equipo</span>
+              <span class="text-xs opacity-80 font-medium">Finalizar operación</span>
+            </div>
           </button>
         </div>
 
@@ -152,7 +158,7 @@
               <!-- Mensaje principal -->
               <div class="text-center space-y-1">
                 <h3 class="text-2xs font-semibold text-white leading-tight" style="font-size: 0.65rem;">
-                  Crea solicitudes para entrada y salida de drones
+                  Gestiona operaciones de solicitud y entrega de equipos
                 </h3>
                 <p class="text-2xs text-blue-200 font-medium" style="font-size: 0.6rem;">
                   Cada solicitud será enviada al supervisor para aprobación
@@ -196,7 +202,7 @@
           <div class="text-center mb-4">
             <h2 class="text-base font-normal mb-2"
                 :class="tipoAsistencia === 'entrada' ? 'text-green-600' : 'text-red-600'">
-              {{ tipoAsistencia === 'entrada' ? 'SOLICITUD ENTRADA' : 'SOLICITUD SALIDA' }}
+              {{ tipoAsistencia === 'entrada' ? 'SOLICITAR EQUIPO' : 'ENTREGAR EQUIPO' }}
             </h2>
             <p class="text-xs text-gray-500">Completa todos los datos requeridos</p>
           </div>
@@ -541,7 +547,7 @@
               v-model="descripcion"
               rows="2"
               class="glass-input w-full text-xs"
-              :placeholder="'Observaciones sobre el equipo para ' + (tipoAsistencia === 'entrada' ? 'entrada' : 'salida') + '...'"
+              :placeholder="'Observaciones sobre el equipo para ' + (tipoAsistencia === 'entrada' ? 'solicitud' : 'entrega') + '...'"
             ></textarea>
           </div>
 
@@ -593,11 +599,11 @@
     <!-- Modal de confirmación para entrada -->
     <ConfirmModal 
       :show="showEntradaModal" 
-      title="Registrar Entrada"
+      title="Confirmar Solicitud de Equipo"
       :message="entradaModalMessage"
       type="confirm"
       :showConfirm="true"
-      confirmText="Registrar Entrada"
+      confirmText="Solicitar Equipo"
       cancelText="Cancelar"
       @close="closeEntradaModal"
       @confirm="confirmarEntradaModal"
@@ -606,11 +612,11 @@
     <!-- Modal de confirmación para salida -->
     <ConfirmModal 
       :show="showSalidaModal" 
-      title="Registrar Salida"
+      title="Confirmar Entrega de Equipo"
       :message="salidaModalMessage"
       type="error"
       :showConfirm="true"
-      confirmText="Registrar Salida"
+      confirmText="Entregar Equipo"
       cancelText="Cancelar"
       @close="closeSalidaModal"
       @confirm="confirmarSalidaModal"
@@ -4459,5 +4465,73 @@ watch([entradaMarcada, salidaMarcada], () => {
     width: 0.625rem;
     height: 0.625rem;
   }
+}
+
+/* Estilos para botones modernos de drones */
+.modern-drone-button {
+  position: relative;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.entrada-button {
+  background: linear-gradient(135deg, 
+    rgba(16, 185, 129, 0.9) 0%,
+    rgba(5, 150, 105, 0.95) 50%,
+    rgba(4, 120, 87, 1) 100%
+  );
+  box-shadow: 
+    0 8px 32px rgba(16, 185, 129, 0.3),
+    0 4px 16px rgba(16, 185, 129, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.entrada-button:hover {
+  background: linear-gradient(135deg, 
+    rgba(5, 150, 105, 0.95) 0%,
+    rgba(4, 120, 87, 1) 50%,
+    rgba(6, 95, 70, 1) 100%
+  );
+  box-shadow: 
+    0 12px 40px rgba(16, 185, 129, 0.4),
+    0 6px 20px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.salida-button {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.9) 0%,
+    rgba(220, 38, 38, 0.95) 50%,
+    rgba(185, 28, 28, 1) 100%
+  );
+  box-shadow: 
+    0 8px 32px rgba(239, 68, 68, 0.3),
+    0 4px 16px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.salida-button:hover {
+  background: linear-gradient(135deg, 
+    rgba(220, 38, 38, 0.95) 0%,
+    rgba(185, 28, 28, 1) 50%,
+    rgba(153, 27, 27, 1) 100%
+  );
+  box-shadow: 
+    0 12px 40px rgba(239, 68, 68, 0.4),
+    0 6px 20px rgba(239, 68, 68, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.modern-drone-button:disabled {
+  opacity: 0.6;
+  transform: none !important;
+  cursor: not-allowed;
+}
+
+.modern-drone-button:disabled:hover {
+  transform: none !important;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.1);
 }
 </style>
