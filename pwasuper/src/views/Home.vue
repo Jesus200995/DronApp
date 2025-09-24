@@ -11,8 +11,8 @@
       <!-- Botones de selección de sección -->
       <div v-if="!modoAsistencia" class="glass-card">
         <div class="text-center mb-3">
-          <h1 class="text-xl font-bold text-gray-800 mb-2 modern-title">Panel de Registro</h1>
-          <div class="green-line mx-auto mb-2"></div>
+          <h1 class="text-lg font-bold text-blue-900 mb-2 modern-title">Panel de Registro</h1>
+          <div class="blue-line mx-auto mb-2"></div>
           <p class="text-xs text-gray-500 mb-3">Selecciona el tipo de registro que deseas realizar</p>
           
           <!-- Botones de navegación entre secciones -->
@@ -20,17 +20,14 @@
             <button
               @click="seccionActiva = 'asistencia'"
               :class="[
-                'section-nav-button flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all duration-300',
+                'section-nav-button flex-1 px-4 py-2 text-xs font-medium rounded-full transition-all duration-300',
                 seccionActiva === 'asistencia' 
                   ? 'active text-white shadow-lg' 
                   : 'text-gray-600 hover:bg-white/30'
               ]"
               :style="seccionActiva === 'asistencia' ? 'background-color: rgb(30, 144, 255);' : ''"
             >
-              <div class="flex items-center justify-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+              <div class="flex items-center justify-center">
                 <span>Gestión Drones</span>
               </div>
             </button>
@@ -38,17 +35,14 @@
             <button
               @click="seccionActiva = 'actividades'"
               :class="[
-                'section-nav-button flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 relative',
+                'section-nav-button flex-1 px-4 py-2 text-xs font-medium rounded-full transition-all duration-300 relative',
                 seccionActiva === 'actividades'
                   ? 'active text-white shadow-lg' 
                   : 'text-gray-600 hover:bg-white/30'
               ]"
               :style="seccionActiva === 'actividades' ? 'background-color: rgb(147, 51, 234);' : ''"
             >
-              <div class="flex items-center justify-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+              <div class="flex items-center justify-center">
                 <span>Actividades</span>
               </div>
             </button>
@@ -3175,17 +3169,17 @@ watch([entradaMarcada, salidaMarcada], () => {
 .modern-title {
   background: linear-gradient(
     90deg, 
-    #166534 0%, 
-    #15803d 25%, 
-    #86efac 50%, 
-    #15803d 75%, 
-    #166534 100%
+    #1e3a8a 0%, 
+    #1d4ed8 25%, 
+    #60a5fa 50%, 
+    #1d4ed8 75%, 
+    #1e3a8a 100%
   );
   background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: gradient-wave 3s ease-in-out infinite;
+  animation: blue-gradient-wave 3s ease-in-out infinite;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
   letter-spacing: -0.015em;
   font-weight: 500;
@@ -3200,7 +3194,24 @@ watch([entradaMarcada, salidaMarcada], () => {
   animation: line-glow 2s ease-in-out infinite alternate;
 }
 
+.blue-line {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #1e3a8a, #3b82f6, #1e3a8a);
+  border-radius: 1px;
+  animation: blue-line-glow 2s ease-in-out infinite alternate;
+}
+
 @keyframes gradient-wave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes blue-gradient-wave {
   0%, 100% {
     background-position: 0% 50%;
   }
@@ -3216,6 +3227,17 @@ watch([entradaMarcada, salidaMarcada], () => {
   }
   100% {
     box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+    opacity: 1;
+  }
+}
+
+@keyframes blue-line-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+    opacity: 0.8;
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
     opacity: 1;
   }
 }
