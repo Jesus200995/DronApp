@@ -122,19 +122,27 @@ def ejecutar_consulta_segura(query, params=None, fetch_type='all'):
         except psycopg2.Error as e:
             print(f"❌ Error de PostgreSQL en intento {intento}: {e}")
             
-            # Hacer rollback para limpiar la transacción corrupta
+            # Limpiar transacción abortada de forma más agresiva
             try:
                 if conn and not conn.closed:
                     conn.rollback()
                     print("🔄 Rollback ejecutado para limpiar transacción")
+                    
+                    # Verificar el estado de la transacción
+                    if conn.get_transaction_status() == psycopg2.extensions.TRANSACTION_STATUS_INERROR:
+                        print("⚠️ Transacción en estado de error, reestableciendo conexión...")
+                        conn.close()
+                        conectar_base_datos()
+                        
             except Exception as rollback_error:
-                print(f"⚠️ Error en rollback: {rollback_error}")
+                print(f"⚠️ Error en rollback, forzando reconexión: {rollback_error}")
+                conectar_base_datos()
             
             if intento == max_reintentos:
                 raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
             
-            # Intentar reconectar para el siguiente intento
-            conectar_base_datos()
+            # Pequeña pausa antes del siguiente intento
+            time.sleep(0.5)
             
         except Exception as e:
             print(f"❌ Error general en intento {intento}: {e}")
