@@ -44,11 +44,12 @@
         <div class="space-y-3">
           <div v-for="(item, index) in historial" :key="index" 
                :class="[
-                 'relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg',
+                 'historial-card relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg',
                  'backdrop-filter backdrop-blur-xl border shadow-md',
                  'bg-gradient-to-br from-white/80 via-blue-50/40 to-indigo-100/60 border-blue-200/60 hover:shadow-blue-200/50'
                ]"
-               style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+               style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);"
+               :style="{ 'animation-delay': `${index * 0.1}s` }">
             
             <!-- Efectos decorativos -->
             <div class="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-60 rounded-xl pointer-events-none"></div>
@@ -100,16 +101,27 @@
                     </div>
                   </div>
                   
-                  <!-- Estado y cambios -->
-                  <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm text-gray-600">Estado final:</span>
-                      <span :class="[
-                        'px-2 py-1 rounded-full text-xs font-semibold',
-                        getStatusColor(item.estado_final)
-                      ]">
-                        {{ formatStatus(item.estado_final) }}
-                      </span>
+                  <!-- Estado y información adicional -->
+                  <div class="space-y-3">
+                    <!-- Estados y tipo en una línea -->
+                    <div class="flex items-center gap-3 flex-wrap">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-600">Estado:</span>
+                        <span :class="[
+                          'px-2 py-1 rounded-full text-xs font-semibold',
+                          getStatusColor(item.estado_final)
+                        ]">
+                          {{ formatStatus(item.estado_final) }}
+                        </span>
+                      </div>
+                      
+                      <!-- Separador visual -->
+                      <div class="visual-separator w-1 h-4 rounded-full"></div>
+                      
+                      <!-- Resumen de la acción -->
+                      <div class="text-sm text-gray-600">
+                        <span class="font-medium">{{ getActionSummary(item.tipo_accion, item.cambios) }}</span>
+                      </div>
                     </div>
                     
                     <!-- Foto del equipo si existe -->
@@ -123,10 +135,14 @@
                       <div class="relative inline-block">
                         <img :src="getPhotoUrl(item.foto_equipo)" 
                              @click="verImagen(getPhotoUrl(item.foto_equipo))"
-                             class="w-16 h-16 object-cover rounded-lg cursor-pointer hover:scale-110 transition-transform shadow-md" 
+                             class="equipment-photo w-16 h-16 object-cover rounded-lg cursor-pointer" 
                              :alt="`Foto equipo solicitud ${item.solicitud_id}`" 
                              loading="lazy" />
-                        <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity rounded-lg pointer-events-none"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black from-opacity-20 to-transparent opacity-0 hover:opacity-100 transition-opacity rounded-lg pointer-events-none flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
                     
@@ -141,9 +157,95 @@
                       <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-2">{{ item.observaciones }}</p>
                     </div>
                     
-                    <div v-if="item.cambios" class="bg-gray-50 rounded-lg p-3">
-                      <h4 class="text-sm font-semibold text-gray-700 mb-2">Detalles del cambio:</h4>
-                      <pre class="text-xs text-gray-600 whitespace-pre-wrap">{{ formatCambios(item.cambios) }}</pre>
+                    <!-- Checklist visual completo -->
+                    <div v-if="getChecklistFromChanges(item.cambios)" class="mb-3">
+                      <div class="flex items-center gap-2 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" />
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-800">Checklist del Equipo</span>
+                      </div>
+                      <div class="checklist-container bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div v-for="(valor, campo) in getChecklistFromChanges(item.cambios)" :key="campo" 
+                               :class="[
+                                 'checklist-item flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
+                                 valor ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-red-50 border-red-200 hover:bg-red-100'
+                               ]">
+                            <div :class="[
+                              'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200',
+                              valor ? 'bg-green-500 border-green-500 shadow-lg shadow-green-200' : 'bg-red-100 border-red-300'
+                            ]">
+                              <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                              </svg>
+                              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold text-gray-800 truncate">{{ formatChecklistItem(campo) }}</span>
+                                <span :class="[
+                                  'text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ml-2',
+                                  valor ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'
+                                ]">
+                                  {{ valor ? '✓ OK' : '✗ Falta' }}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Resumen del checklist -->
+                        <div class="mt-4 pt-3 border-t border-gray-200">
+                          <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center gap-2">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                              </svg>
+                              <span class="font-medium text-gray-600">Resumen:</span>
+                            </div>
+                            <div class="flex items-center gap-4">
+                              <span :class="[
+                                'text-xs px-3 py-1 rounded-full font-semibold',
+                                getChecklistSummary(getChecklistFromChanges(item.cambios)).allComplete 
+                                  ? 'bg-green-100 text-green-800 border border-green-200' 
+                                  : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                              ]">
+                                {{ getChecklistSummary(getChecklistFromChanges(item.cambios)).completed }}/{{ getChecklistSummary(getChecklistFromChanges(item.cambios)).total }} Completado
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- Información adicional mejorada -->
+                    <div v-if="item.cambios && hasOtherChanges(item.cambios)" class="mt-3">
+                      <div class="flex items-center gap-2 mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-sm font-semibold text-gray-800">Información Adicional</span>
+                      </div>
+                      <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4">
+                        <div class="space-y-3">
+                          <div v-for="(detalle, index) in formatCambiosEstructurados(item.cambios)" :key="index"
+                               class="flex items-start gap-3 p-3 bg-white bg-opacity-70 rounded-lg border border-white shadow-sm">
+                            <div class="text-lg flex-shrink-0">{{ detalle.icono || '📄' }}</div>
+                            <div class="min-w-0 flex-1">
+                              <div class="font-semibold text-gray-800 text-sm mb-1">{{ detalle.etiqueta }}</div>
+                              <div :class="[
+                                'text-sm break-words',
+                                detalle.tipo === 'comentario' ? 'text-blue-700 italic' :
+                                detalle.tipo === 'estado' ? 'font-medium text-green-700' :
+                                'text-gray-700'
+                              ]">{{ detalle.valor }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
@@ -462,6 +564,22 @@ function formatTipo(tipo) {
   return tipos[tipo.toLowerCase()] || tipo;
 }
 
+// Función para formatear etiquetas de acciones
+function formatActionLabel(accion) {
+  if (!accion) return 'Acción desconocida';
+  
+  const acciones = {
+    'creacion': 'Creación de solicitud',
+    'revision': 'Revisión por supervisor', 
+    'edicion': 'Edición de solicitud',
+    'eliminacion': 'Eliminación de solicitud',
+    'aprobar': 'Aprobación',
+    'rechazar': 'Rechazo'
+  };
+  
+  return acciones[accion.toLowerCase()] || accion.charAt(0).toUpperCase() + accion.slice(1);
+}
+
 // Función para obtener URL de foto
 function getPhotoUrl(fotoPath) {
   if (!fotoPath) return '';
@@ -482,38 +600,235 @@ function getPhotoUrl(fotoPath) {
   }
 }
 
-// Función para formatear los cambios JSON
-function formatCambios(cambiosStr) {
+// Función para normalizar checklist con todos los campos
+function normalizeChecklist(checklist) {
+  const camposObligatorios = ['bateria', 'helices', 'gps', 'camara'];
+  const checklistCompleto = {};
+  
+  camposObligatorios.forEach(campo => {
+    checklistCompleto[campo] = checklist && checklist.hasOwnProperty(campo) ? checklist[campo] : false;
+  });
+  
+  return checklistCompleto;
+}
+
+// Función para extraer el checklist de los cambios
+function getChecklistFromChanges(cambiosStr) {
   try {
-    if (!cambiosStr) return 'Sin cambios registrados';
+    if (!cambiosStr) return null;
     
-    // Si es una cadena, intentar parsearla
     let cambios = typeof cambiosStr === 'string' ? JSON.parse(cambiosStr) : cambiosStr;
     
-    // Formatear de manera legible
-    let resultado = '';
+    // Buscar checklist en diferentes posibles ubicaciones
+    let checklist = null;
     
+    if (cambios.checklist) {
+      checklist = cambios.checklist;
+    } else if (cambios.checklist_nuevo) {
+      checklist = cambios.checklist_nuevo;
+    }
+    
+    // Si encontramos un checklist, normalizarlo para incluir todos los campos
+    if (checklist) {
+      return normalizeChecklist(checklist);
+    }
+    
+    return null;
+  } catch (e) {
+    console.error('Error al extraer checklist:', e);
+    return null;
+  }
+}
+
+// Función para verificar si hay otros cambios además del checklist
+function hasOtherChanges(cambiosStr) {
+  try {
+    if (!cambiosStr) return false;
+    
+    let cambios = typeof cambiosStr === 'string' ? JSON.parse(cambiosStr) : cambiosStr;
+    
+    // Verificar si hay campos que no sean checklist
+    const camposChecklist = ['checklist', 'checklist_nuevo', 'checklist_anterior'];
+    const otrosCampos = Object.keys(cambios).filter(key => !camposChecklist.includes(key));
+    
+    return otrosCampos.length > 0;
+  } catch (e) {
+    return true; // Si hay error, mostrar los cambios
+  }
+}
+
+// Función para formatear elementos del checklist
+function formatChecklistItem(item) {
+  const traducciones = {
+    'bateria': 'Batería',
+    'helices': 'Hélices', 
+    'camara': 'Cámara',
+    'gps': 'GPS',
+    'sensores': 'Sensores',
+    'memoria': 'Memoria SD',
+    'estructura': 'Estructura',
+    'motor': 'Motores',
+    'control': 'Control remoto'
+  };
+  
+  return traducciones[item.toLowerCase()] || item.charAt(0).toUpperCase() + item.slice(1);
+}
+
+// Función para obtener resumen del checklist
+function getChecklistSummary(checklist) {
+  if (!checklist) {
+    return { completed: 0, total: 0, allComplete: false };
+  }
+  
+  const items = Object.values(checklist);
+  const completed = items.filter(item => item === true).length;
+  const total = items.length;
+  
+  return {
+    completed,
+    total,
+    allComplete: completed === total
+  };
+}
+
+// Función para formatear cambios de manera estructurada y amigable
+function formatCambiosEstructurados(cambiosStr) {
+  try {
+    if (!cambiosStr) return [];
+    
+    let cambios = typeof cambiosStr === 'string' ? JSON.parse(cambiosStr) : cambiosStr;
+    let detalles = [];
+    
+    // Excluir campos del checklist ya que se muestran por separado
+    const camposExcluir = ['checklist', 'checklist_nuevo', 'checklist_anterior'];
+    
+    // Formatear campos específicos de manera amigable
     if (cambios.estado_anterior && cambios.estado_nuevo) {
-      resultado += `Estado: ${cambios.estado_anterior} → ${cambios.estado_nuevo}\n`;
+      detalles.push({
+        icono: '🔄',
+        etiqueta: 'Cambio de estado',
+        valor: `${formatStatus(cambios.estado_anterior)} → ${formatStatus(cambios.estado_nuevo)}`,
+        tipo: 'estado'
+      });
     }
     
     if (cambios.comentarios) {
-      resultado += `Comentarios: ${cambios.comentarios}\n`;
+      detalles.push({
+        icono: '💬',
+        etiqueta: 'Comentarios del supervisor',
+        valor: cambios.comentarios,
+        tipo: 'comentario'
+      });
     }
     
-    if (cambios.fecha_programada) {
-      resultado += `Fecha programada: ${cambios.fecha_programada}\n`;
+    if (cambios.accion) {
+      detalles.push({
+        icono: '⚡',
+        etiqueta: 'Acción realizada',
+        valor: formatActionLabel(cambios.accion),
+        tipo: 'accion'
+      });
     }
     
-    // Si no hay campos específicos, mostrar el JSON completo de manera limpia
-    if (!resultado) {
-      resultado = JSON.stringify(cambios, null, 2);
+    if (cambios.motivo) {
+      detalles.push({
+        icono: '📋',
+        etiqueta: 'Motivo',
+        valor: cambios.motivo,
+        tipo: 'motivo'
+      });
     }
     
-    return resultado.trim();
+    if (cambios.tipo && !cambios.estado_anterior) {
+      detalles.push({
+        icono: '📝',
+        etiqueta: 'Tipo de solicitud',
+        valor: formatTipo(cambios.tipo),
+        tipo: 'tipo'
+      });
+    }
+    
+    if (cambios.observaciones_anterior !== undefined && cambios.observaciones_nuevo !== undefined) {
+      detalles.push({
+        icono: '📝',
+        etiqueta: 'Observaciones actualizadas',
+        valor: cambios.observaciones_nuevo || 'Sin observaciones',
+        tipo: 'observaciones'
+      });
+    }
+    
+    if (cambios.foto_equipo && !cambios.estado_anterior) {
+      detalles.push({
+        icono: '📷',
+        etiqueta: 'Archivo de imagen',
+        valor: cambios.foto_equipo.split(/[/\\]/).pop() || cambios.foto_equipo,
+        tipo: 'archivo'
+      });
+    }
+    
+    // Si no hay detalles específicos pero hay otros campos, mostrarlos
+    if (detalles.length === 0) {
+      Object.keys(cambios).forEach(key => {
+        if (!camposExcluir.includes(key) && cambios[key] !== null && cambios[key] !== undefined) {
+          detalles.push({
+            etiqueta: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+            valor: typeof cambios[key] === 'object' ? JSON.stringify(cambios[key]) : String(cambios[key])
+          });
+        }
+      });
+    }
+    
+    return detalles;
   } catch (e) {
-    console.error('Error al formatear cambios:', e);
-    return cambiosStr || 'Cambios no disponibles';
+    console.error('Error al formatear cambios estructurados:', e);
+    return [{
+      etiqueta: 'Error',
+      valor: 'No se pudieron procesar los cambios'
+    }];
+  }
+}
+
+
+
+// Función para generar resumen de la acción
+function getActionSummary(tipoAccion, cambiosStr) {
+  try {
+    let cambios = {};
+    if (cambiosStr) {
+      cambios = typeof cambiosStr === 'string' ? JSON.parse(cambiosStr) : cambiosStr;
+    }
+    
+    switch (tipoAccion) {
+      case 'creacion':
+        const tipoSolicitud = cambios.tipo || 'entrada';
+        return `Solicitud de ${tipoSolicitud} creada`;
+        
+      case 'revision':
+        if (cambios.estado_nuevo === 'aprobado') {
+          return '✅ Solicitud aprobada por supervisor';
+        } else if (cambios.estado_nuevo === 'rechazado') {
+          return '❌ Solicitud rechazada por supervisor';
+        }
+        return 'Revisión realizada por supervisor';
+        
+      case 'edicion':
+        const campos = [];
+        if (cambios.checklist_nuevo) campos.push('checklist');
+        if (cambios.observaciones_nuevo !== undefined) campos.push('observaciones');
+        
+        if (campos.length > 0) {
+          return `Editado: ${campos.join(', ')}`;
+        }
+        return 'Solicitud editada por técnico';
+        
+      case 'eliminacion':
+        return '🗑️ Solicitud eliminada por técnico';
+        
+      default:
+        return `Acción: ${formatActionLabel(tipoAccion)}`;
+    }
+  } catch (e) {
+    return `Acción: ${formatActionLabel(tipoAccion)}`;
   }
 }
 
@@ -1059,6 +1374,101 @@ function verImagen(url) {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Estilos para el checklist visual */
+.checklist-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.checklist-item {
+  transition: all 0.2s ease;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.checklist-item:hover {
+  background: rgba(255, 255, 255, 0.5);
+  transform: translateX(2px);
+}
+
+.checkbox-verified {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.checkbox-unverified {
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  border: 2px solid #d1d5db;
+}
+
+/* Estilos para los detalles de cambios */
+.change-details {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(99, 102, 241, 0.05));
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.change-item {
+  transition: all 0.2s ease;
+}
+
+.change-item:hover {
+  transform: translateY(-1px);
+}
+
+/* Animaciones para los elementos del historial */
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.historial-card {
+  animation: slideInFromLeft 0.3s ease-out;
+}
+
+/* Estilos para imágenes del equipo */
+.equipment-photo {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.equipment-photo:hover {
+  transform: scale(1.1) rotate(2deg);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Estilos para los badges de estado */
+.status-badge {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+/* Separador visual mejorado */
+.visual-separator {
+  background: linear-gradient(to bottom, transparent, rgba(156, 163, 175, 0.3), transparent);
+}
+
+/* Efectos de hover para tarjetas del historial */
+.historial-card:hover .equipment-photo {
+  filter: brightness(1.1);
+}
+
+.historial-card:hover .change-details {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.08));
+  border-color: rgba(59, 130, 246, 0.2);
 }
 
 /* Animaciones suaves para las tarjetas del historial más compactas */

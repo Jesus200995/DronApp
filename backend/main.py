@@ -286,6 +286,24 @@ except Exception as e:
 # Define el timezone de CDMX
 CDMX_TZ = pytz.timezone("America/Mexico_City")
 
+def normalizar_checklist(checklist_data):
+    """
+    Normaliza un checklist para incluir todos los campos obligatorios.
+    
+    Args:
+        checklist_data (dict): Datos del checklist que pueden estar incompletos
+        
+    Returns:
+        dict: Checklist completo con todos los campos
+    """
+    campos_obligatorios = ["bateria", "helices", "gps", "camara"]
+    checklist_completo = {}
+    
+    for campo in campos_obligatorios:
+        checklist_completo[campo] = checklist_data.get(campo, False)
+    
+    return checklist_completo
+
 def obtener_fecha_hora_cdmx(timestamp_offline=None):
     """
     Función de utilidad para manejar correctamente las fechas y horas en zona CDMX.
@@ -709,9 +727,12 @@ async def crear_solicitud_dron(
         # Usar timestamp personalizado si viene de offline, sino usar tiempo actual
         fecha, fecha_hora, timestamp_for_filename = obtener_fecha_hora_cdmx(timestamp_offline)
 
-        # Validar JSON del checklist
+        # Validar JSON del checklist y normalizar con todos los campos
         try:
             checklist_json = json.loads(checklist)
+            checklist_completo = normalizar_checklist(checklist_json)
+            print(f"📋 Checklist normalizado: {checklist_completo}")
+            
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
 
@@ -754,7 +775,7 @@ async def crear_solicitud_dron(
             (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
             VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
             RETURNING id
-        """, (tipo, usuario_id, fecha_hora, ruta_archivo, json.dumps(checklist_json), 
+        """, (tipo, usuario_id, fecha_hora, ruta_archivo, json.dumps(checklist_completo), 
               observaciones, punto_ubicacion, 'pendiente'))
         
         solicitud_id = cursor.fetchone()[0]
@@ -762,7 +783,7 @@ async def crear_solicitud_dron(
         # Registrar en historial la creación de la solicitud
         cambios_creacion = {
             "tipo": tipo,
-            "checklist": checklist_json,
+            "checklist": checklist_completo,
             "observaciones": observaciones,
             "foto_equipo": nombre_archivo
         }
@@ -1362,10 +1383,15 @@ async def editar_solicitud(
         if datos.checklist:
             try:
                 checklist_json = json.loads(datos.checklist)
+                checklist_completo = normalizar_checklist(checklist_json)
+                
                 campos_actualizar.append("checklist = %s")
-                valores.append(json.dumps(checklist_json))
+                valores.append(json.dumps(checklist_completo))
                 cambios_realizados["checklist_anterior"] = json.loads(solicitud[5]) if solicitud[5] else {}
-                cambios_realizados["checklist_nuevo"] = checklist_json
+                cambios_realizados["checklist_nuevo"] = checklist_completo
+                
+                print(f"📋 Checklist editado y normalizado: {checklist_completo}")
+                
             except json.JSONDecodeError:
                 raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
         
