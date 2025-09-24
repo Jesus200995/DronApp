@@ -239,9 +239,15 @@
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">1. Ubicación</h3>
-              <span v-if="latitud && longitud" 
-                :class="tipoAsistencia === 'entrada' ? 'text-blue-600' : 'text-green-600'"
-                class="text-xs">✓ Completado</span>
+              <div v-if="latitud && longitud" 
+                class="modern-status-badge completed-badge"
+                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="font-medium">Completado</span>
+              </div>
             </div>
             
             <!-- Botón de ubicación moderno y compacto -->
@@ -294,9 +300,15 @@
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">2. Foto</h3>
-              <span v-if="foto" 
-                :class="tipoAsistencia === 'entrada' ? 'text-blue-600' : 'text-green-600'"
-                class="text-xs">✓ Completado</span>
+              <div v-if="foto" 
+                class="modern-status-badge completed-badge"
+                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="font-medium">Completado</span>
+              </div>
             </div>
             
             <div class="flex items-center justify-center w-full">
@@ -325,9 +337,15 @@
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">3. Checklist del Equipo</h3>
-              <span v-if="Object.keys(checklist).length > 0" 
-                :class="tipoAsistencia === 'entrada' ? 'text-blue-600' : 'text-green-600'"
-                class="text-xs">✓ Completado</span>
+              <div v-if="Object.keys(checklist).length > 0" 
+                class="modern-status-badge completed-badge"
+                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="font-medium">Completado</span>
+              </div>
             </div>
             
             <div class="space-y-3 p-3 bg-gray-50 rounded-lg">
@@ -395,9 +413,15 @@
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
               <h3 class="text-base font-semibold text-gray-800">4. Observaciones</h3>
-              <span v-if="descripcion.trim()" 
-                :class="tipoAsistencia === 'entrada' ? 'text-blue-600' : 'text-green-600'"
-                class="text-xs">✓ Completado</span>
+              <div v-if="descripcion.trim()" 
+                class="modern-status-badge completed-badge"
+                :class="tipoAsistencia === 'entrada' ? 'entrada-theme' : 'salida-theme'"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span class="font-medium">Completado</span>
+              </div>
             </div>
             
             <textarea
@@ -4135,6 +4159,152 @@ watch([entradaMarcada, salidaMarcada], () => {
   .coordinates-display-modern {
     padding: 0.375rem 0.5rem;
     min-width: 120px;
+  }
+}
+
+/* Estilos para badges modernos de estado completado */
+.modern-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.375rem;
+  border-radius: 8px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.025em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid transparent;
+  box-shadow: 
+    0 2px 8px 0 rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  animation: badge-appear 0.4s ease-out;
+}
+
+.completed-badge {
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Tema para entrada (azul) */
+.completed-badge.entrada-theme {
+  background: linear-gradient(135deg, 
+    rgba(59, 130, 246, 0.9) 0%,      /* Blue-500 */
+    rgba(37, 99, 235, 0.9) 50%,      /* Blue-600 */
+    rgba(29, 78, 216, 0.9) 100%      /* Blue-700 */
+  );
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 
+    0 2px 8px 0 rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.completed-badge.entrada-theme:hover {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 
+    0 4px 12px 0 rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, 
+    rgba(79, 70, 229, 0.9) 0%,       /* Indigo-600 */
+    rgba(67, 56, 202, 0.9) 50%,      /* Indigo-700 */
+    rgba(55, 48, 163, 0.9) 100%      /* Indigo-800 */
+  );
+}
+
+/* Tema para salida (rojo) */
+.completed-badge.salida-theme {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.9) 0%,       /* Red-500 */
+    rgba(220, 38, 38, 0.9) 50%,      /* Red-600 */
+    rgba(185, 28, 28, 0.9) 100%      /* Red-700 */
+  );
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 
+    0 2px 8px 0 rgba(239, 68, 68, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+.completed-badge.salida-theme:hover {
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 
+    0 4px 12px 0 rgba(239, 68, 68, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, 
+    rgba(244, 63, 94, 0.9) 0%,       /* Pink-500 */
+    rgba(219, 39, 119, 0.9) 50%,     /* Pink-600 */
+    rgba(190, 24, 93, 0.9) 100%      /* Pink-700 */
+  );
+}
+
+/* Efecto de brillo para badges */
+.modern-status-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.6s ease;
+}
+
+.modern-status-badge:hover::before {
+  left: 100%;
+}
+
+/* Animación de aparición suave */
+@keyframes badge-appear {
+  0% {
+    opacity: 0;
+    transform: translateX(10px) scale(0.9);
+  }
+  50% {
+    opacity: 0.7;
+    transform: translateX(-2px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Pulso sutil para badges completados */
+.completed-badge {
+  animation: badge-appear 0.4s ease-out, badge-pulse 3s ease-in-out infinite 1s;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 2px 8px 0 rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 3px 12px 0 rgba(0, 0, 0, 0.15),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
+      0 0 0 2px rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Responsive para badges */
+@media (max-width: 480px) {
+  .modern-status-badge {
+    padding: 0.1rem 0.3rem;
+    font-size: 0.55rem;
+  }
+  
+  .modern-status-badge svg {
+    width: 0.625rem;
+    height: 0.625rem;
   }
 }
 </style>
