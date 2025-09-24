@@ -225,8 +225,6 @@ try:
             ubicacion GEOGRAPHY(Point, 4326),
             estado VARCHAR(20) NOT NULL DEFAULT 'pendiente'
                 CHECK (estado IN ('pendiente','aprobado','rechazado')),
-            comentarios_supervisor TEXT,
-            fecha_respuesta TIMESTAMPTZ,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """, fetch_type='none')
@@ -929,19 +927,19 @@ async def actualizar_solicitud(
         # Determinar nuevo estado
         nuevo_estado = 'aprobado' if accion == 'aprobar' else 'rechazado'
         
-        # Actualizar solicitud
+        # Actualizar solicitud (solo el estado, los comentarios van al historial)
         cursor.execute("""
             UPDATE solicitudes_dron 
-            SET estado = %s, comentarios_supervisor = %s, fecha_respuesta = %s
+            SET estado = %s
             WHERE id = %s
-        """, (nuevo_estado, comentarios, datetime.now(CDMX_TZ), solicitud_id))
+        """, (nuevo_estado, solicitud_id))
         
-        # Registrar en historial la revisión del supervisor
+        # Registrar en historial la revisión del supervisor con los comentarios
         cambios_revision = {
             "accion": accion,
-            "comentarios_supervisor": comentarios,
             "estado_anterior": 'pendiente',
-            "estado_nuevo": nuevo_estado
+            "estado_nuevo": nuevo_estado,
+            "comentarios": comentarios  # Guardamos los comentarios en el historial
         }
         
         # Obtener el usuario_id del supervisor (aquí se podría implementar autenticación)
@@ -992,8 +990,7 @@ async def obtener_solicitud_detalle(solicitud_id: int):
         
         cursor.execute("""
             SELECT s.id, s.tipo, s.usuario_id, s.fecha_hora, s.foto_equipo, 
-                   s.checklist, s.observaciones, s.estado, s.comentarios_supervisor, 
-                   s.fecha_respuesta,
+                   s.checklist, s.observaciones, s.estado,
                    ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
                    u.nombre, u.puesto, u.correo
             FROM solicitudes_dron s
@@ -1015,16 +1012,16 @@ async def obtener_solicitud_detalle(solicitud_id: int):
             "checklist": json.loads(registro[5]) if registro[5] else {},
             "observaciones": registro[6],
             "estado": registro[7],
-            "comentarios_supervisor": registro[8],
-            "fecha_respuesta": registro[9].isoformat() if registro[9] else None,
+            "comentarios_supervisor": None,  # Campo no disponible en esta estructura
+            "fecha_respuesta": None,  # Campo no disponible en esta estructura
             "ubicacion": {
-                "longitud": float(registro[10]) if registro[10] else None,
-                "latitud": float(registro[11]) if registro[11] else None
+                "longitud": float(registro[8]) if registro[8] else None,
+                "latitud": float(registro[9]) if registro[9] else None
             },
             "usuario": {
-                "nombre_completo": registro[12],
-                "cargo": registro[13],
-                "email": registro[14]
+                "nombre_completo": registro[10],
+                "cargo": registro[11],
+                "email": registro[12]
             }
         }
         
@@ -1096,11 +1093,9 @@ async def obtener_historial_usuario(
                     h.fecha_hora,
                     h.cambios,
                     h.estado_final,
-                    s.tipo,
-                    s.observaciones as observaciones_solicitud,
-                    s.estado as estado_actual_solicitud,
-                    s.comentarios_supervisor,
-                    s.fecha_respuesta
+                    COALESCE(s.tipo, 'desconocido') as tipo,
+                    COALESCE(s.observaciones, '') as observaciones_solicitud,
+                    COALESCE(s.estado, h.estado_final) as estado_actual_solicitud
                 FROM historial_solicitudes h
                 LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
                 WHERE h.usuario_id = %s
@@ -1140,11 +1135,9 @@ async def obtener_historial_usuario(
                     "cambios": cambios_data,
                     "estado_final": row[5],
                     "solicitud": {
-                        "tipo": row[6],  # tipo_actividad en SQLite
-                        "observaciones": row[9],  # observaciones
-                        "estado_actual": row[8],
-                        "ubicacion": row[7],
-                        "fecha_respuesta": row[10]
+                        "tipo": row[6],
+                        "observaciones": row[7],
+                        "estado_actual": row[8]
                     }
                 }
             else:
@@ -1158,9 +1151,7 @@ async def obtener_historial_usuario(
                     "solicitud": {
                         "tipo": row[6],
                         "observaciones": row[7],
-                        "estado_actual": row[8],
-                        "comentarios_supervisor": row[9],
-                        "fecha_respuesta": row[10].isoformat() if row[10] else None
+                        "estado_actual": row[8]
                     }
                 }
             historial.append(registro)
