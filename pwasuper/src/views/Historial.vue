@@ -1,14 +1,15 @@
 <template>
-  <div class="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
-    <!-- Elementos decorativos para mejorar el efecto de vidrio -->
-    <div class="absolute inset-0">
-      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
-      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
-    </div>
-    
-    <div class="absolute inset-0 overflow-y-auto pt-16 sm:pt-20 pb-4">
-      <div class="page-container relative z-10 px-1 sm:px-2 md:px-3 lg:px-4 xl:px-5 py-3 sm:py-4 lg:py-5 min-h-full max-w-full">
+  <div class="historial-container">
+    <div class="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
+      <!-- Elementos decorativos para mejorar el efecto de vidrio -->
+      <div class="absolute inset-0">
+        <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
+        <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+        <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
+      </div>
+      
+      <div class="absolute inset-0 overflow-y-auto pt-16 sm:pt-20 pb-4">
+        <div class="page-container relative z-10 px-1 sm:px-2 md:px-3 lg:px-4 xl:px-5 py-3 sm:py-4 lg:py-5 min-h-full max-w-full">
     <!-- Historial de solicitudes de drones -->
     <div class="glass-card mb-2">
       <!-- Título centralizado para Historial de Drones -->
@@ -237,15 +238,14 @@
       <div v-if="cargando" class="text-center py-10">
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
         <p class="mt-4 text-gray-500 text-lg">Cargando historial...</p>
+        </div>
       </div>
     </div>
-  </div>
-</div>
     
     <!-- Modal para visualizar imagen -->
     <div v-if="imagenModalVisible" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-4">
       <div class="w-full max-w-lg max-h-[90vh] flex flex-col relative">
-        <button @click="imagenModalVisible = false" class="absolute right-2 top-2 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-opacity z-10">
+        <button @click="imagenModalVisible = false; limpiarModalListeners()" class="absolute right-2 top-2 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-opacity z-10">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -254,11 +254,11 @@
           <img :src="imagenSeleccionada" class="w-full h-auto object-contain max-h-[85vh]" alt="Imagen ampliada" />
         </div>
       </div>
+    </div>
+    </div>
   </div>
-</template>
-
-<script setup>
-import { ref, onMounted } from 'vue';
+</template><script setup>
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { API_URL, checkInternetConnection, getOfflineMessage } from '../utils/network.js';
@@ -271,6 +271,10 @@ const isOnline = ref(true);
 const userInfo = ref(null);
 const imagenModalVisible = ref(false);
 const imagenSeleccionada = ref('');
+
+// Referencias para limpiar event listeners y cancelar requests
+const modalEventListeners = ref([]);
+const abortController = ref(null);
 
 // Comprobar autenticación y cargar datos
 onMounted(async () => {
@@ -294,6 +298,16 @@ onMounted(async () => {
   cargarHistorial();
 });
 
+// Limpiar event listeners y cancelar requests al desmontar el componente
+onUnmounted(() => {
+  limpiarModalListeners();
+  
+  // Cancelar cualquier request pendiente
+  if (abortController.value) {
+    abortController.value.abort();
+  }
+});
+
 // Función principal para cargar el historial
 async function cargarHistorial() {
   cargando.value = true;
@@ -310,9 +324,13 @@ async function cargarHistorial() {
   try {
     console.log('Cargando historial para usuario:', userInfo.value.id);
     
+    // Crear un nuevo AbortController para este request
+    abortController.value = new AbortController();
+    
     // Obtener historial específico del usuario actual
     const response = await axios.get(`${API_URL}/historial/${userInfo.value.id}`, {
       timeout: 10000, // 10 segundos de timeout
+      signal: abortController.value.signal,
       headers: {
         'Content-Type': 'application/json'
       }
@@ -331,6 +349,12 @@ async function cargarHistorial() {
     }
     
   } catch (err) {
+    // Si el request fue cancelado, no mostrar error
+    if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+      console.log('Request cancelado correctamente');
+      return;
+    }
+    
     console.error('Error al cargar historial:', err);
     console.error('Detalles del error:', {
       status: err.response?.status,
@@ -889,36 +913,62 @@ async function eliminarSolicitud(solicitudId) {
   }
 }
 
+// Función para limpiar event listeners del modal
+function limpiarModalListeners() {
+  modalEventListeners.value.forEach(({ element, type, handler }) => {
+    if (element && element.removeEventListener) {
+      element.removeEventListener(type, handler);
+    }
+  });
+  modalEventListeners.value = [];
+}
+
 // Función para abrir una imagen en el modal
 function verImagen(url) {
   if (url) {
+    // Limpiar listeners anteriores
+    limpiarModalListeners();
+    
     imagenSeleccionada.value = url;
     imagenModalVisible.value = true;
     
     // Configurar gestos táctiles para cerrar el modal
     setTimeout(() => {
-      const modalElement = document.querySelector('[v-if="imagenModalVisible"]');
+      const modalElement = document.querySelector('.fixed.inset-0.bg-black');
       if (modalElement) {
         let startY = 0;
         let distY = 0;
         
-        modalElement.addEventListener('touchstart', (e) => {
+        const touchStartHandler = (e) => {
           startY = e.touches[0].clientY;
-        }, { passive: true });
+        };
         
-        modalElement.addEventListener('touchmove', (e) => {
+        const touchMoveHandler = (e) => {
           distY = e.touches[0].clientY - startY;
           if (distY > 100) {
             imagenModalVisible.value = false;
+            limpiarModalListeners();
           }
-        }, { passive: true });
+        };
         
-        // Cerrar modal con un toque en el fondo
-        modalElement.addEventListener('click', (e) => {
+        const clickHandler = (e) => {
           if (e.target === modalElement) {
             imagenModalVisible.value = false;
+            limpiarModalListeners();
           }
-        });
+        };
+        
+        // Agregar listeners y guardar referencias
+        modalElement.addEventListener('touchstart', touchStartHandler, { passive: true });
+        modalElement.addEventListener('touchmove', touchMoveHandler, { passive: true });
+        modalElement.addEventListener('click', clickHandler);
+        
+        // Guardar referencias para limpieza posterior
+        modalEventListeners.value.push(
+          { element: modalElement, type: 'touchstart', handler: touchStartHandler },
+          { element: modalElement, type: 'touchmove', handler: touchMoveHandler },
+          { element: modalElement, type: 'click', handler: clickHandler }
+        );
       }
     }, 100);
   }
