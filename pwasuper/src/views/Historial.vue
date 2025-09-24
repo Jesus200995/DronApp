@@ -65,12 +65,15 @@
               <div class="flex gap-4">
                 <!-- Icono de acción -->
                 <div :class="[
-                  'w-12 h-12 rounded-xl flex items-center justify-center shadow-lg transition-all duration-300 hover:scale-110',
+                  'w-10 h-10 rounded-lg flex items-center justify-center shadow-md transition-all duration-300 hover:scale-105',
                   getActionColor(item.tipo_accion).bg
                 ]">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path v-if="item.tipo_accion === 'creacion'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <!-- Icono de dron para creación -->
+                    <path v-if="item.tipo_accion === 'creacion'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    <!-- Icono de check para revisión -->
                     <path v-else-if="item.tipo_accion === 'revision'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <!-- Icono de información para otros -->
                     <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -101,28 +104,8 @@
                     </div>
                   </div>
                   
-                  <!-- Estado y información adicional -->
+                  <!-- Contenido principal del historial -->
                   <div class="space-y-3">
-                    <!-- Estados y tipo en una línea -->
-                    <div class="flex items-center gap-3 flex-wrap">
-                      <div class="flex items-center gap-2">
-                        <span class="text-sm text-gray-600">Estado:</span>
-                        <span :class="[
-                          'px-2 py-1 rounded-full text-xs font-semibold',
-                          getStatusColor(item.estado_final)
-                        ]">
-                          {{ formatStatus(item.estado_final) }}
-                        </span>
-                      </div>
-                      
-                      <!-- Separador visual -->
-                      <div class="visual-separator w-1 h-4 rounded-full"></div>
-                      
-                      <!-- Resumen de la acción -->
-                      <div class="text-sm text-gray-600">
-                        <span class="font-medium">{{ getActionSummary(item.tipo_accion, item.cambios) }}</span>
-                      </div>
-                    </div>
                     
                     <!-- Foto del equipo si existe -->
                     <div v-if="item.foto_equipo" class="mb-2">
@@ -146,17 +129,6 @@
                       </div>
                     </div>
                     
-                    <!-- Observaciones específicas del historial -->
-                    <div v-if="item.observaciones" class="mb-2">
-                      <div class="flex items-center gap-2 mb-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        <span class="text-sm font-medium text-gray-700">Observaciones:</span>
-                      </div>
-                      <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-2">{{ item.observaciones }}</p>
-                    </div>
-                    
                     <!-- Checklist visual completo -->
                     <div v-if="getChecklistFromChanges(item.cambios)" class="mb-3">
                       <div class="flex items-center gap-2 mb-3">
@@ -170,16 +142,16 @@
                           <div v-for="(valor, campo) in getChecklistFromChanges(item.cambios)" :key="campo" 
                                :class="[
                                  'checklist-item flex items-center gap-3 p-3 rounded-lg border transition-all duration-200',
-                                 valor ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-red-50 border-red-200 hover:bg-red-100'
+                                 valor ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                                ]">
                             <div :class="[
                               'w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-200',
-                              valor ? 'bg-green-500 border-green-500 shadow-lg shadow-green-200' : 'bg-red-100 border-red-300'
+                              valor ? 'bg-green-500 border-green-500 shadow-lg shadow-green-200' : 'bg-gray-200 border-gray-300'
                             ]">
                               <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                               </svg>
-                              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                               </svg>
                             </div>
@@ -188,9 +160,9 @@
                                 <span class="text-sm font-semibold text-gray-800 truncate">{{ formatChecklistItem(campo) }}</span>
                                 <span :class="[
                                   'text-xs px-2 py-1 rounded-full font-medium flex-shrink-0 ml-2',
-                                  valor ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'
+                                  valor ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-gray-100 text-gray-700 border border-gray-200'
                                 ]">
-                                  {{ valor ? '✓ OK' : '✗ Falta' }}
+                                  {{ valor ? '✓ Sí' : '✗ No' }}
                                 </span>
                               </div>
                             </div>
@@ -208,12 +180,9 @@
                             </div>
                             <div class="flex items-center gap-4">
                               <span :class="[
-                                'text-xs px-3 py-1 rounded-full font-semibold',
-                                getChecklistSummary(getChecklistFromChanges(item.cambios)).allComplete 
-                                  ? 'bg-green-100 text-green-800 border border-green-200' 
-                                  : 'bg-yellow-100 text-yellow-800 border border-yellow-200'
+                                'text-xs px-3 py-1 rounded-full font-semibold bg-gray-700 text-white border border-gray-600'
                               ]">
-                                {{ getChecklistSummary(getChecklistFromChanges(item.cambios)).completed }}/{{ getChecklistSummary(getChecklistFromChanges(item.cambios)).total }} Completado
+                                <span class="font-bold">{{ getChecklistSummary(getChecklistFromChanges(item.cambios)).completed }}/{{ getChecklistSummary(getChecklistFromChanges(item.cambios)).total }}</span> Completado
                               </span>
                             </div>
                           </div>
@@ -221,32 +190,30 @@
                       </div>
                     </div>
                     
-                    <!-- Información adicional mejorada -->
-                    <div v-if="item.cambios && hasOtherChanges(item.cambios)" class="mt-3">
-                      <div class="flex items-center gap-2 mb-3">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <!-- Observaciones después del checklist -->
+                    <div v-if="item.observaciones" class="mt-4">
+                      <div class="flex items-center gap-2 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        <span class="text-sm font-semibold text-gray-800">Información Adicional</span>
+                        <span class="text-sm font-medium text-gray-700">Observaciones:</span>
                       </div>
-                      <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4">
-                        <div class="space-y-3">
-                          <div v-for="(detalle, index) in formatCambiosEstructurados(item.cambios)" :key="index"
-                               class="flex items-start gap-3 p-3 bg-white bg-opacity-70 rounded-lg border border-white shadow-sm">
-                            <div class="text-lg flex-shrink-0">{{ detalle.icono || '📄' }}</div>
-                            <div class="min-w-0 flex-1">
-                              <div class="font-semibold text-gray-800 text-sm mb-1">{{ detalle.etiqueta }}</div>
-                              <div :class="[
-                                'text-sm break-words',
-                                detalle.tipo === 'comentario' ? 'text-blue-700 italic' :
-                                detalle.tipo === 'estado' ? 'font-medium text-green-700' :
-                                'text-gray-700'
-                              ]">{{ detalle.valor }}</div>
-                            </div>
-                          </div>
-                        </div>
+                      <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 border border-gray-200">{{ item.observaciones }}</p>
+                    </div>
+
+                    <!-- Estado centrado al final -->
+                    <div class="mt-4 text-center">
+                      <div class="inline-flex items-center gap-2">
+                        <span class="text-base text-gray-600">Estado:</span>
+                        <span :class="[
+                          'px-4 py-2 rounded-full text-base font-semibold',
+                          getStatusColor(item.estado_final)
+                        ]">
+                          {{ formatStatus(item.estado_final) }}
+                        </span>
                       </div>
                     </div>
+
                   </div>
                   
                   <!-- Botones de acción para solicitudes pendientes -->
