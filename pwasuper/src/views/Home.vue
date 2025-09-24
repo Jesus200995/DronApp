@@ -29,32 +29,24 @@
             >
               <div class="flex items-center justify-center space-x-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
-                <span>Asistencia</span>
+                <span>Gestión Drones</span>
               </div>
             </button>
             
             <button
-              @click="(!entradaMarcada || salidaMarcada) ? mostrarModalActividadesBloqueadas() : (seccionActiva = 'actividades')"
-              :disabled="false"
+              @click="seccionActiva = 'actividades'"
               :class="[
                 'section-nav-button flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 relative',
-                seccionActiva === 'actividades' && entradaMarcada && !salidaMarcada
+                seccionActiva === 'actividades'
                   ? 'active text-white shadow-lg' 
-                  : (!entradaMarcada || salidaMarcada)
-                    ? 'bg-gray-300 text-gray-500 cursor-pointer'
-                    : 'text-gray-600 hover:bg-white/30'
+                  : 'text-gray-600 hover:bg-white/30'
               ]"
-              :style="seccionActiva === 'actividades' && entradaMarcada && !salidaMarcada ? 'background-color: rgb(147, 51, 234);' : ''"
+              :style="seccionActiva === 'actividades' ? 'background-color: rgb(147, 51, 234);' : ''"
             >
               <div class="flex items-center justify-center space-x-2">
-                <!-- Icono de candado cuando está bloqueado -->
-                <svg v-if="!entradaMarcada || salidaMarcada" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <!-- Icono normal de actividades cuando está habilitado -->
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <span>Actividades</span>
@@ -79,131 +71,62 @@
         </button>
         
         <div class="text-center mb-2">
-          <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title">Registra tu asistencia</h2>
+          <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title">🚁 Gestión de Drones</h2>
           <div class="blue-line mx-auto mb-1"></div>
           <p class="text-xs text-gray-500">
-            {{ modoAsistencia ? 'Completa los datos para ' + (tipoAsistencia === 'entrada' ? 'marcar entrada' : 'marcar salida') : 'Marca tu entrada y salida del día' }}
+            {{ modoAsistencia ? 'Completa la solicitud de ' + (tipoAsistencia === 'entrada' ? 'ENTRADA' : 'SALIDA') + ' del dron' : 'Crear solicitudes de entrada o salida del equipo' }}
           </p>
         </div>
 
-        <!-- Botones de Asistencia (solo visibles cuando no está en modo asistencia) -->
+        <!-- Botones de Solicitudes de Drones (solo visibles cuando no está en modo solicitud) -->
         <div v-if="!modoAsistencia" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
-        <!-- Botón Marcar Entrada -->
-        <button
-          @click="mostrarModalEntrada"
-          :disabled="entradaMarcada || verificandoAsistencia"
-          class="relative overflow-hidden rounded-xl transition-all duration-300 transform min-h-[80px] w-full flex flex-col items-center justify-center p-2"
-          :class="{
-            'text-white shadow-lg hover:scale-105 active:scale-95': !entradaMarcada && !verificandoAsistencia,
-            'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 cursor-not-allowed': entradaMarcada || verificandoAsistencia
-          }"
-          :style="!entradaMarcada && !verificandoAsistencia ? 'background-color: rgb(30, 144, 255); box-shadow: 0 4px 12px rgba(30, 144, 255, 0.3);' : ''"
-          @mouseover="!entradaMarcada && !verificandoAsistencia && ($event.target.style.backgroundColor = 'rgb(25, 130, 230)')"
-          @mouseout="!entradaMarcada && !verificandoAsistencia && ($event.target.style.backgroundColor = 'rgb(30, 144, 255)')"
-        >
-          <div v-if="verificandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
-            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
-          </div>
-          
-          <!-- Estado: No marcada - Activo -->
-          <template v-if="!entradaMarcada && !verificandoAsistencia">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            <span class="font-semibold text-sm">Marcar Entrada</span>
-            <span class="text-xs opacity-90">Registra tu llegada</span>
-          </template>
-          
-          <!-- Estado: Marcada - Completada -->
-          <template v-else-if="entradaMarcada">
-            <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mb-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
+          <!-- Botón Entrada de Dron -->
+          <button
+            @click="iniciarSolicitud('entrada')"
+            :disabled="enviandoAsistencia"
+            class="relative overflow-hidden rounded-xl transition-all duration-300 transform min-h-[80px] w-full flex flex-col items-center justify-center p-2 text-white shadow-lg hover:scale-105 active:scale-95"
+            style="background-color: rgb(34, 197, 94); box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);"
+            @mouseover="$event.target.style.backgroundColor = 'rgb(22, 163, 74)'"
+            @mouseout="$event.target.style.backgroundColor = 'rgb(34, 197, 94)'"
+          >
+            <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
+              <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
             </div>
-            <span class="font-semibold text-sm text-gray-700">Entrada Registrada</span>
-            <span class="text-xs text-gray-500">
-              <span v-if="asistenciaHoy && asistenciaHoy.entrada">
-                {{ formatearHora(asistenciaHoy.entrada) }}
-              </span>
-              <span v-else-if="datosEntrada.hora">
-                {{ datosEntrada.hora }}
-              </span>
-            </span>
-            <span class="text-xs text-blue-600 font-medium">✓ Completada</span>
-          </template>
-        </button>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+            <span class="font-semibold text-sm">Entrada de Dron</span>
+            <span class="text-xs opacity-90">Solicitar entrada del equipo</span>
+          </button>
 
-        <!-- Botón Marcar Salida -->
-        <button
-          @click="mostrarModalSalida"
-          :disabled="!entradaMarcada || salidaMarcada || verificandoAsistencia"
-          class="relative overflow-hidden rounded-xl transition-all duration-300 transform min-h-[80px] w-full flex flex-col items-center justify-center p-2"
-          :class="{
-            'text-white shadow-lg hover:scale-105 active:scale-95': entradaMarcada && !salidaMarcada && !verificandoAsistencia,
-            'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-500 cursor-not-allowed': !entradaMarcada || salidaMarcada || verificandoAsistencia
-          }"
-          :style="entradaMarcada && !salidaMarcada && !verificandoAsistencia ? 'background-color: rgb(220, 20, 60); box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);' : ''"
-          @mouseover="entradaMarcada && !salidaMarcada && !verificandoAsistencia && ($event.target.style.backgroundColor = 'rgb(200, 15, 55)')"
-          @mouseout="entradaMarcada && !salidaMarcada && !verificandoAsistencia && ($event.target.style.backgroundColor = 'rgb(220, 20, 60)')"
-        >
-          <div v-if="verificandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
-            <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
-          </div>
-          
-          <!-- Estado: Activo para marcar salida -->
-          <template v-if="entradaMarcada && !salidaMarcada && !verificandoAsistencia">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <!-- Botón Salida de Dron -->
+          <button
+            @click="iniciarSolicitud('salida')"
+            :disabled="enviandoAsistencia"
+            class="relative overflow-hidden rounded-xl transition-all duration-300 transform min-h-[80px] w-full flex flex-col items-center justify-center p-2 text-white shadow-lg hover:scale-105 active:scale-95"
+            style="background-color: rgb(239, 68, 68); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
+            @mouseover="$event.target.style.backgroundColor = 'rgb(220, 38, 38)'"
+            @mouseout="$event.target.style.backgroundColor = 'rgb(239, 68, 68)'"
+          >
+            <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
+              <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
+            </div>
+            
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
-            <span class="font-semibold text-sm">Marcar Salida</span>
-            <span class="text-xs opacity-90">Registra tu salida</span>
-          </template>
-          
-          <!-- Estado: Bloqueado (sin entrada) -->
-          <template v-else-if="!entradaMarcada">
-            <div class="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center mb-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <span class="font-semibold text-sm text-gray-600">Marcar Salida</span>
-            <span class="text-xs text-gray-500">Primero marca tu entrada</span>
-            <div class="flex items-center mt-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-amber-600 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <span class="text-xs text-amber-600 font-medium">Bloqueado</span>
-            </div>
-          </template>
-          
-          <!-- Estado: Salida completada -->
-          <template v-else-if="salidaMarcada">
-            <div class="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center mb-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <span class="font-semibold text-sm text-gray-700">Salida Registrada</span>
-            <span class="text-xs text-gray-500">
-              <span v-if="asistenciaHoy && asistenciaHoy.salida">
-                {{ formatearHora(asistenciaHoy.salida) }}
-              </span>
-              <span v-else-if="datosSalida.hora">
-                {{ datosSalida.hora }}
-              </span>
-            </span>
-            <span class="text-xs text-red-600 font-medium">✓ Completada</span>
-          </template>
-        </button>
-      </div>
+            <span class="font-semibold text-sm">Salida de Dron</span>
+            <span class="text-xs opacity-90">Solicitar salida del equipo</span>
+          </button>
+        </div>
 
-        <!-- Aviso amigable sobre registro de asistencia -->
+        <!-- Aviso informativo sobre solicitudes de drones -->
         <div v-if="!modoAsistencia" class="text-center mb-2 relative">
-          <!-- Ícono suave en esquina izquierda (más pequeño) -->
-          <div class="absolute -left-0.5 -top-0.5 w-4 h-4 bg-gradient-to-br from-rose-300/80 via-red-300/70 to-rose-400/60 rounded-full shadow-md backdrop-blur-sm border border-rose-200/50 z-30 overflow-hidden">
+          <!-- Ícono de dron en esquina -->
+          <div class="absolute -left-0.5 -top-0.5 w-4 h-4 bg-gradient-to-br from-blue-300/80 via-blue-400/70 to-blue-500/60 rounded-full shadow-md backdrop-blur-sm border border-blue-200/50 z-30 overflow-hidden">
             <!-- Efecto vidrio líquido en círculo -->
-            <div class="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-rose-100/20 pointer-events-none rounded-full"></div>
+            <div class="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-blue-100/20 pointer-events-none rounded-full"></div>
             
             <!-- Reflejo líquido superior -->
             <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/50 to-transparent rounded-full"></div>
@@ -213,40 +136,40 @@
               <div class="absolute top-0.5 left-0.5 w-1 h-1 bg-white/60 rounded-full animate-ping"></div>
             </div>
             
-            <!-- Ícono suave (más pequeño) -->
+            <!-- Ícono de dron (más pequeño) -->
             <div class="relative z-10 w-full h-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-rose-700/80 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-blue-700/80 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
             </div>
           </div>
           
           <!-- Contenedor principal rediseñado -->
-          <div class="relative bg-gradient-to-br from-red-900 via-red-950 to-black backdrop-blur-sm rounded-xl shadow-xl border border-red-800/30 overflow-hidden mx-2">
-            <!-- Borde superior rojo elegante -->
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-red-400 to-red-500"></div>
+          <div class="relative bg-gradient-to-br from-blue-900 via-blue-950 to-indigo-950 backdrop-blur-sm rounded-xl shadow-xl border border-blue-800/30 overflow-hidden mx-2">
+            <!-- Borde superior azul elegante -->
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500"></div>
             
             <!-- Contenido principal -->
             <div class="relative p-4">
               <!-- Icono y encabezado -->
               <div class="flex items-center justify-center mb-3">
                 <div class="flex items-center space-x-2">
-                  <div class="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center shadow-lg">
+                  <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.718 9.168-4.309M6 15a2 2 0 002 2h1.832c4.1 0 7.625 1.718 9.168 4.309" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <span class="font-semibold text-red-100 tracking-wide uppercase" style="font-size: 0.6rem;">Importante</span>
+                  <span class="font-semibold text-blue-100 tracking-wide uppercase" style="font-size: 0.6rem;">Instrucción</span>
                 </div>
               </div>
               
               <!-- Mensaje principal -->
               <div class="text-center space-y-1">
                 <h3 class="text-2xs font-semibold text-white leading-tight" style="font-size: 0.65rem;">
-                  Marcar entrada es necesario para usar actividades
+                  Crea solicitudes para entrada y salida de drones
                 </h3>
-                <p class="text-2xs text-red-200 font-medium" style="font-size: 0.6rem;">
-                  Al marcar salida se finaliza el acceso del día
+                <p class="text-2xs text-blue-200 font-medium" style="font-size: 0.6rem;">
+                  Cada solicitud será enviada al supervisor para aprobación
                 </p>
               </div>
             </div>
@@ -404,10 +327,80 @@
             </div>
           </div>
 
-          <!-- Paso 3: Descripción -->
+          <!-- Paso 3: Checklist del Equipo -->
           <div class="mb-4">
             <div class="flex items-center justify-between mb-2">
-              <h3 class="text-base font-semibold text-gray-800">3. Descripción/Notas</h3>
+              <h3 class="text-base font-semibold text-gray-800">3. Checklist del Equipo</h3>
+              <span v-if="Object.keys(checklist).length > 0" 
+                :class="tipoAsistencia === 'entrada' ? 'text-blue-600' : 'text-green-600'"
+                class="text-xs">✓ Completado</span>
+            </div>
+            
+            <div class="space-y-3 p-3 bg-gray-50 rounded-lg">
+              <!-- Batería -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <span class="text-sm font-medium text-gray-700">Batería</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="checklist.bateria" class="sr-only peer">
+                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+                </label>
+              </div>
+
+              <!-- Hélices -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span class="text-sm font-medium text-gray-700">Hélices</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="checklist.helices" class="sr-only peer">
+                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+              </div>
+
+              <!-- GPS -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-purple-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span class="text-sm font-medium text-gray-700">GPS</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="checklist.gps" class="sr-only peer">
+                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                </label>
+              </div>
+
+              <!-- Cámara -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-orange-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span class="text-sm font-medium text-gray-700">Cámara</span>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" v-model="checklist.camara" class="sr-only peer">
+                  <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-600"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Paso 4: Observaciones -->
+          <div class="mb-4">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-base font-semibold text-gray-800">4. Observaciones</h3>
               <span v-if="descripcion.trim()" 
                 :class="tipoAsistencia === 'entrada' ? 'text-blue-600' : 'text-green-600'"
                 class="text-xs">✓ Completado</span>
@@ -417,7 +410,7 @@
               v-model="descripcion"
               rows="2"
               class="glass-input w-full text-xs"
-              :placeholder="'Describe el lugar donde ' + (tipoAsistencia === 'entrada' ? 'inicias' : 'terminas') + ' tu jornada...'"
+              :placeholder="'Observaciones sobre el equipo para ' + (tipoAsistencia === 'entrada' ? 'entrada' : 'salida') + '...'"
             ></textarea>
           </div>
 
@@ -431,35 +424,35 @@
             </button>
             
             <button
-              @click="confirmarAsistencia"
-              :disabled="!puedeEnviarAsistencia || enviandoAsistencia"
+              @click="confirmarSolicitud"
+              :disabled="!puedeEnviarSolicitud || enviandoAsistencia"
               class="flex-1 relative text-xs py-2"
               :class="[
                 'glass-button',
                 tipoAsistencia === 'entrada' ? 'glass-button-entrada' : 'glass-button-salida',
-                {'opacity-50 cursor-not-allowed': !puedeEnviarAsistencia || enviandoAsistencia}
+                {'opacity-50 cursor-not-allowed': !puedeEnviarSolicitud || enviandoAsistencia}
               ]"
             >
               <div v-if="enviandoAsistencia" class="absolute inset-0 bg-white bg-opacity-20 flex items-center justify-center rounded">
                 <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
               </div>
-              <span>{{ tipoAsistencia === 'entrada' ? 'Registrar Entrada' : 'Registrar Salida' }}</span>
+              <span>{{ 'Enviar Solicitud' }}</span>
             </button>
           </div>
 
           <!-- Advertencia si faltan datos -->
-          <div v-if="!puedeEnviarAsistencia" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div v-if="!puedeEnviarSolicitud" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div class="flex items-center text-yellow-800">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <span class="text-sm font-medium">
-                Faltan datos: 
+                Faltan datos requeridos: 
                 {{ !latitud || !longitud ? 'Ubicación' : '' }}
                 {{ (!latitud || !longitud) && !foto ? ', ' : '' }}
-                {{ !foto ? 'Foto' : '' }}
-                {{ ((!latitud || !longitud) || !foto) && !descripcion.trim() ? ', ' : '' }}
-                {{ !descripcion.trim() ? 'Descripción' : '' }}
+                {{ !foto ? 'Foto del equipo' : '' }}
+                {{ ((!latitud || !longitud) || !foto) && Object.keys(checklist).length === 0 ? ', ' : '' }}
+                {{ Object.keys(checklist).length === 0 ? 'Checklist' : '' }}
               </span>
             </div>
           </div>
@@ -965,12 +958,13 @@ const datosSalida = ref({});
 const asistenciaHoy = ref(null);
 const verificandoAsistencia = ref(false);
 
-// Referencias y estado para asistencia (datos del formulario)
+// Referencias y estado para solicitudes de drones (datos del formulario)
 const latitud = ref(null);
 const longitud = ref(null);
 const foto = ref(null);
 const archivoFoto = ref(null);
 const descripcion = ref("");
+const checklist = ref({}); // Nuevo: checklist del equipo
 
 // Referencias y estado para registro normal
 const latitudRegistro = ref(null);
@@ -1078,30 +1072,31 @@ const getUserInitials = computed(() => {
   return 'US';
 });
 
-// Computed para verificar si se pueden enviar los datos de asistencia
-const puedeEnviarAsistencia = computed(() => {
-  return latitud.value && longitud.value && foto.value && descripcion.value.trim();
+// Computed para verificar si se pueden enviar los datos de solicitud
+const puedeEnviarSolicitud = computed(() => {
+  return latitud.value && longitud.value && foto.value && Object.keys(checklist.value).length > 0;
 });
 
-// Funciones para el sistema de asistencia
-function iniciarAsistencia(tipo) {
+// Funciones para el sistema de solicitudes de drones
+function iniciarSolicitud(tipo) {
   modoAsistencia.value = true;
   tipoAsistencia.value = tipo;
-  limpiarDatosAsistencia();
+  limpiarDatosSolicitud();
   error.value = null;
   mensajeAsistencia.value = '';
   
-  // Obtener ubicación automáticamente al iniciar el proceso de asistencia
-  console.log(`🚀 Iniciando proceso de ${tipo}, obteniendo ubicación automáticamente...`);
+  // Obtener ubicación automáticamente al iniciar el proceso de solicitud
+  console.log(`� Iniciando solicitud de ${tipo} de dron, obteniendo ubicación automáticamente...`);
   getUbicacion();
 }
 
-function limpiarDatosAsistencia() {
+function limpiarDatosSolicitud() {
   latitud.value = null;
   longitud.value = null;
   foto.value = null;
   archivoFoto.value = null;
   descripcion.value = "";
+  checklist.value = {};
   
   if (fileInput.value) {
     fileInput.value.value = "";
@@ -1111,152 +1106,65 @@ function limpiarDatosAsistencia() {
 function cancelarAsistencia() {
   modoAsistencia.value = false;
   tipoAsistencia.value = '';
-  limpiarDatosAsistencia();
+  limpiarDatosSolicitud();
 }
 
-async function confirmarAsistencia() {
-  if (!puedeEnviarAsistencia.value || enviandoAsistencia.value) return;
+async function confirmarSolicitud() {
+  if (!puedeEnviarSolicitud.value || enviandoAsistencia.value) return;
   
   enviandoAsistencia.value = true;
   error.value = null;
   
   try {
+    console.log('� Enviando solicitud de dron:', {
+      tipo: tipoAsistencia.value,
+      usuario: user.value.id,
+      checklist: checklist.value,
+      ubicacion: { lat: latitud.value, lon: longitud.value }
+    });
+    
     // Verificar conexión a internet antes de enviar
     isOnline.value = await checkInternetConnection();
     
     if (!isOnline.value) {
-      // **MODO OFFLINE: Guardar datos localmente**
-      console.log('📴 Sin conexión - Guardando asistencia offline');
-      
-      // Guardar en almacenamiento offline usando IndexedDB
-      await offlineService.guardarAsistenciaOffline(
-        user.value.id,
-        tipoAsistencia.value,
-        latitud.value,
-        longitud.value,
-        descripcion.value,
-        archivoFoto.value
-      );
-      
-      // Simular datos de respuesta para el estado local
-      const horaActual = new Date().toLocaleTimeString('es-MX', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'America/Mexico_City'
-      });
-      
-      // Actualizar estado local
-      if (tipoAsistencia.value === 'entrada') {
-        entradaMarcada.value = true;
-        datosEntrada.value = {
-          hora: horaActual,
-          descripcion: descripcion.value,
-          latitud: latitud.value,
-          longitud: longitud.value,
-          foto_url: foto.value // URL local temporal
-        };
-      } else {
-        salidaMarcada.value = true;
-        datosSalida.value = {
-          hora: horaActual,
-          descripcion: descripcion.value,
-          latitud: latitud.value,
-          longitud: longitud.value,
-          foto_url: foto.value // URL local temporal
-        };
-      }
-      
-      // Mostrar mensaje informativo offline
-      mensajeAsistencia.value = `${tipoAsistencia.value === 'entrada' ? 'Entrada' : 'Salida'} guardada offline. Se enviará automáticamente cuando tengas conexión.`;
-      modalMessage.value = `¡${tipoAsistencia.value === 'entrada' ? 'Entrada' : 'Salida'} guardada! Se sincronizará cuando recuperes la conexión.`;
-      showModal.value = true;
-      
-      // Salir del modo asistencia
-      modoAsistencia.value = false;
-      tipoAsistencia.value = '';
-      limpiarDatosAsistencia();
-      
-      // Guardar estado en localStorage
-      guardarEstadoAsistencia();
-      
-      // Limpiar mensaje después de 8 segundos (más tiempo para modo offline)
-      setTimeout(() => {
-        mensajeAsistencia.value = '';
-      }, 8000);
-      
+      // TODO: Implementar almacenamiento offline para solicitudes de drones
+      error.value = "Sin conexión. Las solicitudes de drones requieren conexión a internet para enviarlas al supervisor.";
       return;
     }
 
-    // **MODO ONLINE: Enviar directamente al servidor**
-    console.log('🌐 Conexión disponible - Enviando asistencia al servidor');
-    
     // Crear FormData para enviar al servidor
     const formData = new FormData();
     formData.append("usuario_id", user.value.id.toString());
+    formData.append("tipo", tipoAsistencia.value);
     formData.append("latitud", latitud.value);
     formData.append("longitud", longitud.value);
-    formData.append("descripcion", descripcion.value);
-    formData.append("foto", archivoFoto.value);
+    formData.append("foto_equipo", archivoFoto.value);
+    formData.append("checklist", JSON.stringify(checklist.value));
+    formData.append("observaciones", descripcion.value);
     
-    // ✅ NUEVO: Agregar timestamp CDMX exacto (igual que la barra verde)
-    // Solo enviar timestamp_offline si el servidor lo soporta
+    // Agregar timestamp offline si está disponible
     const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalDev) {
       formData.append("timestamp_offline", obtenerTimestampCDMX());
     }
 
-    // Determinar endpoint según tipo de asistencia y usar el servicio
-    let response;
-    if (tipoAsistencia.value === 'entrada') {
-      response = await asistenciasService.registrarEntrada(formData);
-    } else {
-      response = await asistenciasService.registrarSalida(formData);
-    }
-
-    // Procesar respuesta exitosa
-    if (tipoAsistencia.value === 'entrada') {
-      entradaMarcada.value = true;
-      datosEntrada.value = {
-        hora: new Date(response.hora_entrada).toLocaleTimeString('es-MX', {
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'America/Mexico_City'
-        }),
-        descripcion: response.descripcion,
-        latitud: response.latitud,
-        longitud: response.longitud,
-        foto_url: response.foto_url
-      };
-    } else {
-      salidaMarcada.value = true;
-      datosSalida.value = {
-        hora: new Date(response.hora_salida).toLocaleTimeString('es-MX', {
-          hour: '2-digit',
-          minute: '2-digit',
-          timeZone: 'America/Mexico_City'
-        }),
-        descripcion: response.descripcion,
-        latitud: response.latitud,
-        longitud: response.longitud,
-        foto_url: response.foto_url
-      };
-    }
+    // Enviar solicitud al endpoint de solicitudes
+    const response = await axios.post(`${API_URL}/solicitudes`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      },
+      timeout: 15000
+    });
 
     // Mostrar mensaje de éxito
-    mensajeAsistencia.value = response.mensaje;
-    modalMessage.value = `¡${tipoAsistencia.value === 'entrada' ? 'Entrada' : 'Salida'} registrada exitosamente!`;
+    mensajeAsistencia.value = `Solicitud de ${tipoAsistencia.value} enviada al supervisor exitosamente.`;
+    modalMessage.value = `¡Solicitud de ${tipoAsistencia.value} enviada! El supervisor revisará tu solicitud.`;
     showModal.value = true;
     
-    // Salir del modo asistencia
+    // Salir del modo solicitud
     modoAsistencia.value = false;
     tipoAsistencia.value = '';
-    limpiarDatosAsistencia();
-    
-    // Guardar estado en localStorage
-    guardarEstadoAsistencia();
-    
-    // Verificar asistencia con el backend para actualizar datos
-    await verificarAsistenciaHoy();
+    limpiarDatosSolicitud();
     
     // Limpiar mensaje después de 5 segundos
     setTimeout(() => {
@@ -1264,25 +1172,13 @@ async function confirmarAsistencia() {
     }, 5000);
 
   } catch (err) {
-    console.error('Error al enviar asistencia:', err);
+    console.error('Error al enviar solicitud:', err);
     if (err.response) {
       error.value = "Error del servidor: " + (err.response.data.detail || err.response.statusText);
-      
-      // Si ya existe registro, actualizar estado
-      if (err.response.data.detail && err.response.data.detail.includes('Ya existe')) {
-        if (tipoAsistencia.value === 'entrada') {
-          entradaMarcada.value = true;
-        } else {
-          salidaMarcada.value = true;
-        }
-        
-        // Actualizar datos desde el servidor
-        await verificarAsistenciaHoy();
-      }
     } else if (err.request) {
       error.value = "No se pudo conectar con el servidor. Verifica tu conexión a internet.";
     } else {
-      error.value = "Error al enviar datos: " + err.message;
+      error.value = "Error al enviar solicitud: " + err.message;
     }
   } finally {
     enviandoAsistencia.value = false;
@@ -1763,55 +1659,8 @@ function closeSuccessModal() {
 
 // Funciones para modales de confirmación
 function mostrarModalEntrada() {
-  entradaModalMessage.value = `
-    <div class="text-left">
-      <div class="flex items-center mb-3">
-        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center mr-3" style="background-color: rgba(30, 144, 255, 0.1);">
-          <svg class="w-5 h-5" style="color: rgb(30, 144, 255);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-          </svg>
-        </div>
-        <div>
-          <h3 class="text-base font-semibold text-gray-900">Registrar Entrada</h3>
-          <p class="text-xs text-gray-600">Inicia tu jornada laboral</p>
-        </div>
-      </div>
-      
-      <div class="p-3 mb-3 rounded" style="background-color: rgba(30, 144, 255, 0.1); border-left: 4px solid rgba(30, 144, 255, 0.6);">
-        <div class="flex items-center">
-          <svg class="w-4 h-4 mr-2" style="color: rgb(30, 144, 255);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          </svg>
-          <p class="font-medium text-sm" style="color: rgb(25, 118, 210);">Al registrar tu entrada podrás registrar actividades</p>
-        </div>
-        <p class="text-xs mt-1 ml-6" style="color: rgb(30, 144, 255);">Durante tu jornada podrás capturar todas tus actividades</p>
-      </div>
-
-      <div class="space-y-2 text-xs text-gray-600">
-        <div class="flex items-start">
-          <svg class="w-3 h-3 mr-2 mt-0.5 flex-shrink-0" style="color: rgb(30, 144, 255);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-          </svg>
-          <span>Se capturará ubicación y fotografía</span>
-        </div>
-        
-        <div class="flex items-start">
-          <svg class="w-3 h-3 text-purple-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
-          </svg>
-          <span>Funciona offline</span>
-        </div>
-        
-        <div class="flex items-start">
-          <svg class="w-3 h-3 text-amber-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
-          </svg>
-          <span>No se puede cancelar una vez registrada</span>
-        </div>
-      </div>
-    </div>
-  `;
-  showEntradaModal.value = true;
+  // Esta función ya no se usa en el nuevo flujo de solicitudes de drones
+  console.log('⚠️ Función obsoleta mostrarModalEntrada llamada');
 }
 
 function mostrarModalSalida() {

@@ -163,6 +163,34 @@ try:
         )
     """, fetch_type='none')
     
+    # Crear extensión PostGIS si no existe (necesaria para ubicaciones geográficas)
+    try:
+        ejecutar_consulta_segura("CREATE EXTENSION IF NOT EXISTS postgis", fetch_type='none')
+        print("✅ Extensión PostGIS verificada/creada")
+    except Exception as e:
+        print(f"⚠️ No se pudo crear extensión PostGIS (puede que ya exista o falten permisos): {e}")
+    
+    # Crear tabla solicitudes_dron si no existe
+    ejecutar_consulta_segura("""
+        CREATE TABLE IF NOT EXISTS solicitudes_dron (
+            id SERIAL PRIMARY KEY,
+            tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('entrada','salida')),
+            usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+            fecha_hora TIMESTAMPTZ NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Mexico_City'),
+            foto_equipo TEXT,
+            checklist JSONB NOT NULL,
+            observaciones TEXT,
+            ubicacion GEOGRAPHY(Point, 4326),
+            estado VARCHAR(20) NOT NULL DEFAULT 'pendiente'
+                CHECK (estado IN ('pendiente','aprobado','rechazado')),
+            comentarios_supervisor TEXT,
+            fecha_respuesta TIMESTAMPTZ,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """, fetch_type='none')
+    
+    print("✅ Tabla solicitudes_dron verificada/creada")
+    
     # Verificar si existen usuarios admin, si no crear uno por defecto
     count_result = ejecutar_consulta_segura("SELECT COUNT(*) FROM admin_users", fetch_type='one')
     count = count_result[0] if count_result else 0
@@ -1721,8 +1749,9 @@ def obtener_fecha_hora_cdmx(timestamp_offline=None):
     
     return fecha_cdmx, now_cdmx, timestamp_for_filename
 
-@app.post("/asistencia/entrada")
-async def marcar_entrada(
+# DEPRECATED: Reemplazado por el nuevo sistema de solicitudes de drones
+# @app.post("/asistencia/entrada")
+async def marcar_entrada_deprecated(
     usuario_id: int = Form(...),
     latitud: float = Form(...),
     longitud: float = Form(...),
@@ -1799,8 +1828,9 @@ async def marcar_entrada(
         print(f"❌ Error general en entrada: {e}")
         raise HTTPException(status_code=500, detail=f"Error al registrar entrada: {str(e)}")
 
-@app.post("/asistencia/salida")
-async def marcar_salida(
+# DEPRECATED: Reemplazado por el nuevo sistema de solicitudes de drones  
+# @app.post("/asistencia/salida")
+async def marcar_salida_deprecated(
     usuario_id: int = Form(...),
     latitud: float = Form(...),
     longitud: float = Form(...),
@@ -4777,6 +4807,317 @@ async def verificar_salud_api():
         "timestamp": datetime.now().isoformat(),
         "database_connected": bool(conn)
     }
+
+# ==================== ENDPOINTS DE GESTIÓN DE SOLICITUDES DE DRONES ====================
+
+@app.post("/solicitudes")
+async def crear_solicitud_dron(
+    usuario_id: int = Form(...),
+    tipo: str = Form(...),  # 'entrada' o 'salida'
+    latitud: float = Form(...),
+    longitud: float = Form(...),
+    foto_equipo: UploadFile = File(...),
+    checklist: str = Form(...),  # JSON string con el checklist
+    observaciones: str = Form(""),
+    timestamp_offline: str = Form(None)  # Campo opcional para registro offline
+):
+    """Crear nueva solicitud de entrada o salida de dron"""
+    try:
+        print(f"🚁 SOLICITUD DRON - Datos recibidos:")
+        print(f"   usuario_id: {usuario_id}")
+        print(f"   tipo: {tipo}")
+        print(f"   latitud: {latitud}")
+        print(f"   longitud: {longitud}")
+        print(f"   foto_equipo: {foto_equipo.filename}")
+        print(f"   checklist: {checklist}")
+        print(f"   observaciones: {observaciones}")
+        print(f"   timestamp_offline: {timestamp_offline}")
+        
+        # Validar tipo de solicitud
+        if tipo not in ['entrada', 'salida']:
+            raise HTTPException(status_code=400, detail="El tipo debe ser 'entrada' o 'salida'")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Usar timestamp personalizado si viene de offline, sino usar tiempo actual
+        fecha, fecha_hora, timestamp_for_filename = obtener_fecha_hora_cdmx(timestamp_offline)
+
+        # Validar JSON del checklist
+        try:
+            checklist_json = json.loads(checklist)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
+
+        # Guardar la foto del equipo
+        ext = os.path.splitext(foto_equipo.filename)[1]
+        nombre_archivo = f"dron_{tipo}_{usuario_id}_{timestamp_for_filename}{ext}"
+        ruta_archivo = os.path.join(FOTOS_DIR, nombre_archivo)
+        
+        with open(ruta_archivo, "wb") as f:
+            contenido = await foto_equipo.read()
+            f.write(contenido)
+
+        # Crear el punto geográfico para PostgreSQL
+        punto_ubicacion = f"POINT({longitud} {latitud})"
+
+        # Insertar solicitud en la base de datos
+        cursor.execute("""
+            INSERT INTO solicitudes_dron 
+            (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
+            VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
+            RETURNING id
+        """, (tipo, usuario_id, fecha_hora, ruta_archivo, json.dumps(checklist_json), 
+              observaciones, punto_ubicacion, 'pendiente'))
+        
+        solicitud_id = cursor.fetchone()[0]
+        conn.commit()
+        
+        print(f"✅ Solicitud de {tipo} creada con ID: {solicitud_id}")
+        
+        return {
+            "status": "ok",
+            "mensaje": f"Solicitud de {tipo} de dron enviada al supervisor",
+            "solicitud_id": solicitud_id,
+            "tipo": tipo,
+            "fecha_hora": str(fecha_hora),
+            "estado": "pendiente",
+            "foto_equipo": ruta_archivo
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL en solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general en solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al crear solicitud: {str(e)}")
+
+@app.get("/solicitudes")
+async def obtener_solicitudes(
+    estado: Optional[str] = None,  # 'pendiente', 'aprobado', 'rechazado'
+    usuario_id: Optional[int] = None,
+    tipo: Optional[str] = None,  # 'entrada', 'salida'
+    limit: Optional[int] = 50
+):
+    """Obtener listado de solicitudes con filtros opcionales"""
+    try:
+        print(f"📋 Consultando solicitudes - Filtros:")
+        print(f"   estado: {estado}")
+        print(f"   usuario_id: {usuario_id}")
+        print(f"   tipo: {tipo}")
+        print(f"   limit: {limit}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Construir consulta base
+        query = """
+            SELECT s.id, s.tipo, s.usuario_id, s.fecha_hora, s.foto_equipo, 
+                   s.checklist, s.observaciones, s.estado,
+                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                   u.nombre_completo, u.cargo
+            FROM solicitudes_dron s
+            LEFT JOIN usuarios u ON s.usuario_id = u.id
+            WHERE 1=1
+        """
+        params = []
+        
+        # Agregar filtros dinámicamente
+        if estado:
+            if estado not in ['pendiente', 'aprobado', 'rechazado']:
+                raise HTTPException(status_code=400, detail="Estado debe ser 'pendiente', 'aprobado' o 'rechazado'")
+            query += " AND s.estado = %s"
+            params.append(estado)
+        
+        if usuario_id:
+            query += " AND s.usuario_id = %s"
+            params.append(usuario_id)
+            
+        if tipo:
+            if tipo not in ['entrada', 'salida']:
+                raise HTTPException(status_code=400, detail="Tipo debe ser 'entrada' o 'salida'")
+            query += " AND s.tipo = %s"
+            params.append(tipo)
+        
+        # Ordenar por fecha más reciente y aplicar límite
+        query += " ORDER BY s.fecha_hora DESC"
+        if limit:
+            query += f" LIMIT {limit}"
+        
+        cursor.execute(query, params)
+        registros = cursor.fetchall()
+        
+        solicitudes = []
+        for registro in registros:
+            solicitud = {
+                "id": registro[0],
+                "tipo": registro[1],
+                "usuario_id": registro[2],
+                "fecha_hora": registro[3].isoformat() if registro[3] else None,
+                "foto_equipo": registro[4],
+                "checklist": json.loads(registro[5]) if registro[5] else {},
+                "observaciones": registro[6],
+                "estado": registro[7],
+                "ubicacion": {
+                    "longitud": float(registro[8]) if registro[8] else None,
+                    "latitud": float(registro[9]) if registro[9] else None
+                },
+                "usuario": {
+                    "nombre_completo": registro[10],
+                    "cargo": registro[11]
+                }
+            }
+            solicitudes.append(solicitud)
+        
+        print(f"✅ Encontradas {len(solicitudes)} solicitudes")
+        
+        return {
+            "solicitudes": solicitudes,
+            "total": len(solicitudes),
+            "filtros_aplicados": {
+                "estado": estado,
+                "usuario_id": usuario_id,
+                "tipo": tipo,
+                "limit": limit
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al consultar solicitudes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener solicitudes: {str(e)}")
+
+@app.put("/solicitudes/{solicitud_id}")
+async def actualizar_solicitud(
+    solicitud_id: int,
+    accion: str = Form(...),  # 'aprobar' o 'rechazar'
+    comentarios: str = Form("")  # Comentarios del supervisor
+):
+    """Aprobar o rechazar una solicitud (solo para supervisores)"""
+    try:
+        print(f"🔄 Actualizando solicitud {solicitud_id} - Acción: {accion}")
+        
+        # Validar acción
+        if accion not in ['aprobar', 'rechazar']:
+            raise HTTPException(status_code=400, detail="La acción debe ser 'aprobar' o 'rechazar'")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la solicitud existe y está pendiente
+        cursor.execute(
+            "SELECT id, estado, tipo, usuario_id FROM solicitudes_dron WHERE id = %s",
+            (solicitud_id,)
+        )
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        if solicitud[1] != 'pendiente':
+            raise HTTPException(
+                status_code=400, 
+                detail=f"La solicitud ya está {solicitud[1]} y no se puede modificar"
+            )
+        
+        # Determinar nuevo estado
+        nuevo_estado = 'aprobado' if accion == 'aprobar' else 'rechazado'
+        
+        # Actualizar solicitud
+        cursor.execute("""
+            UPDATE solicitudes_dron 
+            SET estado = %s, comentarios_supervisor = %s, fecha_respuesta = %s
+            WHERE id = %s
+        """, (nuevo_estado, comentarios, datetime.now(CDMX_TZ), solicitud_id))
+        
+        conn.commit()
+        
+        print(f"✅ Solicitud {solicitud_id} {nuevo_estado} exitosamente")
+        
+        return {
+            "status": "ok",
+            "mensaje": f"Solicitud {nuevo_estado} exitosamente",
+            "solicitud_id": solicitud_id,
+            "nuevo_estado": nuevo_estado,
+            "tipo_solicitud": solicitud[2],
+            "usuario_id": solicitud[3],
+            "comentarios": comentarios
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL al actualizar solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general al actualizar solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar solicitud: {str(e)}")
+
+@app.get("/solicitudes/{solicitud_id}")
+async def obtener_solicitud_detalle(solicitud_id: int):
+    """Obtener detalles de una solicitud específica"""
+    try:
+        print(f"🔍 Consultando detalles de solicitud {solicitud_id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        cursor.execute("""
+            SELECT s.id, s.tipo, s.usuario_id, s.fecha_hora, s.foto_equipo, 
+                   s.checklist, s.observaciones, s.estado, s.comentarios_supervisor, 
+                   s.fecha_respuesta,
+                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                   u.nombre_completo, u.cargo, u.email
+            FROM solicitudes_dron s
+            LEFT JOIN usuarios u ON s.usuario_id = u.id
+            WHERE s.id = %s
+        """, (solicitud_id,))
+        
+        registro = cursor.fetchone()
+        
+        if not registro:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        solicitud = {
+            "id": registro[0],
+            "tipo": registro[1],
+            "usuario_id": registro[2],
+            "fecha_hora": registro[3].isoformat() if registro[3] else None,
+            "foto_equipo": registro[4],
+            "checklist": json.loads(registro[5]) if registro[5] else {},
+            "observaciones": registro[6],
+            "estado": registro[7],
+            "comentarios_supervisor": registro[8],
+            "fecha_respuesta": registro[9].isoformat() if registro[9] else None,
+            "ubicacion": {
+                "longitud": float(registro[10]) if registro[10] else None,
+                "latitud": float(registro[11]) if registro[11] else None
+            },
+            "usuario": {
+                "nombre_completo": registro[12],
+                "cargo": registro[13],
+                "email": registro[14]
+            }
+        }
+        
+        print(f"✅ Solicitud {solicitud_id} encontrada - Estado: {solicitud['estado']}")
+        
+        return {"solicitud": solicitud}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al obtener detalles de solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener solicitud: {str(e)}")
+
+# ==================== FIN ENDPOINTS DE GESTIÓN DE SOLICITUDES DE DRONES ====================
 
 # ==================== FIN ENDPOINTS DE GESTIÓN DE ROLES Y PERMISOS ====================
 
