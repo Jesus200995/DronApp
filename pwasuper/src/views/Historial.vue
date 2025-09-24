@@ -225,10 +225,9 @@ async function cargarHistorial() {
     
     // Obtener historial específico del usuario actual
     const response = await axios.get(`${API_URL}/historial/${userInfo.value.id}`, {
-      timeout: 15000, // 15 segundos de timeout
+      timeout: 10000, // 10 segundos de timeout
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Content-Type': 'application/json'
       }
     });
     
@@ -238,8 +237,19 @@ async function cargarHistorial() {
     historial.value = response.data.historial || [];
     
     console.log('✅ Total de registros de historial:', historial.value.length);
+    
+    // Si no hay historial pero el endpoint funcionó, mostrar mensaje amigable
+    if (historial.value.length === 0) {
+      console.log('📋 No hay registros de historial - usuario puede no haber creado solicitudes aún');
+    }
+    
   } catch (err) {
     console.error('Error al cargar historial:', err);
+    console.error('Detalles del error:', {
+      status: err.response?.status,
+      statusText: err.response?.statusText,
+      data: err.response?.data
+    });
     
     if (err.response) {
       // Error de respuesta del servidor
@@ -247,17 +257,20 @@ async function cargarHistorial() {
         error.value = 'No se encontraron registros de historial para este usuario.';
         historial.value = []; // Asegurar que esté vacío
       } else if (err.response.status === 500) {
-        error.value = 'El servidor está experimentando problemas técnicos. Por favor, inténtalo más tarde.';
+        error.value = `Error del servidor: ${err.response.data?.detail || 'Problema interno del servidor'}`;
       } else {
-        error.value = 'Error del servidor: ' + (err.response.data.detail || err.response.statusText);
+        error.value = `Error ${err.response.status}: ${err.response.data?.detail || err.response.statusText}`;
       }
     } else if (err.request) {
-      // Error de conexión
-      error.value = 'No se pudo conectar con el servidor. Verifica tu conexión a internet.';
+      // Error de conexión - servidor no disponible
+      error.value = 'No se pudo conectar con el servidor. El servidor backend no está disponible.';
     } else {
       // Error general
-      error.value = 'Error al cargar el historial: ' + err.message;
+      error.value = 'Error inesperado: ' + err.message;
     }
+    
+    // En caso de error, asegurar que el historial esté vacío
+    historial.value = [];
   } finally {
     cargando.value = false;
   }
