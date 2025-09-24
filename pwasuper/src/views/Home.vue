@@ -113,59 +113,24 @@
           </button>
         </div>
 
-        <!-- Aviso informativo sobre solicitudes de drones -->
-        <div v-if="!modoAsistencia" class="text-center mb-2 relative">
-          <!-- Ícono de dron en esquina -->
-          <div class="absolute -left-0.5 -top-0.5 w-4 h-4 bg-gradient-to-br from-blue-300/80 via-blue-400/70 to-blue-500/60 rounded-full shadow-md backdrop-blur-sm border border-blue-200/50 z-30 overflow-hidden">
-            <!-- Efecto vidrio líquido en círculo -->
-            <div class="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-blue-100/20 pointer-events-none rounded-full"></div>
+        <!-- Botón de Historial -->
+        <div v-if="!modoAsistencia" class="mb-2">
+          <button
+            @click="$router.push('/historial')"
+            class="modern-drone-button historial-button group relative overflow-hidden rounded-2xl min-h-[90px] w-full flex flex-col items-center justify-center p-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
+          >
+            <!-- Efecto de resplandor animado -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
             
-            <!-- Reflejo líquido superior -->
-            <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/50 to-transparent rounded-full"></div>
+            <!-- Elementos decorativos flotantes -->
+            <div class="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
+            <div class="absolute bottom-3 left-3 w-1.5 h-1.5 bg-white/20 rounded-full animate-ping" style="animation-delay: 0.6s;"></div>
             
-            <!-- Ondas líquidas (más pequeñas) -->
-            <div class="absolute inset-0 opacity-30">
-              <div class="absolute top-0.5 left-0.5 w-1 h-1 bg-white/60 rounded-full animate-ping"></div>
+            <div class="relative z-10 flex flex-col items-center space-y-1">
+              <span class="font-bold text-base tracking-wide">Ver Historial</span>
+              <span class="text-xs opacity-80 font-medium">Seguimiento de solicitudes</span>
             </div>
-            
-            <!-- Ícono de dron (más pequeño) -->
-            <div class="relative z-10 w-full h-full flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-blue-700/80 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </div>
-          </div>
-          
-          <!-- Contenedor principal rediseñado -->
-          <div class="relative bg-gradient-to-br from-blue-900 via-blue-950 to-indigo-950 backdrop-blur-sm rounded-xl shadow-xl border border-blue-800/30 overflow-hidden mx-2">
-            <!-- Borde superior azul elegante -->
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-400 to-blue-500"></div>
-            
-            <!-- Contenido principal -->
-            <div class="relative p-4">
-              <!-- Icono y encabezado -->
-              <div class="flex items-center justify-center mb-3">
-                <div class="flex items-center space-x-2">
-                  <div class="w-7 h-7 rounded-full bg-blue-500 flex items-center justify-center shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <span class="font-semibold text-blue-100 tracking-wide uppercase" style="font-size: 0.6rem;">Instrucción</span>
-                </div>
-              </div>
-              
-              <!-- Mensaje principal -->
-              <div class="text-center space-y-1">
-                <h3 class="text-2xs font-semibold text-white leading-tight" style="font-size: 0.65rem;">
-                  Gestiona operaciones de solicitud y entrega de equipos
-                </h3>
-                <p class="text-2xs text-blue-200 font-medium" style="font-size: 0.6rem;">
-                  Cada solicitud será enviada al supervisor para aprobación
-                </p>
-              </div>
-            </div>
-          </div>
+          </button>
         </div>
         
         <!-- Mensaje de estado de asistencia -->
@@ -4533,5 +4498,31 @@ watch([entradaMarcada, salidaMarcada], () => {
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.1),
     0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.historial-button {
+  background: linear-gradient(135deg, 
+    rgba(255, 159, 67, 0.9) 0%,
+    rgba(255, 127, 80, 0.95) 30%,
+    rgba(255, 99, 71, 1) 70%,
+    rgba(220, 69, 86, 1) 100%
+  );
+  box-shadow: 
+    0 8px 32px rgba(255, 159, 67, 0.3),
+    0 4px 16px rgba(255, 127, 80, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.historial-button:hover {
+  background: linear-gradient(135deg, 
+    rgba(255, 127, 80, 0.95) 0%,
+    rgba(255, 99, 71, 1) 30%,
+    rgba(220, 69, 86, 1) 70%,
+    rgba(184, 59, 94, 1) 100%
+  );
+  box-shadow: 
+    0 12px 40px rgba(255, 159, 67, 0.4),
+    0 6px 20px rgba(255, 127, 80, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 </style>
