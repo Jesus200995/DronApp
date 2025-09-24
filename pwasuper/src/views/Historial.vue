@@ -41,7 +41,7 @@
         <div class="mb-3 text-sm text-gray-600">
           Total de registros: <span class="font-semibold text-blue-700">{{ historial.length }}</span>
         </div>
-        <div class="space-y-2">
+        <div class="space-y-4">
           <div v-for="(item, index) in historial" :key="index" 
                :class="[
                  'historial-card relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg',
