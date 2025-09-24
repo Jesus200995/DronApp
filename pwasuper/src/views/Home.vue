@@ -85,7 +85,7 @@
               <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
             </div>
             
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
             <span class="font-semibold text-sm">Entrada de Dron</span>
@@ -105,7 +105,7 @@
               <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-current"></div>
             </div>
             
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             <span class="font-semibold text-sm">Salida de Dron</span>
@@ -263,7 +263,7 @@
                 
                 <!-- Estado completado -->
                 <div v-else-if="latitud && longitud" class="flex items-center space-x-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span class="text-sm font-medium text-white">Ubicación OK</span>
@@ -271,7 +271,7 @@
                 
                 <!-- Estado inicial -->
                 <div v-else class="flex items-center space-x-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
@@ -339,9 +339,9 @@
               </div>
             </div>
             
-            <div class="grid grid-cols-1 gap-2 p-3 bg-gray-50 rounded-lg max-h-80 overflow-y-auto">
+            <div class="grid grid-cols-1 gap-2 p-2 bg-gray-50 rounded-lg max-h-80 overflow-y-auto">
               <!-- 1. Inspección Visual Drone -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -350,15 +350,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Chequear ajustes de tornillería, tren de aterrizaje, gimbal y accesorios.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.inspeccion_visual_drone" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 2. Inspección Visual Hélices -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -367,15 +367,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Chequear que no estén fisuradas, rajadas y la rosca o traba esté sana.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.inspeccion_visual_helices" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 3. Inspección Baterías -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -384,15 +384,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Chequear carga y estado físico de todas las baterías a utilizar.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.inspeccion_baterias" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 4. Inspección de Motores -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -401,15 +401,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Girar los motores y notar su libre giro o que no suenen raro o trabados.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.inspeccion_motores" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 5. Control Remoto -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -418,15 +418,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Chequear posición de comandos y encender, verificar carga del control.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.control_remoto" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 6. Inspección Móvil o Tablet -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -435,15 +435,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Cargar la batería completa del celular o tableta a utilizar para la aplicación.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.inspeccion_movil_tablet" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 7. Tarjeta de Memoria -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -452,15 +452,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Verificar esté insertada la tarjeta de memoria en la cámara o equipo drone. Verificar contenido o formato.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.tarjeta_memoria" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 8. Inspección IMU -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -469,15 +469,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Chequear los parámetros de la IMU que estén dentro de los valores normales, de lo contrario calibrar.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.inspeccion_imu" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 9. Mapas Offline -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -486,15 +486,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Bajar los mapas de la zona a realizar el vuelo antes de ir al destino si en este no hay internet.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.mapas_offline" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 10. Protección Gimbal -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -503,15 +503,15 @@
                     </div>
                     <p class="text-xs text-gray-600">Verificar la protección del gimbal para el transporte.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.proteccion_gimbal" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
 
               <!-- 11. Análisis del Clima -->
-              <div class="bg-white p-2 rounded border">
+              <div class="bg-white p-1.5 rounded border">
                 <div class="flex items-center justify-between">
                   <div class="flex-1">
                     <div class="flex items-center mb-1">
@@ -520,9 +520,9 @@
                     </div>
                     <p class="text-xs text-gray-600">Analizar factores climáticos, tormentas solares, vientos, etc.</p>
                   </div>
-                  <label class="relative inline-flex items-center cursor-pointer ml-2">
+                  <label class="relative inline-flex items-center cursor-pointer ml-1">
                     <input type="checkbox" v-model="checklist.analisis_clima" class="sr-only peer">
-                    <div class="relative w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-yellow-600"></div>
+                    <div class="relative w-10 h-5 bg-gray-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[1px] after:left-[1px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all duration-300 peer-checked:bg-green-600 shadow-inner"></div>
                   </label>
                 </div>
               </div>
@@ -580,7 +580,7 @@
           <!-- Advertencia si faltan datos -->
           <div v-if="!puedeEnviarSolicitud" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
             <div class="flex items-center text-yellow-800">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
               <span class="text-sm font-medium">
@@ -639,7 +639,7 @@
       <div v-if="!entradaMarcada || salidaMarcada" class="mb-4">
         <div class="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded-lg">
           <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
             <div>
@@ -704,7 +704,7 @@
           >
             <!-- Estado completado -->
             <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span class="text-sm font-medium text-white">Ubicación OK</span>
@@ -712,7 +712,7 @@
             
             <!-- Estado bloqueado -->
             <div v-else-if="!entradaMarcada || salidaMarcada" class="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m0 0v2m0-2h2m-2 0H9m12-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span class="text-sm font-medium text-gray-400">
@@ -723,7 +723,7 @@
             
             <!-- Estado inicial -->
             <div v-else class="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -927,7 +927,7 @@
         >
           <span v-if="enviando" class="flex items-center justify-center">
             <svg
-              class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+              class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
