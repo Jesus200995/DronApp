@@ -14,6 +14,8 @@ import re
 import bcrypt
 import pytz
 import json
+import time
+import uuid
 from typing import List, Optional
 import io
 
@@ -4849,14 +4851,38 @@ async def crear_solicitud_dron(
         except json.JSONDecodeError:
             raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
 
-        # Guardar la foto del equipo
-        ext = os.path.splitext(foto_equipo.filename)[1]
-        nombre_archivo = f"dron_{tipo}_{usuario_id}_{timestamp_for_filename}{ext}"
+        # Guardar la foto del equipo con manejo mejorado de archivos
+        ext = os.path.splitext(foto_equipo.filename)[1] if foto_equipo.filename else '.jpg'
+        
+        # Generar nombre único para evitar conflictos
+        import time
+        import uuid
+        timestamp_unico = f"{timestamp_for_filename}_{int(time.time() * 1000)}_{str(uuid.uuid4())[:8]}"
+        nombre_archivo = f"dron_{tipo}_{usuario_id}_{timestamp_unico}{ext}"
         ruta_archivo = os.path.join(FOTOS_DIR, nombre_archivo)
         
-        with open(ruta_archivo, "wb") as f:
+        # Asegurar que el directorio existe y es escribible
+        try:
+            os.makedirs(FOTOS_DIR, exist_ok=True)
+            
+            # Leer contenido del archivo
             contenido = await foto_equipo.read()
-            f.write(contenido)
+            
+            # Escribir archivo con manejo de errores mejorado
+            with open(ruta_archivo, "wb") as f:
+                f.write(contenido)
+                
+            print(f"✅ Foto guardada exitosamente: {ruta_archivo}")
+            
+        except PermissionError as pe:
+            print(f"❌ Error de permisos al guardar foto: {pe}")
+            raise HTTPException(status_code=500, detail=f"Error de permisos al guardar archivo: {str(pe)}")
+        except OSError as ose:
+            print(f"❌ Error del sistema al guardar foto: {ose}")
+            raise HTTPException(status_code=500, detail=f"Error del sistema al guardar archivo: {str(ose)}")
+        except Exception as fe:
+            print(f"❌ Error general al guardar foto: {fe}")
+            raise HTTPException(status_code=500, detail=f"Error al procesar archivo: {str(fe)}")
 
         # Crear el punto geográfico para PostgreSQL
         punto_ubicacion = f"POINT({longitud} {latitud})"
