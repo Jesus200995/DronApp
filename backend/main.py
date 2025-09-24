@@ -192,7 +192,21 @@ try:
         )
     """, fetch_type='none')
     
+    # Crear tabla historial_solicitudes si no existe
+    ejecutar_consulta_segura("""
+        CREATE TABLE IF NOT EXISTS historial_solicitudes (
+            id SERIAL PRIMARY KEY,
+            solicitud_id INT NOT NULL REFERENCES solicitudes_dron(id) ON DELETE CASCADE,
+            usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+            accion VARCHAR(20) NOT NULL CHECK (accion IN ('creacion','edicion','eliminacion','revision')),
+            fecha_hora TIMESTAMPTZ NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Mexico_City'),
+            cambios JSONB,
+            estado_final VARCHAR(20) CHECK (estado_final IN ('pendiente','aprobado','rechazado'))
+        )
+    """, fetch_type='none')
+    
     print("✅ Tabla solicitudes_dron verificada/creada")
+    print("✅ Tabla historial_solicitudes verificada/creada")
     
     # Verificar si existen usuarios admin, si no crear uno por defecto
     count_result = ejecutar_consulta_segura("SELECT COUNT(*) FROM admin_users", fetch_type='one')
@@ -704,6 +718,21 @@ async def crear_solicitud_dron(
               observaciones, punto_ubicacion, 'pendiente'))
         
         solicitud_id = cursor.fetchone()[0]
+        
+        # Registrar en historial la creación de la solicitud
+        cambios_creacion = {
+            "tipo": tipo,
+            "checklist": checklist_json,
+            "observaciones": observaciones,
+            "foto_equipo": nombre_archivo
+        }
+        
+        cursor.execute("""
+            INSERT INTO historial_solicitudes 
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (solicitud_id, usuario_id, 'creacion', fecha_hora, json.dumps(cambios_creacion), 'pendiente'))
+        
         conn.commit()
         
         print(f"✅ Solicitud de {tipo} creada con ID: {solicitud_id}")
@@ -868,6 +897,26 @@ async def actualizar_solicitud(
             WHERE id = %s
         """, (nuevo_estado, comentarios, datetime.now(CDMX_TZ), solicitud_id))
         
+        # Registrar en historial la revisión del supervisor
+        cambios_revision = {
+            "accion": accion,
+            "comentarios_supervisor": comentarios,
+            "estado_anterior": 'pendiente',
+            "estado_nuevo": nuevo_estado
+        }
+        
+        # Obtener el usuario_id del supervisor (aquí se podría implementar autenticación)
+        # Por ahora usamos el usuario_id de la solicitud como fallback
+        cursor.execute("SELECT usuario_id FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        usuario_solicitante = cursor.fetchone()[0]
+        
+        cursor.execute("""
+            INSERT INTO historial_solicitudes 
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (solicitud_id, usuario_solicitante, 'revision', datetime.now(CDMX_TZ), 
+              json.dumps(cambios_revision), nuevo_estado))
+        
         conn.commit()
         
         print(f"✅ Solicitud {solicitud_id} {nuevo_estado} exitosamente")
@@ -949,6 +998,267 @@ async def obtener_solicitud_detalle(solicitud_id: int):
     except Exception as e:
         print(f"❌ Error al obtener detalles de solicitud: {e}")
         raise HTTPException(status_code=500, detail=f"Error al obtener solicitud: {str(e)}")
+
+# ==================== ENDPOINTS DE HISTORIAL DE SOLICITUDES ====================
+
+@app.get("/historial/{usuario_id}")
+async def obtener_historial_usuario(
+    usuario_id: int,
+    limit: Optional[int] = 100
+):
+    """Obtener historial completo de solicitudes de un usuario específico"""
+    try:
+        print(f"📋 Consultando historial para usuario {usuario_id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que el usuario existe
+        cursor.execute("SELECT id, nombre FROM usuarios WHERE id = %s", (usuario_id,))
+        usuario = cursor.fetchone()
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        # Obtener historial completo con datos de la solicitud
+        query = """
+            SELECT 
+                h.id as historial_id,
+                h.solicitud_id,
+                h.accion,
+                h.fecha_hora,
+                h.cambios,
+                h.estado_final,
+                s.tipo,
+                s.observaciones as observaciones_solicitud,
+                s.estado as estado_actual_solicitud,
+                s.comentarios_supervisor,
+                s.fecha_respuesta
+            FROM historial_solicitudes h
+            LEFT JOIN solicitudes_dron s ON h.solicitud_id = s.id
+            WHERE h.usuario_id = %s
+            ORDER BY h.fecha_hora DESC
+            LIMIT %s
+        """
+        
+        cursor.execute(query, (usuario_id, limit))
+        resultados = cursor.fetchall()
+        
+        historial = []
+        for row in resultados:
+            registro = {
+                "historial_id": row[0],
+                "solicitud_id": row[1],
+                "accion": row[2],
+                "fecha_hora": row[3].isoformat() if row[3] else None,
+                "cambios": json.loads(row[4]) if row[4] else {},
+                "estado_final": row[5],
+                "solicitud": {
+                    "tipo": row[6],
+                    "observaciones": row[7],
+                    "estado_actual": row[8],
+                    "comentarios_supervisor": row[9],
+                    "fecha_respuesta": row[10].isoformat() if row[10] else None
+                }
+            }
+            historial.append(registro)
+        
+        print(f"✅ Encontrados {len(historial)} registros de historial")
+        
+        return {
+            "historial": historial,
+            "usuario": {
+                "id": usuario[0],
+                "nombre": usuario[1]
+            },
+            "total": len(historial)
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al obtener historial: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener historial: {str(e)}")
+
+@app.delete("/solicitudes/{solicitud_id}")
+async def eliminar_solicitud(
+    solicitud_id: int,
+    usuario_id: int = Form(...)  # ID del usuario que hace la eliminación
+):
+    """Eliminar una solicitud (solo si está en estado pendiente)"""
+    try:
+        print(f"🗑️ Intentando eliminar solicitud {solicitud_id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la solicitud existe y obtener su estado
+        cursor.execute("""
+            SELECT id, estado, tipo, usuario_id, observaciones, checklist
+            FROM solicitudes_dron 
+            WHERE id = %s
+        """, (solicitud_id,))
+        
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        # Solo permitir eliminación si está pendiente (técnicos) o si es admin (futuro)
+        if solicitud[1] != 'pendiente':
+            raise HTTPException(
+                status_code=403, 
+                detail=f"No se puede eliminar una solicitud en estado '{solicitud[1]}'"
+            )
+        
+        # Verificar que el usuario tiene permisos (es el dueño de la solicitud)
+        if solicitud[3] != usuario_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permisos para eliminar esta solicitud"
+            )
+        
+        # Registrar en historial antes de eliminar
+        cambios_eliminacion = {
+            "tipo": solicitud[2],
+            "observaciones": solicitud[4],
+            "checklist": json.loads(solicitud[5]) if solicitud[5] else {},
+            "motivo": "Eliminación por técnico"
+        }
+        
+        cursor.execute("""
+            INSERT INTO historial_solicitudes 
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (solicitud_id, usuario_id, 'eliminacion', datetime.now(CDMX_TZ), 
+              json.dumps(cambios_eliminacion), solicitud[1]))
+        
+        # Eliminar la solicitud (el historial se mantiene por la FK)
+        cursor.execute("DELETE FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        
+        conn.commit()
+        
+        print(f"✅ Solicitud {solicitud_id} eliminada exitosamente")
+        
+        return {
+            "status": "ok",
+            "mensaje": "Solicitud eliminada exitosamente",
+            "solicitud_id": solicitud_id
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL al eliminar solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general al eliminar solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar solicitud: {str(e)}")
+
+class SolicitudUpdate(BaseModel):
+    checklist: Optional[str] = None  # JSON string
+    observaciones: Optional[str] = None
+    usuario_id: int  # ID del usuario que hace la edición
+
+@app.put("/solicitudes/{solicitud_id}/editar")
+async def editar_solicitud(
+    solicitud_id: int,
+    datos: SolicitudUpdate
+):
+    """Editar una solicitud (solo si está en estado pendiente)"""
+    try:
+        print(f"✏️ Intentando editar solicitud {solicitud_id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la solicitud existe y obtener datos actuales
+        cursor.execute("""
+            SELECT id, estado, tipo, usuario_id, observaciones, checklist
+            FROM solicitudes_dron 
+            WHERE id = %s
+        """, (solicitud_id,))
+        
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        # Solo permitir edición si está pendiente (técnicos) o si es admin (futuro)
+        if solicitud[1] != 'pendiente':
+            raise HTTPException(
+                status_code=403, 
+                detail=f"No se puede editar una solicitud en estado '{solicitud[1]}'"
+            )
+        
+        # Verificar que el usuario tiene permisos (es el dueño de la solicitud)
+        if solicitud[3] != datos.usuario_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permisos para editar esta solicitud"
+            )
+        
+        # Preparar campos a actualizar
+        campos_actualizar = []
+        valores = []
+        cambios_realizados = {}
+        
+        if datos.checklist:
+            try:
+                checklist_json = json.loads(datos.checklist)
+                campos_actualizar.append("checklist = %s")
+                valores.append(json.dumps(checklist_json))
+                cambios_realizados["checklist_anterior"] = json.loads(solicitud[5]) if solicitud[5] else {}
+                cambios_realizados["checklist_nuevo"] = checklist_json
+            except json.JSONDecodeError:
+                raise HTTPException(status_code=400, detail="El checklist debe ser un JSON válido")
+        
+        if datos.observaciones is not None:
+            campos_actualizar.append("observaciones = %s")
+            valores.append(datos.observaciones)
+            cambios_realizados["observaciones_anterior"] = solicitud[4]
+            cambios_realizados["observaciones_nuevo"] = datos.observaciones
+        
+        if not campos_actualizar:
+            raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+        
+        # Actualizar la solicitud
+        valores.append(solicitud_id)
+        query = f"UPDATE solicitudes_dron SET {', '.join(campos_actualizar)} WHERE id = %s"
+        cursor.execute(query, valores)
+        
+        # Registrar en historial la edición
+        cambios_realizados["motivo"] = "Edición por técnico"
+        
+        cursor.execute("""
+            INSERT INTO historial_solicitudes 
+            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (solicitud_id, datos.usuario_id, 'edicion', datetime.now(CDMX_TZ), 
+              json.dumps(cambios_realizados), 'pendiente'))
+        
+        conn.commit()
+        
+        print(f"✅ Solicitud {solicitud_id} editada exitosamente")
+        
+        return {
+            "status": "ok",
+            "mensaje": "Solicitud editada exitosamente",
+            "solicitud_id": solicitud_id,
+            "cambios": cambios_realizados
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL al editar solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general al editar solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al editar solicitud: {str(e)}")
 
 # ==================== MAIN ====================
 
