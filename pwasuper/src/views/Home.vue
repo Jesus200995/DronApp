@@ -644,6 +644,55 @@
         </div>
 
         <form @submit.prevent="guardarActividad">
+          <!-- Ubicación -->
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación *</label>
+            <!-- Botón de ubicación moderno y compacto - idéntico al de entrada/salida -->
+            <div class="location-container-modern">
+              <button
+                type="button"
+                @click="obtenerUbicacionActividad"
+                :disabled="obteniendoUbicacionActividad"
+                class="location-button-modern relative flex items-center justify-center px-4 py-2 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95"
+                :class="{
+                  'opacity-50 cursor-not-allowed': obteniendoUbicacionActividad,
+                  'location-button-success-modern': nuevaActividad.latitud && nuevaActividad.longitud && !obteniendoUbicacionActividad
+                }"
+              >
+                <!-- Spinner de carga -->
+                <div v-if="obteniendoUbicacionActividad" class="flex items-center space-x-2">
+                  <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                  <span class="text-sm font-medium text-white">Ubicando...</span>
+                </div>
+                
+                <!-- Estado completado -->
+                <div v-else-if="nuevaActividad.latitud && nuevaActividad.longitud" class="flex items-center space-x-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-sm font-medium text-white">Ubicación OK</span>
+                </div>
+                
+                <!-- Estado inicial -->
+                <div v-else class="flex items-center space-x-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span class="text-sm font-medium text-white">Obtener Ubicación</span>
+                </div>
+              </button>
+
+              <!-- Coordenadas compactas -->
+              <div v-if="nuevaActividad.latitud && nuevaActividad.longitud" class="coordinates-display-modern mt-2">
+                <div class="text-xs text-gray-600 font-mono">
+                  <div>Lat: {{ nuevaActividad.latitud?.toFixed(6) }}</div>
+                  <div>Lon: {{ nuevaActividad.longitud?.toFixed(6) }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Selector de tipo de actividad mejorado -->
           <div class="mb-3">
             <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Actividad *</label>
@@ -697,44 +746,6 @@
                   ref="fileInputActividad"
                 />
               </label>
-            </div>
-          </div>
-
-          <!-- Ubicación -->
-          <div class="mb-3">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación *</label>
-            <button
-              type="button"
-              @click="obtenerUbicacionActividad"
-              :disabled="obteniendoUbicacionActividad"
-              class="location-button-modern relative flex items-center justify-center px-4 py-2 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 w-full"
-              :class="{
-                'location-button-success-modern': nuevaActividad.latitud && nuevaActividad.longitud,
-                'opacity-50 cursor-not-allowed': obteniendoUbicacionActividad
-              }"
-            >
-              <div v-if="obteniendoUbicacionActividad" class="flex items-center space-x-2">
-                <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
-                <span class="text-sm font-medium text-white">Obteniendo ubicación...</span>
-              </div>
-              <div v-else-if="nuevaActividad.latitud && nuevaActividad.longitud" class="flex items-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span class="text-sm font-medium text-white">Ubicación Capturada</span>
-              </div>
-              <div v-else class="flex items-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span class="text-sm font-medium text-white">Capturar Ubicación</span>
-              </div>
-            </button>
-            
-            <!-- Mostrar coordenadas capturadas -->
-            <div v-if="nuevaActividad.latitud && nuevaActividad.longitud" class="mt-2 text-xs text-gray-600 font-mono text-center">
-              Lat: {{ nuevaActividad.latitud?.toFixed(6) }}, Lon: {{ nuevaActividad.longitud?.toFixed(6) }}
             </div>
           </div>
 
