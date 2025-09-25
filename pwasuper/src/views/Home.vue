@@ -622,8 +622,8 @@
     <!-- Formulario para registrar nueva actividad -->
     <div v-if="seccionActiva === 'actividades' && !modoAsistencia" class="glass-card">
         <div class="text-center mb-3">
-          <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title">Registrar Nueva Actividad</h2>
-          <div class="green-line mx-auto mb-1"></div>
+          <h2 class="text-lg font-bold text-purple-600 mb-1 actividad-title">Registrar Nueva Actividad</h2>
+          <div class="purple-line mx-auto mb-1"></div>
           <p class="text-xs text-gray-500">Completa todos los campos requeridos</p>
         </div>
         
@@ -4599,5 +4599,28 @@ watch([entradaMarcada, salidaMarcada], () => {
     0 12px 40px rgba(255, 159, 67, 0.4),
     0 6px 20px rgba(255, 127, 80, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.actividad-title {
+  color: #9333ea !important; /* purple-600 */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  letter-spacing: -0.015em;
+}
+
+.purple-line {
+  width: 60px;
+  height: 2px;
+  background: linear-gradient(90deg, #7c3aed, #a855f7, #7c3aed);
+  border-radius: 1px;
+  animation: purple-line-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes purple-line-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(124, 58, 237, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.8), 0 0 30px rgba(124, 58, 237, 0.6);
+  }
 }
 </style>
