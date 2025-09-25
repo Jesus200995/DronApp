@@ -212,6 +212,19 @@ try:
     except Exception as e:
         print(f"⚠️ No se pudo crear extensión PostGIS (puede que ya exista o falten permisos): {e}")
     
+    # Crear tabla actividades_dron si no existe
+    ejecutar_consulta_segura("""
+        CREATE TABLE IF NOT EXISTS actividades_dron (
+            id SERIAL PRIMARY KEY,
+            usuario_id INT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+            fecha_hora TIMESTAMPTZ NOT NULL DEFAULT (NOW() AT TIME ZONE 'America/Mexico_City'),
+            tipo_actividad VARCHAR(100) NOT NULL,
+            descripcion TEXT,
+            imagen TEXT,
+            ubicacion GEOGRAPHY(Point, 4326)
+        )
+    """, fetch_type='none')
+    
     # Crear tabla solicitudes_dron si no existe
     ejecutar_consulta_segura("""
         CREATE TABLE IF NOT EXISTS solicitudes_dron (
@@ -245,6 +258,7 @@ try:
         )
     """, fetch_type='none')
     
+    print("✅ Tabla actividades_dron verificada/creada")
     print("✅ Tabla solicitudes_dron verificada/creada")
     print("✅ Tabla historial_solicitudes verificada/creada")
     
@@ -1557,6 +1571,357 @@ async def editar_solicitud(
         conn.rollback()
         print(f"❌ Error general al editar solicitud: {e}")
         raise HTTPException(status_code=500, detail=f"Error al editar solicitud: {str(e)}")
+
+# ==================== ENDPOINTS DE ACTIVIDADES ====================
+
+class ActividadCreate(BaseModel):
+    usuario_id: int
+    tipo_actividad: str
+    descripcion: Optional[str] = None
+    imagen: Optional[str] = None  # Base64 o URL
+    latitud: float
+    longitud: float
+
+class ActividadUpdate(BaseModel):
+    tipo_actividad: Optional[str] = None
+    descripcion: Optional[str] = None
+    imagen: Optional[str] = None
+    latitud: Optional[float] = None
+    longitud: Optional[float] = None
+
+@app.post("/actividades")
+async def crear_actividad(
+    usuario_id: int = Form(...),
+    tipo_actividad: str = Form(...),
+    descripcion: str = Form(""),
+    latitud: float = Form(...),
+    longitud: float = Form(...),
+    imagen: UploadFile = File(None),
+    timestamp_offline: str = Form(None)
+):
+    """Crear nueva actividad de dron"""
+    try:
+        print(f"🚁 ACTIVIDAD - Datos recibidos:")
+        print(f"   usuario_id: {usuario_id}")
+        print(f"   tipo_actividad: {tipo_actividad}")
+        print(f"   descripcion: {descripcion}")
+        print(f"   latitud: {latitud}")
+        print(f"   longitud: {longitud}")
+        print(f"   imagen: {imagen.filename if imagen else 'Sin imagen'}")
+        print(f"   timestamp_offline: {timestamp_offline}")
+        
+        # Validar tipo de actividad
+        tipos_validos = ['aspersion', 'mantenimiento', 'entrenamiento', 'inspeccion', 'monitoreo', 'campo', 'gabinete']
+        if tipo_actividad not in tipos_validos:
+            raise HTTPException(status_code=400, detail=f"Tipo de actividad debe ser uno de: {', '.join(tipos_validos)}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Usar timestamp personalizado si viene de offline, sino usar tiempo actual
+        fecha, fecha_hora, timestamp_for_filename = obtener_fecha_hora_cdmx(timestamp_offline)
+
+        # Procesar imagen si se envió
+        imagen_url = None
+        if imagen:
+            try:
+                ext = os.path.splitext(imagen.filename)[1] if imagen.filename else '.jpg'
+                timestamp_unico = f"{timestamp_for_filename}_{int(time.time() * 1000)}_{str(uuid.uuid4())[:8]}"
+                nombre_archivo = f"actividad_{tipo_actividad}_{usuario_id}_{timestamp_unico}{ext}"
+                ruta_archivo = os.path.join(FOTOS_DIR, nombre_archivo)
+                
+                # Leer y guardar imagen
+                contenido = await imagen.read()
+                with open(ruta_archivo, "wb") as f:
+                    f.write(contenido)
+                
+                imagen_url = ruta_archivo
+                print(f"✅ Imagen guardada: {ruta_archivo}")
+                
+            except Exception as fe:
+                print(f"❌ Error al guardar imagen: {fe}")
+                imagen_url = None
+
+        # Crear el punto geográfico para PostgreSQL
+        punto_ubicacion = f"POINT({longitud} {latitud})"
+
+        # Insertar actividad en la base de datos
+        cursor.execute("""
+            INSERT INTO actividades_dron 
+            (usuario_id, fecha_hora, tipo_actividad, descripcion, imagen, ubicacion) 
+            VALUES (%s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326))
+            RETURNING id
+        """, (usuario_id, fecha_hora, tipo_actividad, descripcion, imagen_url, punto_ubicacion))
+        
+        actividad_id = cursor.fetchone()[0]
+        conn.commit()
+        
+        print(f"✅ Actividad creada con ID: {actividad_id}")
+        
+        return {
+            "status": "ok",
+            "mensaje": f"Actividad de {tipo_actividad} registrada exitosamente",
+            "actividad_id": actividad_id,
+            "tipo_actividad": tipo_actividad,
+            "fecha_hora": str(fecha_hora),
+            "imagen_url": imagen_url
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL en actividad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general en actividad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al crear actividad: {str(e)}")
+
+@app.get("/actividades/{usuario_id}")
+async def obtener_actividades_usuario(
+    usuario_id: int,
+    limit: Optional[int] = 50,
+    offset: Optional[int] = 0,
+    tipo_actividad: Optional[str] = None
+):
+    """Obtener todas las actividades registradas por un técnico específico"""
+    try:
+        print(f"📋 Consultando actividades para usuario {usuario_id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Construir consulta base
+        query = """
+            SELECT a.id, a.usuario_id, a.fecha_hora, a.tipo_actividad, 
+                   a.descripcion, a.imagen,
+                   ST_X(a.ubicacion) as longitud, ST_Y(a.ubicacion) as latitud,
+                   u.nombre, u.puesto
+            FROM actividades_dron a
+            LEFT JOIN usuarios u ON a.usuario_id = u.id
+            WHERE a.usuario_id = %s
+        """
+        params = [usuario_id]
+        
+        # Agregar filtro por tipo si se especifica
+        if tipo_actividad:
+            query += " AND a.tipo_actividad = %s"
+            params.append(tipo_actividad)
+        
+        # Ordenar por fecha más reciente y aplicar límites
+        query += " ORDER BY a.fecha_hora DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+        
+        cursor.execute(query, params)
+        registros = cursor.fetchall()
+        
+        actividades = []
+        for registro in registros:
+            actividad = {
+                "id": registro[0],
+                "usuario_id": registro[1],
+                "fecha_hora": registro[2].isoformat() if registro[2] else None,
+                "tipo_actividad": registro[3],
+                "descripcion": registro[4],
+                "imagen": registro[5],
+                "ubicacion": {
+                    "longitud": float(registro[6]) if registro[6] else None,
+                    "latitud": float(registro[7]) if registro[7] else None
+                },
+                "usuario": {
+                    "nombre_completo": registro[8],
+                    "cargo": registro[9]
+                }
+            }
+            actividades.append(actividad)
+        
+        print(f"✅ Encontradas {len(actividades)} actividades para usuario {usuario_id}")
+        
+        return {
+            "actividades": actividades,
+            "total": len(actividades),
+            "usuario_id": usuario_id,
+            "filtros": {
+                "tipo_actividad": tipo_actividad,
+                "limit": limit,
+                "offset": offset
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al consultar actividades: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener actividades: {str(e)}")
+
+@app.delete("/actividades/{id}")
+async def eliminar_actividad(
+    id: int,
+    usuario_id: int = Form(...)
+):
+    """Eliminar una actividad (solo quien la creó o administrador)"""
+    try:
+        print(f"🗑️ Intentando eliminar actividad {id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la actividad existe y obtener datos
+        cursor.execute("""
+            SELECT id, usuario_id, tipo_actividad, descripcion
+            FROM actividades_dron 
+            WHERE id = %s
+        """, (id,))
+        
+        actividad = cursor.fetchone()
+        
+        if not actividad:
+            raise HTTPException(status_code=404, detail="Actividad no encontrada")
+        
+        # Verificar que el usuario tiene permisos (es el dueño)
+        if actividad[1] != usuario_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permisos para eliminar esta actividad"
+            )
+        
+        # Eliminar la actividad
+        cursor.execute("DELETE FROM actividades_dron WHERE id = %s", (id,))
+        conn.commit()
+        
+        print(f"✅ Actividad {id} eliminada exitosamente")
+        
+        return {
+            "status": "ok",
+            "mensaje": "Actividad eliminada exitosamente",
+            "actividad_id": id
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL al eliminar actividad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general al eliminar actividad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar actividad: {str(e)}")
+
+@app.put("/actividades/{id}")
+async def editar_actividad(
+    id: int,
+    usuario_id: int = Form(...),
+    tipo_actividad: str = Form(None),
+    descripcion: str = Form(None),
+    latitud: float = Form(None),
+    longitud: float = Form(None),
+    imagen: UploadFile = File(None)
+):
+    """Editar una actividad (solo si la creó el usuario)"""
+    try:
+        print(f"✏️ Intentando editar actividad {id}")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la actividad existe y obtener datos actuales
+        cursor.execute("""
+            SELECT id, usuario_id, tipo_actividad, descripcion, imagen,
+                   ST_X(ubicacion) as longitud, ST_Y(ubicacion) as latitud
+            FROM actividades_dron 
+            WHERE id = %s
+        """, (id,))
+        
+        actividad = cursor.fetchone()
+        
+        if not actividad:
+            raise HTTPException(status_code=404, detail="Actividad no encontrada")
+        
+        # Verificar que el usuario tiene permisos (es el dueño)
+        if actividad[1] != usuario_id:
+            raise HTTPException(
+                status_code=403,
+                detail="No tienes permisos para editar esta actividad"
+            )
+        
+        # Preparar campos a actualizar
+        campos_actualizar = []
+        valores = []
+        cambios_realizados = {}
+        
+        if tipo_actividad and tipo_actividad != actividad[2]:
+            tipos_validos = ['aspersion', 'mantenimiento', 'entrenamiento', 'inspeccion', 'monitoreo', 'campo', 'gabinete']
+            if tipo_actividad not in tipos_validos:
+                raise HTTPException(status_code=400, detail=f"Tipo de actividad debe ser uno de: {', '.join(tipos_validos)}")
+            campos_actualizar.append("tipo_actividad = %s")
+            valores.append(tipo_actividad)
+            cambios_realizados["tipo_actividad"] = {"anterior": actividad[2], "nuevo": tipo_actividad}
+        
+        if descripcion is not None and descripcion != actividad[3]:
+            campos_actualizar.append("descripcion = %s")
+            valores.append(descripcion)
+            cambios_realizados["descripcion"] = {"anterior": actividad[3], "nuevo": descripcion}
+        
+        if latitud and longitud and (latitud != actividad[6] or longitud != actividad[5]):
+            punto_ubicacion = f"POINT({longitud} {latitud})"
+            campos_actualizar.append("ubicacion = ST_GeomFromText(%s, 4326)")
+            valores.append(punto_ubicacion)
+            cambios_realizados["ubicacion"] = {
+                "anterior": {"lat": actividad[6], "lon": actividad[5]},
+                "nuevo": {"lat": latitud, "lon": longitud}
+            }
+        
+        # Procesar nueva imagen si se envió
+        if imagen:
+            try:
+                ext = os.path.splitext(imagen.filename)[1] if imagen.filename else '.jpg'
+                timestamp_unico = f"{int(time.time() * 1000)}_{str(uuid.uuid4())[:8]}"
+                nombre_archivo = f"actividad_edit_{id}_{timestamp_unico}{ext}"
+                ruta_archivo = os.path.join(FOTOS_DIR, nombre_archivo)
+                
+                contenido = await imagen.read()
+                with open(ruta_archivo, "wb") as f:
+                    f.write(contenido)
+                
+                campos_actualizar.append("imagen = %s")
+                valores.append(ruta_archivo)
+                cambios_realizados["imagen"] = {"anterior": actividad[4], "nuevo": ruta_archivo}
+                
+                print(f"✅ Nueva imagen guardada: {ruta_archivo}")
+                
+            except Exception as fe:
+                print(f"❌ Error al guardar nueva imagen: {fe}")
+        
+        if not campos_actualizar:
+            raise HTTPException(status_code=400, detail="No hay campos para actualizar")
+        
+        # Actualizar la actividad
+        valores.append(id)
+        query = f"UPDATE actividades_dron SET {', '.join(campos_actualizar)} WHERE id = %s"
+        cursor.execute(query, valores)
+        conn.commit()
+        
+        print(f"✅ Actividad {id} editada exitosamente")
+        
+        return {
+            "status": "ok",
+            "mensaje": "Actividad editada exitosamente",
+            "actividad_id": id,
+            "cambios": cambios_realizados
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        conn.rollback()
+        print(f"❌ Error de PostgreSQL al editar actividad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error general al editar actividad: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al editar actividad: {str(e)}")
 
 # ==================== MAIN ====================
 

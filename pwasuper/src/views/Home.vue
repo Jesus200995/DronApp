@@ -619,326 +619,144 @@
       @close="closeActividadesBloqueadasModal"
     />
 
-    <!-- Formulario de registro normal (solo cuando no está en modo asistencia) -->
+    <!-- Formulario para registrar nueva actividad -->
     <div v-if="seccionActiva === 'actividades' && !modoAsistencia" class="glass-card">
-      <!-- Mensaje de estado de actividades bloqueadas -->
-      <div v-if="!entradaMarcada || salidaMarcada" class="mb-4">
-        <div class="bg-yellow-100 border-l-4 border-yellow-500 p-3 rounded-lg">
+        <div class="text-center mb-3">
+          <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title">Registrar Nueva Actividad</h2>
+          <div class="green-line mx-auto mb-1"></div>
+          <p class="text-xs text-gray-500">Completa todos los campos requeridos</p>
+        </div>
+        
+        <!-- Info del usuario -->
+        <div class="bg-primary/10 rounded-lg p-2 mb-4">
           <div class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-yellow-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-            </svg>
+            <div class="relative w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-2">
+              <div class="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/10 pointer-events-none rounded-full"></div>
+              <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-full"></div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white drop-shadow-lg relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
             <div>
-              <h3 class="text-sm font-medium text-yellow-800">Registro de actividades bloqueado</h3>
-              <p class="text-xs text-yellow-700 mt-1">
-                <span v-if="!entradaMarcada">Debes marcar tu entrada primero para registrar actividades.</span>
-                <span v-else-if="salidaMarcada">Has marcado tu salida. No puedes registrar más actividades hoy.</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="text-center mb-3">
-        <h2 class="text-lg font-bold text-gray-800 mb-1 modern-title"
-            :class="{ 'opacity-50': !entradaMarcada || salidaMarcada }">
-          Registra tus actividades
-        </h2>
-        <!-- Línea tipo marcatextos -->
-        <div class="green-line mx-auto mb-1" :class="{ 'opacity-50': !entradaMarcada || salidaMarcada }"></div>
-        <p class="text-xs text-gray-500" :class="{ 'opacity-50': !entradaMarcada || salidaMarcada }">
-          <span v-if="entradaMarcada && !salidaMarcada">Captura tu ubicación actual para el registro</span>
-          <span v-else-if="!entradaMarcada">Marca tu entrada primero</span>
-          <span v-else>Registro de actividades finalizado</span>
-        </p>
-      </div>
-      
-      <!-- Info del usuario -->
-      <div class="bg-primary/10 rounded-lg p-2 mb-6">
-        <div class="flex items-center">
-          <div class="relative w-8 h-8 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-800 rounded-full shadow-xl backdrop-blur-xl border border-white/25 overflow-hidden flex items-center justify-center mr-2">
-            <!-- Efecto vidrio en círculo -->
-            <div class="absolute inset-0 bg-gradient-to-br from-white/15 via-transparent to-black/10 pointer-events-none rounded-full"></div>
-            
-            <!-- Reflejo superior del círculo -->
-            <div class="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-full"></div>
-            
-            <!-- Ícono de usuario -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white drop-shadow-lg relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </div>
-          <div>
-            <p class="font-bold text-green-600 text-sm">{{ user.cargo || 'Sin cargo asignado' }}</p>
-            <p class="font-normal text-gray-600 text-xs">{{ user.nombre_completo || 'Usuario' }}</p>
-          </div>
-        </div>
-      </div>
-
-      <form @submit.prevent="enviarRegistro" :class="{ 'opacity-50 pointer-events-none': !entradaMarcada || salidaMarcada }">
-        <!-- Botón para obtener ubicación moderno para actividades -->
-        <div class="location-container-modern mb-3 flex flex-col items-center">
-          <button
-            type="button"
-            @click="getUbicacionRegistro"
-            :disabled="!entradaMarcada || salidaMarcada"
-            class="location-button-modern relative flex items-center justify-center px-4 py-2 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95"
-            :class="{
-              'location-button-success-modern': latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada,
-              'opacity-50 cursor-not-allowed': !entradaMarcada || salidaMarcada
-            }"
-          >
-            <!-- Estado completado -->
-            <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span class="text-sm font-medium text-white">Ubicación OK</span>
-            </div>
-            
-            <!-- Estado bloqueado -->
-            <div v-else-if="!entradaMarcada || salidaMarcada" class="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m0 0v2m0-2h2m-2 0H9m12-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span class="text-sm font-medium text-gray-400">
-                <span v-if="!entradaMarcada">Marca Entrada Primero</span>
-                <span v-else>Bloqueado</span>
-              </span>
-            </div>
-            
-            <!-- Estado inicial -->
-            <div v-else class="flex items-center space-x-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span class="text-sm font-medium text-white">Obtener Ubicación</span>
-            </div>
-          </button>
-
-          <!-- Coordenadas compactas -->
-          <div v-if="latitudRegistro && longitudRegistro && entradaMarcada && !salidaMarcada" class="coordinates-display-modern mt-2">
-            <div class="text-xs text-gray-600 font-mono text-center">
-              <div>Lat: {{ latitudRegistro }}</div>
-              <div>Lon: {{ longitudRegistro }}</div>
+              <p class="font-bold text-green-600 text-sm">{{ user.cargo || 'Sin cargo asignado' }}</p>
+              <p class="font-normal text-gray-600 text-xs">{{ user.nombre_completo || 'Usuario' }}</p>
             </div>
           </div>
         </div>
 
-        <!-- Tipo de Actividad - Diseño Vidrio Líquido Compacto -->
-        <div class="mb-3">
-          <label class="block text-xs font-medium text-gray-700 mb-2 flex items-center"
-                 :class="{ 'text-gray-400': !entradaMarcada || salidaMarcada }">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1.5 text-green-600" :class="{ 'text-gray-400': !entradaMarcada || salidaMarcada }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-            </svg>
-            Tipo de Actividad <span class="text-red-500 text-sm">*</span>
-          </label>
-          
-          <!-- Contenedor de opciones con estilo vidrio líquido compacto -->
-          <div class="relative">
-            <div class="grid grid-cols-2 gap-2">
-              <!-- Opción Campo -->
-              <div 
-                @click="entradaMarcada && !salidaMarcada && (tipoActividad = 'campo')"
-                :class="[
-                  'relative overflow-hidden rounded-xl p-3 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] border',
-                  entradaMarcada && !salidaMarcada ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
-                  tipoActividad === 'campo' ? 
-                    'bg-gradient-to-br from-green-600/25 via-green-700/20 to-green-800/25 border-green-600/70 shadow-lg shadow-green-600/20' : 
-                    'bg-gradient-to-br from-gray-50/80 via-white/60 to-gray-100/40 border-gray-200/60 hover:border-green-300/40 hover:from-green-50/30 hover:via-green-25/20 hover:to-green-50/15'
-                ]"
-                style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);"
-              >
-                <!-- Efecto de vidrio líquido sutil -->
-                <div class="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-60 rounded-xl"></div>
-                <div class="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-tl from-green-600/25 to-transparent rounded-full blur-lg"></div>
-                
-                <div class="relative z-10 text-center">
-                  <div class="flex justify-center mb-1.5">
-                    <div :class="[
-                      'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300',
-                      tipoActividad === 'campo' ? 
-                        'bg-green-700 text-white shadow-md shadow-green-700/40' : 
-                        'bg-gray-100 text-gray-500 border border-gray-200'
-                    ]">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <h3 :class="[
-                    'font-medium text-xs mb-0.5 transition-colors duration-300',
-                    tipoActividad === 'campo' ? 'text-green-900' : 'text-gray-600'
-                  ]">Campo</h3>
-                  <p :class="[
-                    'text-xs leading-tight transition-colors duration-300',
-                    tipoActividad === 'campo' ? 'text-green-800' : 'text-gray-400'
-                  ]">Trabajo en terreno</p>
-                </div>
-                
-                <!-- Indicador de selección pequeño -->
-                <div v-if="tipoActividad === 'campo'" class="absolute top-1.5 right-1.5">
-                  <div class="w-4 h-4 bg-green-700 rounded-full flex items-center justify-center shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Opción Gabinete -->
-              <div 
-                @click="entradaMarcada && !salidaMarcada && (tipoActividad = 'gabinete')"
-                :class="[
-                  'relative overflow-hidden rounded-xl p-3 cursor-pointer transition-all duration-300 transform hover:scale-[1.02] border',
-                  entradaMarcada && !salidaMarcada ? 'cursor-pointer' : 'cursor-not-allowed opacity-50',
-                  tipoActividad === 'gabinete' ? 
-                    'bg-gradient-to-br from-orange-600/25 via-red-600/20 to-orange-700/25 border-orange-600/70 shadow-lg shadow-orange-600/20' : 
-                    'bg-gradient-to-br from-gray-50/80 via-white/60 to-gray-100/40 border-gray-200/60 hover:border-orange-300/40 hover:from-orange-50/30 hover:via-red-25/20 hover:to-orange-50/15'
-                ]"
-                style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);"
-              >
-                <!-- Efecto de vidrio líquido sutil -->
-                <div class="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-60 rounded-xl"></div>
-                <div class="absolute bottom-0 right-0 w-12 h-12 bg-gradient-to-tl from-orange-600/25 to-transparent rounded-full blur-lg"></div>
-                
-                <div class="relative z-10 text-center">
-                  <div class="flex justify-center mb-1.5">
-                    <div :class="[
-                      'w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300',
-                      tipoActividad === 'gabinete' ? 
-                        'bg-orange-700 text-white shadow-md shadow-orange-700/40' : 
-                        'bg-gray-100 text-gray-500 border border-gray-200'
-                    ]">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <h3 :class="[
-                    'font-medium text-xs mb-0.5 transition-colors duration-300',
-                    tipoActividad === 'gabinete' ? 'text-orange-900' : 'text-gray-600'
-                  ]">Gabinete</h3>
-                  <p :class="[
-                    'text-xs leading-tight transition-colors duration-300',
-                    tipoActividad === 'gabinete' ? 'text-orange-800' : 'text-gray-400'
-                  ]">Trabajo de oficina</p>
-                </div>
-                
-                <!-- Indicador de selección pequeño -->
-                <div v-if="tipoActividad === 'gabinete'" class="absolute top-1.5 right-1.5">
-                  <div class="w-4 h-4 bg-orange-700 rounded-full flex items-center justify-center shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Mensaje de error si no está seleccionado -->
-            <div v-if="!tipoActividad && (entradaMarcada && !salidaMarcada)" class="mt-1.5 text-center">
-              <p class="text-xs text-red-500 font-medium animate-pulse">Por favor selecciona el tipo de actividad</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Input de archivo para foto -->
-        <div class="mb-3">
-          <label class="block text-sm font-medium text-gray-700 mb-2" 
-                 :class="{ 'text-gray-400': !entradaMarcada || salidaMarcada }">Foto</label>
-          <div class="flex items-center justify-center w-full">
-            <label class="flex flex-col w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 active:bg-gray-100"
-                   :class="{ 'opacity-50 cursor-not-allowed pointer-events-none': !entradaMarcada || salidaMarcada }">
-              <div v-if="!fotoRegistro" class="flex flex-col items-center justify-center pt-7">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-8 h-8 text-gray-400"
-                  :class="{ 'text-gray-300': !entradaMarcada || salidaMarcada }"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
-                <p class="pt-1 text-sm text-gray-400" 
-                   :class="{ 'text-gray-300': !entradaMarcada || salidaMarcada }">
-                  <span v-if="entradaMarcada && !salidaMarcada">Selecciona una foto</span>
-                  <span v-else-if="!entradaMarcada">Marca entrada primero</span>
-                  <span v-else>Función bloqueada</span>
-                </p>
-              </div>
-              <div v-else class="flex items-center justify-center h-full">
-                <img :src="fotoRegistro" class="h-full object-contain" />
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                @change="onFileChangeRegistro"
-                :disabled="!entradaMarcada || salidaMarcada"
-                class="hidden"
-                ref="fileInputRegistro"
-              />
-            </label>
-          </div>
-        </div>
-
-        <!-- Descripción -->
-        <div class="mb-3">
-          <label for="descripcionRegistro" class="block text-sm font-medium text-gray-700 mb-2"
-                 :class="{ 'text-gray-400': !entradaMarcada || salidaMarcada }">Descripción</label>
-          <textarea
-            v-model="descripcionRegistro"
-            id="descripcionRegistro"
-            rows="3"
-            :disabled="!entradaMarcada || salidaMarcada"
-            class="glass-input w-full"
-            :class="{ 'opacity-50': !entradaMarcada || salidaMarcada }"
-            :placeholder="entradaMarcada && !salidaMarcada ? 'Describe el lugar o añade notas...' : !entradaMarcada ? 'Marca entrada primero...' : 'Función bloqueada...'"
-          ></textarea>
-        </div>
-
-        <!-- Botón enviar -->
-        <button
-          type="submit"
-          :disabled="!latitudRegistro || !longitudRegistro || !fotoRegistro || !tipoActividad || enviando || !entradaMarcada || salidaMarcada"
-          :class="['glass-button-registro w-full', (!latitudRegistro || !longitudRegistro || !fotoRegistro || !tipoActividad || enviando || !entradaMarcada || salidaMarcada) ? 'opacity-50 cursor-not-allowed' : '']"
-        >
-          <span v-if="enviando" class="flex items-center justify-center">
-            <svg
-              class="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
+        <form @submit.prevent="guardarActividad">
+          <!-- Selector de tipo de actividad mejorado -->
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Actividad *</label>
+            <select 
+              v-model="nuevaActividad.tipo_actividad" 
+              class="w-full glass-input text-sm"
+              required
             >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            Enviando...
-          </span>
-          <span v-else-if="!entradaMarcada">Marca entrada primero</span>
-          <span v-else-if="salidaMarcada">Actividades finalizadas</span>
-          <span v-else>Guardar registro</span>
-        </button>
-      </form>
+              <option value="">Selecciona el tipo de actividad</option>
+              <option value="aspersion">🚿 Aspersión</option>
+              <option value="mantenimiento">🔧 Mantenimiento</option>
+              <option value="entrenamiento">🎯 Entrenamiento</option>
+              <option value="inspeccion">🔍 Inspección</option>
+              <option value="monitoreo">📊 Monitoreo</option>
+              <option value="campo">🌾 Trabajo de Campo</option>
+              <option value="gabinete">🏢 Trabajo de Gabinete</option>
+            </select>
+          </div>
+
+          <!-- Descripción -->
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Descripción *</label>
+            <textarea
+              v-model="nuevaActividad.descripcion"
+              rows="3"
+              class="glass-input w-full text-sm"
+              placeholder="Describe la actividad realizada..."
+              required
+            ></textarea>
+          </div>
+
+          <!-- Foto -->
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Imagen</label>
+            <div class="flex items-center justify-center w-full">
+              <label class="flex flex-col w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50">
+                <div v-if="!nuevaActividad.foto" class="flex flex-col items-center justify-center pt-5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p class="pt-1 text-xs text-gray-400">Selecciona una imagen</p>
+                </div>
+                <div v-else class="flex items-center justify-center h-full">
+                  <img :src="nuevaActividad.foto" class="h-full object-contain" />
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  @change="onFileChangeActividad"
+                  class="hidden"
+                  ref="fileInputActividad"
+                />
+              </label>
+            </div>
+          </div>
+
+          <!-- Ubicación -->
+          <div class="mb-3">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Ubicación *</label>
+            <button
+              type="button"
+              @click="obtenerUbicacionActividad"
+              :disabled="obteniendoUbicacionActividad"
+              class="location-button-modern relative flex items-center justify-center px-4 py-2 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 active:scale-95 w-full"
+              :class="{
+                'location-button-success-modern': nuevaActividad.latitud && nuevaActividad.longitud,
+                'opacity-50 cursor-not-allowed': obteniendoUbicacionActividad
+              }"
+            >
+              <div v-if="obteniendoUbicacionActividad" class="flex items-center space-x-2">
+                <div class="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                <span class="text-sm font-medium text-white">Obteniendo ubicación...</span>
+              </div>
+              <div v-else-if="nuevaActividad.latitud && nuevaActividad.longitud" class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-sm font-medium text-white">Ubicación Capturada</span>
+              </div>
+              <div v-else class="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="text-sm font-medium text-white">Capturar Ubicación</span>
+              </div>
+            </button>
+            
+            <!-- Mostrar coordenadas capturadas -->
+            <div v-if="nuevaActividad.latitud && nuevaActividad.longitud" class="mt-2 text-xs text-gray-600 font-mono text-center">
+              Lat: {{ nuevaActividad.latitud?.toFixed(6) }}, Lon: {{ nuevaActividad.longitud?.toFixed(6) }}
+            </div>
+          </div>
+
+          <!-- Botón enviar -->
+          <button
+            type="submit"
+            :disabled="!puedeGuardarActividad || guardandoActividad"
+            class="glass-button w-full"
+            :class="{ 'opacity-50 cursor-not-allowed': !puedeGuardarActividad || guardandoActividad }"
+          >
+            <span v-if="guardandoActividad" class="flex items-center justify-center">
+              <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Guardando actividad...
+            </span>
+            <span v-else>Registrar Actividad</span>
+          </button>
+        </form>
+      </div>
     </div>
 
     <!-- Mensajes de error/información -->
@@ -1030,7 +848,6 @@
       :message="modalMessage"
       @close="closeSuccessModal"
     />
-    </div>
   </div>
 </template>
 
@@ -1098,6 +915,22 @@ const actividadesBloqueadasModalMessage = ref('');
 
 // Control de secciones activas
 const seccionActiva = ref('asistencia'); // 'asistencia' o 'actividades'
+
+// Variables para la nueva funcionalidad de actividades
+const actividades = ref([]);
+const cargandoActividades = ref(false);
+const guardandoActividad = ref(false);
+const obteniendoUbicacionActividad = ref(false);
+const nuevaActividad = ref({
+  tipo_actividad: '',
+  descripcion: '',
+  foto: null,
+  latitud: null,
+  longitud: null
+});
+const editandoActividad = ref(false);
+const actividadEnEdicion = ref(null);
+const fileInputActividad = ref(null);
 
 // Función para obtener timestamp CDMX exacto (igual que en la barra verde)
 function obtenerTimestampCDMX() {
@@ -2511,6 +2344,205 @@ function esHorarioDentroDelDiaActual() {
   return fechaCompletaCDMX < finDelDiaCDMX;
 }
 
+// ==================== FUNCIONES DE ACTIVIDADES ====================
+
+// Computed para validar si se puede guardar la actividad
+const puedeGuardarActividad = computed(() => {
+  return nuevaActividad.value.tipo_actividad && 
+         nuevaActividad.value.descripcion && 
+         nuevaActividad.value.latitud && 
+         nuevaActividad.value.longitud;
+});
+
+// Cargar actividades del usuario
+async function cargarActividades() {
+  if (!user.value.id) return;
+  
+  cargandoActividades.value = true;
+  try {
+    const response = await axios.get(`${API_URL}/actividades/${user.value.id}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    actividades.value = response.data.actividades || [];
+    console.log('✅ Actividades cargadas:', actividades.value.length);
+  } catch (error) {
+    console.error('❌ Error cargando actividades:', error);
+    mostrarModal('Error cargando actividades');
+  } finally {
+    cargandoActividades.value = false;
+  }
+}
+
+// Obtener ubicación para nueva actividad
+async function obtenerUbicacionActividad() {
+  if (obteniendoUbicacionActividad.value) return;
+  
+  obteniendoUbicacionActividad.value = true;
+  try {
+    console.log('🌍 Obteniendo ubicación para actividad...');
+    
+    const ubicacion = await geoLocationService.getLocationSmart({
+      timeout: 15000,
+      enableHighAccuracy: true,
+      useCache: false
+    });
+    
+    nuevaActividad.value.latitud = parseFloat(ubicacion.latitude.toFixed(6));
+    nuevaActividad.value.longitud = parseFloat(ubicacion.longitude.toFixed(6));
+    
+    console.log('✅ Ubicación obtenida:', {
+      lat: nuevaActividad.value.latitud,
+      lon: nuevaActividad.value.longitud
+    });
+    
+  } catch (error) {
+    console.error('❌ Error obteniendo ubicación:', error);
+    mostrarModal('No se pudo obtener la ubicación. Verifica los permisos del navegador.');
+  } finally {
+    obteniendoUbicacionActividad.value = false;
+  }
+}
+
+// Manejar cambio de archivo para actividades
+function onFileChangeActividad(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  if (file.size > 10 * 1024 * 1024) { // 10MB
+    mostrarModal('La imagen es demasiado grande. Por favor selecciona una imagen menor a 10MB.');
+    return;
+  }
+  
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    nuevaActividad.value.foto = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Guardar nueva actividad
+async function guardarActividad() {
+  if (!puedeGuardarActividad.value || guardandoActividad.value) return;
+  
+  guardandoActividad.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('usuario_id', user.value.id);
+    formData.append('tipo_actividad', nuevaActividad.value.tipo_actividad);
+    formData.append('descripcion', nuevaActividad.value.descripcion);
+    formData.append('latitud', nuevaActividad.value.latitud);
+    formData.append('longitud', nuevaActividad.value.longitud);
+    
+    if (nuevaActividad.value.foto) {
+      // Comprimir imagen si es necesario
+      const blob = await fetch(nuevaActividad.value.foto).then(r => r.blob());
+      const compressedBlob = await compressImage(blob, 0.8, 1920, 1080);
+      formData.append('imagen', compressedBlob, 'actividad.jpg');
+    }
+    
+    const response = await axios.post(`${API_URL}/actividades`, formData, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    console.log('✅ Actividad guardada exitosamente');
+    mostrarModal('Actividad registrada exitosamente');
+    
+    // Limpiar formulario
+    nuevaActividad.value = {
+      tipo_actividad: '',
+      descripcion: '',
+      foto: null,
+      latitud: null,
+      longitud: null
+    };
+    
+    // Limpiar input de archivo
+    if (fileInputActividad.value) {
+      fileInputActividad.value.value = '';
+    }
+    
+    // Recargar actividades
+    await cargarActividades();
+    
+  } catch (error) {
+    console.error('❌ Error guardando actividad:', error);
+    const mensaje = error.response?.data?.detail || 'Error guardando la actividad';
+    mostrarModal(mensaje);
+  } finally {
+    guardandoActividad.value = false;
+  }
+}
+
+// Editar actividad existente
+function editarActividad(actividad) {
+  actividadEnEdicion.value = { ...actividad };
+  editandoActividad.value = true;
+  // Aquí puedes agregar lógica para abrir un modal de edición
+  console.log('Editando actividad:', actividad);
+}
+
+// Eliminar actividad
+async function eliminarActividad(actividadId) {
+  if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
+  
+  try {
+    await axios.delete(`${API_URL}/actividades/${actividadId}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    
+    console.log('✅ Actividad eliminada');
+    mostrarModal('Actividad eliminada exitosamente');
+    
+    // Recargar actividades
+    await cargarActividades();
+    
+  } catch (error) {
+    console.error('❌ Error eliminando actividad:', error);
+    const mensaje = error.response?.data?.detail || 'Error eliminando la actividad';
+    mostrarModal(mensaje);
+  }
+}
+
+// Formatear tipo de actividad para mostrar
+function formatearTipoActividad(tipo) {
+  const tipos = {
+    'aspersion': 'Aspersión',
+    'mantenimiento': 'Mantenimiento', 
+    'entrenamiento': 'Entrenamiento',
+    'inspeccion': 'Inspección',
+    'monitoreo': 'Monitoreo',
+    'campo': 'Campo',
+    'gabinete': 'Gabinete'
+  };
+  return tipos[tipo] || tipo;
+}
+
+// Formatear fecha y hora para mostrar
+function formatearFechaHora(fechaHora) {
+  try {
+    return new Date(fechaHora).toLocaleString('es-MX', {
+      timeZone: 'America/Mexico_City',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    return fechaHora;
+  }
+}
+
+// ==================== FIN FUNCIONES DE ACTIVIDADES ====================
+
 onMounted(async () => {
   // Verificar si el usuario está autenticado
   if (!user.value.id) {
@@ -2649,6 +2681,21 @@ onMounted(async () => {
       console.log('📆 Día finalizado (después de 23:59:59 CDMX), esperando cambio de fecha');
     }
   }, 10 * 60 * 1000); // *** CORREGIDO: Verificar cada 10 minutos en lugar de 3 ***
+  
+  // Cargar actividades del usuario si ya marcó entrada
+  if (entradaMarcada.value && !salidaMarcada.value) {
+    await cargarActividades();
+  }
+});
+
+// Watcher para cargar actividades cuando cambie el estado de asistencia
+watch([entradaMarcada, salidaMarcada], async ([entrada, salida]) => {
+  if (entrada && !salida && user.value.id) {
+    await cargarActividades();
+  }
+  
+  // Cargar actividades del usuario al iniciar
+  await cargarActividades();
 });
 
 // Limpiar recursos al desmontar el componente
@@ -2670,6 +2717,13 @@ watch([entradaMarcada, salidaMarcada, datosEntrada, datosSalida], () => {
     asegurarEstadosConsistentes();
   }
 }, { deep: true });
+
+// Watcher para cargar actividades cuando se cambie a la sección de actividades
+watch(seccionActiva, (nueva) => {
+  if (nueva === 'actividades' && user.value.id) {
+    cargarActividades();
+  }
+});
 
 // Watcher para limpiar campos de registro cuando se bloquean las actividades
 watch([entradaMarcada, salidaMarcada], () => {
