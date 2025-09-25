@@ -17,6 +17,8 @@ import pytz
 import json
 import time
 import uuid
+import shutil
+import uvicorn
 from typing import List, Optional
 import io
 import tempfile
@@ -1615,8 +1617,12 @@ async def crear_actividad(
         if tipo_actividad not in tipos_validos:
             raise HTTPException(status_code=400, detail=f"Tipo de actividad debe ser uno de: {', '.join(tipos_validos)}")
         
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        # Verificar y limpiar conexión antes de procesar
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
+        # Limpiar cualquier transacción pendiente
+        limpiar_transaccion()
         
         # Usar timestamp personalizado si viene de offline, sino usar tiempo actual
         fecha, fecha_hora, timestamp_for_filename = obtener_fecha_hora_cdmx(timestamp_offline)
@@ -1645,16 +1651,24 @@ async def crear_actividad(
         # Crear el punto geográfico para PostgreSQL
         punto_ubicacion = f"POINT({longitud} {latitud})"
 
-        # Insertar actividad en la base de datos
-        cursor.execute("""
+        # Insertar actividad usando función segura
+        query = """
             INSERT INTO actividades_dron 
             (usuario_id, fecha_hora, tipo_actividad, descripcion, imagen, ubicacion) 
             VALUES (%s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326))
             RETURNING id
-        """, (usuario_id, fecha_hora, tipo_actividad, descripcion, imagen_url, punto_ubicacion))
+        """
         
-        actividad_id = cursor.fetchone()[0]
-        conn.commit()
+        resultado = ejecutar_consulta_segura(
+            query,
+            (usuario_id, fecha_hora, tipo_actividad, descripcion, imagen_url, punto_ubicacion),
+            fetch_type='one'
+        )
+        
+        actividad_id = resultado[0] if resultado else None
+        
+        if not actividad_id:
+            raise HTTPException(status_code=500, detail="Error al crear la actividad")
         
         print(f"✅ Actividad creada con ID: {actividad_id}")
         
@@ -1670,12 +1684,12 @@ async def crear_actividad(
     except HTTPException:
         raise
     except psycopg2.Error as e:
-        conn.rollback()
         print(f"❌ Error de PostgreSQL en actividad: {e}")
+        limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
     except Exception as e:
-        conn.rollback()
         print(f"❌ Error general en actividad: {e}")
+        limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error al crear actividad: {str(e)}")
 
 @app.get("/actividades/{usuario_id}")
@@ -1689,8 +1703,9 @@ async def obtener_actividades_usuario(
     try:
         print(f"📋 Consultando actividades para usuario {usuario_id}")
         
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        # Verificar y limpiar conexión
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
         
         # Construir consulta base
         query = """
@@ -1713,8 +1728,10 @@ async def obtener_actividades_usuario(
         query += " ORDER BY a.fecha_hora DESC LIMIT %s OFFSET %s"
         params.extend([limit, offset])
         
-        cursor.execute(query, params)
-        registros = cursor.fetchall()
+        registros = ejecutar_consulta_segura(query, params, fetch_type='all')
+        
+        if not registros:
+            registros = []
         
         actividades = []
         for registro in registros:
@@ -1764,17 +1781,18 @@ async def eliminar_actividad(
     try:
         print(f"🗑️ Intentando eliminar actividad {id}")
         
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        # Verificar y limpiar conexión
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
         
         # Verificar que la actividad existe y obtener datos
-        cursor.execute("""
+        query = """
             SELECT id, usuario_id, tipo_actividad, descripcion
             FROM actividades_dron 
             WHERE id = %s
-        """, (id,))
+        """
         
-        actividad = cursor.fetchone()
+        actividad = ejecutar_consulta_segura(query, (id,), fetch_type='one')
         
         if not actividad:
             raise HTTPException(status_code=404, detail="Actividad no encontrada")
@@ -1787,8 +1805,7 @@ async def eliminar_actividad(
             )
         
         # Eliminar la actividad
-        cursor.execute("DELETE FROM actividades_dron WHERE id = %s", (id,))
-        conn.commit()
+        ejecutar_consulta_segura("DELETE FROM actividades_dron WHERE id = %s", (id,), fetch_type='none')
         
         print(f"✅ Actividad {id} eliminada exitosamente")
         
@@ -1801,12 +1818,12 @@ async def eliminar_actividad(
     except HTTPException:
         raise
     except psycopg2.Error as e:
-        conn.rollback()
         print(f"❌ Error de PostgreSQL al eliminar actividad: {e}")
+        limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
     except Exception as e:
-        conn.rollback()
         print(f"❌ Error general al eliminar actividad: {e}")
+        limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error al eliminar actividad: {str(e)}")
 
 @app.put("/actividades/{id}")
@@ -1823,18 +1840,19 @@ async def editar_actividad(
     try:
         print(f"✏️ Intentando editar actividad {id}")
         
-        if not conn:
-            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        # Verificar y limpiar conexión
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
         
         # Verificar que la actividad existe y obtener datos actuales
-        cursor.execute("""
+        query = """
             SELECT id, usuario_id, tipo_actividad, descripcion, imagen,
                    ST_X(ubicacion) as longitud, ST_Y(ubicacion) as latitud
             FROM actividades_dron 
             WHERE id = %s
-        """, (id,))
+        """
         
-        actividad = cursor.fetchone()
+        actividad = ejecutar_consulta_segura(query, (id,), fetch_type='one')
         
         if not actividad:
             raise HTTPException(status_code=404, detail="Actividad no encontrada")
@@ -1897,11 +1915,10 @@ async def editar_actividad(
         if not campos_actualizar:
             raise HTTPException(status_code=400, detail="No hay campos para actualizar")
         
-        # Actualizar la actividad
+        # Actualizar la actividad usando función segura
         valores.append(id)
         query = f"UPDATE actividades_dron SET {', '.join(campos_actualizar)} WHERE id = %s"
-        cursor.execute(query, valores)
-        conn.commit()
+        ejecutar_consulta_segura(query, valores, fetch_type='none')
         
         print(f"✅ Actividad {id} editada exitosamente")
         
@@ -1915,12 +1932,12 @@ async def editar_actividad(
     except HTTPException:
         raise
     except psycopg2.Error as e:
-        conn.rollback()
         print(f"❌ Error de PostgreSQL al editar actividad: {e}")
+        limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
     except Exception as e:
-        conn.rollback()
         print(f"❌ Error general al editar actividad: {e}")
+        limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error al editar actividad: {str(e)}")
 
 # ==================== MAIN ====================
