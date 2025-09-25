@@ -2390,26 +2390,36 @@ async function cargarActividades() {
 async function obtenerUbicacionActividad() {
   if (obteniendoUbicacionActividad.value) return;
   
+  // Limpiar coordenadas previas
+  nuevaActividad.value.latitud = null;
+  nuevaActividad.value.longitud = null;
+  
   obteniendoUbicacionActividad.value = true;
   try {
-    console.log('🌍 Obteniendo ubicación para actividad...');
+    console.log('🌍 Obteniendo ubicación EXACTA para actividad en tiempo real...');
     
+    // Obtener ubicación completamente fresca sin usar caché
     const ubicacion = await geoLocationService.getLocationSmart({
-      timeout: 15000,
-      enableHighAccuracy: true,
-      useCache: false
+      timeout: 20000,           // Aumentar timeout para mayor precisión
+      enableHighAccuracy: true, // Máxima precisión
+      useCache: false,          // NO usar caché - ubicación fresca
+      maximumAge: 0             // NO usar ubicaciones previas
     });
     
     nuevaActividad.value.latitud = parseFloat(ubicacion.latitude.toFixed(6));
     nuevaActividad.value.longitud = parseFloat(ubicacion.longitude.toFixed(6));
     
-    console.log('✅ Ubicación obtenida:', {
+    console.log('✅ Ubicación EXACTA obtenida al momento del clic:', {
       lat: nuevaActividad.value.latitud,
-      lon: nuevaActividad.value.longitud
+      lon: nuevaActividad.value.longitud,
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {
     console.error('❌ Error obteniendo ubicación:', error);
+    // Asegurar que las coordenadas queden vacías en caso de error
+    nuevaActividad.value.latitud = null;
+    nuevaActividad.value.longitud = null;
     mostrarModal('No se pudo obtener la ubicación. Verifica los permisos del navegador.');
   } finally {
     obteniendoUbicacionActividad.value = false;
