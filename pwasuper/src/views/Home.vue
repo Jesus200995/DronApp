@@ -72,7 +72,8 @@
           <button
             @click="iniciarSolicitud('entrada')"
             :disabled="enviandoAsistencia"
-            class="modern-drone-button entrada-button group relative overflow-hidden rounded-2xl min-h-[90px] w-full flex flex-col items-center justify-center p-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
+            class="modern-drone-button entrada-button group relative overflow-hidden rounded-2xl min-h-[240px] sm:min-h-[260px] md:min-h-[240px] w-full flex flex-col items-center justify-center py-16 sm:py-18 px-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
+            style="height: 240px !important; min-height: 240px !important;"
           >
             <!-- Efecto de resplandor animado -->
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
@@ -95,7 +96,8 @@
           <button
             @click="iniciarSolicitud('salida')"
             :disabled="enviandoAsistencia"
-            class="modern-drone-button salida-button group relative overflow-hidden rounded-2xl min-h-[90px] w-full flex flex-col items-center justify-center p-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
+            class="modern-drone-button salida-button group relative overflow-hidden rounded-2xl min-h-[240px] sm:min-h-[260px] md:min-h-[240px] w-full flex flex-col items-center justify-center py-16 sm:py-18 px-4 text-white shadow-xl transform transition-all duration-500 hover:scale-[1.02] hover:shadow-2xl active:scale-95"
+            style="height: 240px !important; min-height: 240px !important;"
           >
             <!-- Efecto de resplandor animado -->
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
