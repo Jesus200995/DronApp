@@ -2356,6 +2356,12 @@ function esHorarioDentroDelDiaActual() {
 
 // ==================== FUNCIONES DE ACTIVIDADES ====================
 
+// Función helper para mostrar modales
+function mostrarModal(mensaje) {
+  modalMessage.value = mensaje;
+  showModal.value = true;
+}
+
 // Computed para validar si se puede guardar la actividad
 const puedeGuardarActividad = computed(() => {
   return nuevaActividad.value.tipo_actividad && 
@@ -2457,10 +2463,17 @@ async function guardarActividad() {
     formData.append('longitud', nuevaActividad.value.longitud);
     
     if (nuevaActividad.value.foto) {
-      // Comprimir imagen si es necesario
-      const blob = await fetch(nuevaActividad.value.foto).then(r => r.blob());
-      const compressedBlob = await compressImage(blob, 0.8, 1920, 1080);
-      formData.append('imagen', compressedBlob, 'actividad.jpg');
+      try {
+        // Comprimir imagen si es necesario
+        const blob = await fetch(nuevaActividad.value.foto).then(r => r.blob());
+        const compressedBlob = await compressImage(blob, 0.8, 1920, 1080);
+        formData.append('imagen', compressedBlob, 'actividad.jpg');
+      } catch (compressionError) {
+        console.warn('⚠️ Error comprimiendo imagen, enviando original:', compressionError);
+        // Si falla la compresión, enviar la imagen original
+        const blob = await fetch(nuevaActividad.value.foto).then(r => r.blob());
+        formData.append('imagen', blob, 'actividad.jpg');
+      }
     }
     
     const response = await axios.post(`${API_URL}/actividades`, formData, {
