@@ -86,9 +86,15 @@
               <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-current"></div>
             </div>
             
-            <div class="relative z-10 flex flex-col items-center space-y-1">
-              <span class="font-bold text-base tracking-wide">Solicitar Equipo</span>
-              <span class="text-xs opacity-80 font-medium">Iniciar operación</span>
+            <div class="relative z-10 flex flex-col items-center space-y-2">
+              <!-- Icono de descargar/obtener -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg>
+              <div class="text-center">
+                <span class="font-bold text-base tracking-wide">Solicitar Equipo</span>
+                <div class="text-xs opacity-80 font-medium">Iniciar operación</div>
+              </div>
             </div>
           </button>
 
@@ -110,9 +116,15 @@
               <div class="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-current"></div>
             </div>
             
-            <div class="relative z-10 flex flex-col items-center space-y-1">
-              <span class="font-bold text-base tracking-wide">Entregar Equipo</span>
-              <span class="text-xs opacity-80 font-medium">Finalizar operación</span>
+            <div class="relative z-10 flex flex-col items-center space-y-2">
+              <!-- Icono de subir/entregar -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 14V8m0 0l3 3m-3-3l-3 3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+              </svg>
+              <div class="text-center">
+                <span class="font-bold text-base tracking-wide">Entregar Equipo</span>
+                <div class="text-xs opacity-80 font-medium">Finalizar operación</div>
+              </div>
             </div>
           </button>
           </div>
@@ -129,9 +141,15 @@
             <div class="absolute top-2 right-2 w-2 h-2 bg-white/30 rounded-full animate-pulse" style="animation-delay: 0.2s;"></div>
             <div class="absolute bottom-3 left-3 w-1.5 h-1.5 bg-white/20 rounded-full animate-ping" style="animation-delay: 0.6s;"></div>
             
-            <div class="relative z-10 flex flex-col items-center space-y-1">
-              <span class="font-bold text-base tracking-wide">Ver Historial</span>
-              <span class="text-xs opacity-80 font-medium">Seguimiento de solicitudes</span>
+            <div class="relative z-10 flex flex-col items-center space-y-2">
+              <!-- Icono de historial/documentos -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white drop-shadow-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="text-center">
+                <span class="font-bold text-base tracking-wide">Ver Historial</span>
+                <div class="text-xs opacity-80 font-medium">Seguimiento de solicitudes</div>
+              </div>
             </div>
           </button>
         </div>
