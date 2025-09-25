@@ -620,7 +620,7 @@
     />
 
     <!-- Formulario para registrar nueva actividad -->
-    <div v-if="seccionActiva === 'actividades' && !modoAsistencia" class="glass-card">
+    <div v-if="seccionActiva === 'actividades' && !modoAsistencia" class="glass-card purple-border-card">
         <div class="text-center mb-3">
           <h2 class="text-lg font-bold text-purple-600 mb-1 actividad-title">Registrar Nueva Actividad</h2>
           <p class="text-xs text-gray-500">Completa todos los campos requeridos</p>
@@ -4642,5 +4642,20 @@ watch([entradaMarcada, salidaMarcada], () => {
   100% {
     box-shadow: 0 0 20px rgba(168, 85, 247, 0.8), 0 0 30px rgba(124, 58, 237, 0.6);
   }
+}
+
+.purple-border-card {
+  border: 1px solid rgba(147, 51, 234, 0.2) !important; /* purple-600 muy desvanecido */
+  box-shadow: 0 0 0 1px rgba(147, 51, 234, 0.05), 
+              0 2px 4px rgba(147, 51, 234, 0.05),
+              0 1px 2px rgba(147, 51, 234, 0.03) !important;
+  transition: all 0.3s ease !important;
+}
+
+.purple-border-card:hover {
+  border-color: rgba(124, 58, 237, 0.3) !important; /* purple-700 desvanecido */
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.08), 
+              0 4px 8px rgba(124, 58, 237, 0.08),
+              0 2px 4px rgba(124, 58, 237, 0.06) !important;
 }
 </style>
