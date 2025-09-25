@@ -1152,8 +1152,22 @@ async function cargarHistorialActividades() {
     
     console.log('Respuesta del servidor (actividades):', response.data);
     
-    // Procesar el historial de actividades
-    historialActividades.value = response.data.actividades || [];
+    // Procesar el historial de actividades y formatear los datos
+    const actividadesRaw = response.data.actividades || [];
+    
+    // Formatear las actividades para que coincidan con el formato esperado por el frontend
+    historialActividades.value = actividadesRaw.map(actividad => ({
+      id: actividad.id,
+      usuario_id: actividad.usuario_id,
+      tipo_actividad: actividad.tipo_actividad,
+      descripcion: actividad.descripcion,
+      foto: actividad.imagen, // El backend usa 'imagen' pero el frontend espera 'foto'
+      latitud: actividad.ubicacion?.latitud,
+      longitud: actividad.ubicacion?.longitud,
+      fecha: actividad.fecha_hora, // El backend usa 'fecha_hora' pero el frontend espera 'fecha'
+      offline: false, // Estas vienen del servidor, no son offline
+      usuario: actividad.usuario
+    }));
     
     console.log('✅ Total de registros de actividades:', historialActividades.value.length);
     

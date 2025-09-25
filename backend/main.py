@@ -1707,16 +1707,41 @@ async def obtener_actividades_usuario(
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
         
-        # Construir consulta base
-        query = """
-            SELECT a.id, a.usuario_id, a.fecha_hora, a.tipo_actividad, 
-                   a.descripcion, a.imagen,
-                   ST_X(a.ubicacion) as longitud, ST_Y(a.ubicacion) as latitud,
-                   u.nombre, u.puesto
-            FROM actividades_dron a
-            LEFT JOIN usuarios u ON a.usuario_id = u.id
-            WHERE a.usuario_id = %s
-        """
+        # Verificar si PostGIS está disponible
+        try:
+            # Intentar una consulta simple con ST_X para verificar disponibilidad
+            test_query = "SELECT 1 WHERE EXISTS (SELECT proname FROM pg_proc WHERE proname = 'st_x')"
+            test_result = ejecutar_consulta_segura(test_query, [], fetch_type='one')
+            postigs_available = test_result is not None
+        except:
+            postigs_available = False
+            
+        print(f"🗺️ PostGIS disponible: {postigs_available}")
+        
+        # Construir consulta base según disponibilidad de PostGIS
+        if postigs_available:
+            # Con PostGIS - extraer coordenadas
+            query = """
+                SELECT a.id, a.usuario_id, a.fecha_hora, a.tipo_actividad, 
+                       a.descripcion, a.imagen,
+                       ST_X(a.ubicacion::geometry) as longitud, ST_Y(a.ubicacion::geometry) as latitud,
+                       u.nombre, u.puesto
+                FROM actividades_dron a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                WHERE a.usuario_id = %s
+            """
+        else:
+            # Sin PostGIS - usar valores nulos para coordenadas
+            print("⚠️ PostGIS no disponible, usando coordenadas NULL")
+            query = """
+                SELECT a.id, a.usuario_id, a.fecha_hora, a.tipo_actividad, 
+                       a.descripcion, a.imagen,
+                       NULL as longitud, NULL as latitud,
+                       u.nombre, u.puesto
+                FROM actividades_dron a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                WHERE a.usuario_id = %s
+            """
         params = [usuario_id]
         
         # Agregar filtro por tipo si se especifica
