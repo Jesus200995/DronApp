@@ -623,7 +623,6 @@
     <div v-if="seccionActiva === 'actividades' && !modoAsistencia" class="glass-card">
         <div class="text-center mb-3">
           <h2 class="text-lg font-bold text-purple-600 mb-1 actividad-title">Registrar Nueva Actividad</h2>
-          <div class="purple-line mx-auto mb-1"></div>
           <p class="text-xs text-gray-500">Completa todos los campos requeridos</p>
         </div>
         
