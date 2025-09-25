@@ -10,15 +10,57 @@
       
       <div class="absolute inset-0 overflow-y-auto pt-16 sm:pt-20 pb-4">
         <div class="page-container relative z-10 px-1 sm:px-2 md:px-3 lg:px-4 xl:px-5 py-3 sm:py-4 lg:py-5 min-h-full max-w-full">
-    <!-- Historial de solicitudes de drones -->
+    
+    <!-- Botones de selección de sección -->
     <div class="glass-card mb-2">
-      <!-- Título centralizado para Historial de Drones -->
-      <div class="text-center mb-4">
-        <h1 class="text-lg font-bold text-gray-800 mb-2">Historial de Solicitudes de Drones</h1>
+      <div class="text-center mb-3">
+        <h1 class="text-lg font-bold text-gray-800 mb-2 modern-title">Historial Completo</h1>
         <div class="w-24 h-0.5 bg-gradient-to-r from-blue-400 to-purple-600 mx-auto mb-2"></div>
-        <p v-if="userInfo" class="text-sm text-gray-600">
+        <p v-if="userInfo" class="text-xs text-gray-500 mb-3">
           Historial de: <span class="font-semibold text-blue-700">{{ userInfo.nombre_completo }}</span>
         </p>
+        
+        <!-- Botones de navegación entre secciones -->
+        <div class="flex gap-2 section-nav-container p-1 rounded-full">
+          <button
+            @click="seccionActiva = 'solicitudes'"
+            :class="[
+              'section-nav-button flex-1 px-4 py-2 text-xs font-medium rounded-full transition-all duration-300',
+              seccionActiva === 'solicitudes' 
+                ? 'active text-white shadow-lg' 
+                : 'text-gray-600 hover:bg-white/30'
+            ]"
+            :style="seccionActiva === 'solicitudes' ? 'background-color: rgb(30, 144, 255);' : ''"
+          >
+            <div class="flex items-center justify-center">
+              <span>Solicitudes</span>
+            </div>
+          </button>
+          
+          <button
+            @click="seccionActiva = 'actividades'"
+            :class="[
+              'section-nav-button flex-1 px-4 py-2 text-xs font-medium rounded-full transition-all duration-300 relative',
+              seccionActiva === 'actividades'
+                ? 'active text-white shadow-lg' 
+                : 'text-gray-600 hover:bg-white/30'
+            ]"
+            :style="seccionActiva === 'actividades' ? 'background-color: rgb(147, 51, 234);' : ''"
+          >
+            <div class="flex items-center justify-center">
+              <span>Actividades</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historial de solicitudes de drones -->
+    <div v-if="seccionActiva === 'solicitudes'" class="glass-card mb-2">
+      <!-- Título para Solicitudes -->
+      <div class="text-center mb-4">
+        <h2 class="text-lg font-bold text-blue-700 mb-2">Solicitudes de Equipos</h2>
+        <div class="w-20 h-0.5 bg-gradient-to-r from-blue-400 to-blue-600 mx-auto mb-2"></div>
       </div>
       
       <div class="flex justify-end items-center mb-3">
@@ -229,9 +271,9 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
         </svg>
-        <p class="text-lg text-gray-500 font-medium">No hay historial disponible</p>
+        <p class="text-lg text-gray-500 font-medium">No hay solicitudes disponibles</p>
         <p class="text-sm text-gray-400 mt-1">Crea tu primera solicitud de dron para ver el historial aquí</p>
-        <router-link to="/solicitud" class="glass-button inline-block mt-4 text-sm">Nueva Solicitud</router-link>
+        <router-link to="/" class="glass-button inline-block mt-4 text-sm">Nueva Solicitud</router-link>
       </div>
       
       <!-- Cargando -->
@@ -239,6 +281,152 @@
         <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
         <p class="mt-4 text-gray-500 text-lg">Cargando historial...</p>
         </div>
+      </div>
+    </div>
+
+    <!-- Historial de actividades -->
+    <div v-if="seccionActiva === 'actividades'" class="glass-card mb-2">
+      <!-- Título para Actividades -->
+      <div class="text-center mb-4">
+        <h2 class="text-lg font-bold text-purple-700 mb-2">Historial de Actividades</h2>
+        <div class="w-20 h-0.5 bg-gradient-to-r from-purple-400 to-purple-600 mx-auto mb-2"></div>
+      </div>
+      
+      <div class="flex justify-end items-center mb-3">
+        <button @click="cargarHistorialActividades" class="glass-button-refresh text-sm px-3 py-2 flex items-center gap-2">
+          <svg :class="['h-4 w-4 transition-transform duration-500', cargandoActividades ? 'animate-spin' : '']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="text-sm">{{ cargandoActividades ? 'Cargando...' : 'Actualizar' }}</span>
+        </button>
+      </div>
+
+      <div v-if="errorActividades" class="mb-4 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg" role="alert">
+        <p class="text-sm font-semibold">{{ errorActividades }}</p>
+        <p class="text-sm mt-1">
+          <strong>Problema detectado:</strong> Verifica tu conexión a internet o contacta al administrador.
+        </p>
+      </div>
+
+      <!-- Lista de historial de actividades -->
+      <div v-if="historialActividades.length > 0">
+        <div class="mb-3 text-sm text-gray-600">
+          Total de actividades: <span class="font-semibold text-purple-700">{{ historialActividades.length }}</span>
+        </div>
+        <div class="space-y-4">
+          <div v-for="(item, index) in historialActividades" :key="index" 
+               :class="[
+                 'historial-card relative overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-[1.02] hover:shadow-lg',
+                 'backdrop-filter backdrop-blur-xl border shadow-md',
+                 'bg-gradient-to-br from-white/80 via-purple-50/40 to-indigo-100/60 border-purple-200/60 hover:shadow-purple-200/50'
+               ]"
+               style="backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);"
+               :style="{ 'animation-delay': `${index * 0.1}s` }">
+            
+            <!-- Efectos decorativos -->
+            <div class="absolute inset-0 bg-gradient-to-br from-white/30 via-transparent to-transparent opacity-60 rounded-xl pointer-events-none"></div>
+            <div class="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-purple-400/20 to-transparent rounded-full blur-lg"></div>
+            
+            <!-- Borde superior colorido según el tipo de actividad -->
+            <div :class="[
+              'absolute top-0 left-0 right-0 h-1 rounded-t-xl',
+              getTipoActividadColor(item.tipo_actividad).border
+            ]"></div>
+            
+            <div class="relative z-10 p-3">
+              <!-- Header con información principal -->
+              <div class="flex justify-between items-start mb-2">
+                <div>
+                  <h3 class="text-lg font-bold text-gray-800">Actividad #{{ item.id }}</h3>
+                  <div class="flex items-center gap-2 mb-1">
+                    <p :class="[
+                      'text-sm font-semibold',
+                      getTipoActividadColor(item.tipo_actividad).text
+                    ]">
+                      {{ formatTipoActividad(item.tipo_actividad) }}
+                    </p>
+                    <span v-if="item.offline" class="px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 border border-orange-200">
+                      Offline
+                    </span>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-sm font-semibold text-gray-700">{{ formatFechaCompleta(item.fecha) }}</p>
+                  <p class="text-sm text-gray-600">{{ formatHoraCDMX(item.fecha) }}</p>
+                </div>
+              </div>
+              
+              <!-- Contenido principal del historial de actividades -->
+              <div class="space-y-3">
+                
+                <!-- Descripción de la actividad -->
+                <div v-if="item.descripcion" class="mb-2">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span class="text-sm font-medium text-gray-700">Descripción:</span>
+                  </div>
+                  <p class="text-sm text-gray-600 bg-gray-50 rounded-lg p-3 border border-gray-200">{{ item.descripcion }}</p>
+                </div>
+                
+                <!-- Foto de la actividad si existe -->
+                <div v-if="item.foto" class="mb-2">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span class="text-sm font-medium text-gray-700">Imagen:</span>
+                  </div>
+                  <div class="relative inline-block">
+                    <img :src="getFotoActividadUrl(item.foto)" 
+                         @click="verImagen(getFotoActividadUrl(item.foto))"
+                         class="equipment-photo w-16 h-16 object-cover rounded-lg cursor-pointer" 
+                         :alt="`Foto actividad ${item.id}`" 
+                         loading="lazy" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black from-opacity-20 to-transparent opacity-0 hover:opacity-100 transition-opacity rounded-lg pointer-events-none flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Ubicación -->
+                <div v-if="item.latitud && item.longitud" class="mb-2">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="text-sm font-medium text-gray-700">Ubicación:</span>
+                  </div>
+                  <p class="text-xs font-mono text-gray-600 bg-gray-50 rounded-lg p-2 border border-gray-200">
+                    Lat: {{ item.latitud }}<br>
+                    Lon: {{ item.longitud }}
+                  </p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado vacío para actividades -->
+      <div v-if="historialActividades.length === 0 && !cargandoActividades" class="text-center py-10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 8l2 2 4-4" />
+        </svg>
+        <p class="text-lg text-gray-500 font-medium">No hay actividades registradas</p>
+        <p class="text-sm text-gray-400 mt-1">Registra tu primera actividad para ver el historial aquí</p>
+        <router-link to="/" class="glass-button inline-block mt-4 text-sm">Registrar Actividad</router-link>
+      </div>
+      
+      <!-- Cargando actividades -->
+      <div v-if="cargandoActividades" class="text-center py-10">
+        <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500 mx-auto"></div>
+        <p class="mt-4 text-gray-500 text-lg">Cargando actividades...</p>
       </div>
     </div>
     
@@ -272,6 +460,12 @@ const userInfo = ref(null);
 const imagenModalVisible = ref(false);
 const imagenSeleccionada = ref('');
 
+// Variables para la nueva funcionalidad de actividades
+const seccionActiva = ref('solicitudes'); // 'solicitudes' o 'actividades'
+const historialActividades = ref([]);
+const cargandoActividades = ref(false);
+const errorActividades = ref(null);
+
 // Referencias para limpiar event listeners y cancelar requests
 const modalEventListeners = ref([]);
 const abortController = ref(null);
@@ -288,14 +482,12 @@ onMounted(async () => {
   
   // Verificar conexión a internet
   isOnline.value = await checkInternetConnection();
-  if (!isOnline.value) {
-    error.value = getOfflineMessage();
-    cargando.value = false;
-    return;
-  }
   
-  // Cargar historial de solicitudes
+  // Cargar historial de solicitudes (siempre, incluso offline)
   cargarHistorial();
+  
+  // Cargar historial de actividades (siempre, incluso offline)
+  cargarHistorialActividades();
 });
 
 // Limpiar event listeners y cancelar requests al desmontar el componente
@@ -316,7 +508,10 @@ async function cargarHistorial() {
   // Verificar conexión a internet antes de cargar
   isOnline.value = await checkInternetConnection();
   if (!isOnline.value) {
-    error.value = getOfflineMessage();
+    // En modo offline, mostrar mensaje pero no impedir el funcionamiento
+    console.log('Modo offline: no se pueden cargar solicitudes del servidor');
+    historial.value = []; // Limpiar solicitudes ya que requieren conexión
+    error.value = 'Sin conexión. Las solicitudes requieren conexión a internet para ser visualizadas.';
     cargando.value = false;
     return;
   }
@@ -921,6 +1116,243 @@ function limpiarModalListeners() {
     }
   });
   modalEventListeners.value = [];
+}
+
+// Función principal para cargar el historial de actividades
+async function cargarHistorialActividades() {
+  cargandoActividades.value = true;
+  errorActividades.value = null;
+  
+  // Verificar conexión a internet antes de cargar
+  isOnline.value = await checkInternetConnection();
+  if (!isOnline.value) {
+    // En modo offline, cargar actividades desde localStorage
+    cargarActividadesOffline();
+    cargandoActividades.value = false;
+    return;
+  }
+
+  try {
+    console.log('Cargando historial de actividades para usuario:', userInfo.value.id);
+    
+    // Crear un nuevo AbortController para este request
+    if (abortController.value) {
+      abortController.value.abort();
+    }
+    abortController.value = new AbortController();
+    
+    // Obtener historial de actividades específico del usuario actual
+    const response = await axios.get(`${API_URL}/actividades/${userInfo.value.id}`, {
+      timeout: 10000, // 10 segundos de timeout
+      signal: abortController.value.signal,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Respuesta del servidor (actividades):', response.data);
+    
+    // Procesar el historial de actividades
+    historialActividades.value = response.data.actividades || [];
+    
+    console.log('✅ Total de registros de actividades:', historialActividades.value.length);
+    
+    // Combinar con actividades offline si las hay
+    combinarActividadesOffline();
+    
+  } catch (err) {
+    // Si el request fue cancelado, no mostrar error
+    if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+      console.log('Request de actividades cancelado correctamente');
+      return;
+    }
+    
+    console.error('Error al cargar historial de actividades:', err);
+    
+    if (err.response) {
+      if (err.response.status === 404) {
+        errorActividades.value = 'No se encontraron registros de actividades para este usuario.';
+        historialActividades.value = [];
+      } else if (err.response.status === 500) {
+        const detalle = err.response.data?.detail || 'Problema interno del servidor';
+        errorActividades.value = `Error del servidor: ${detalle}`;
+      } else {
+        errorActividades.value = `Error ${err.response.status}: ${err.response.data?.detail || err.response.statusText}`;
+      }
+    } else if (err.request) {
+      errorActividades.value = 'No se pudo conectar con el servidor para cargar actividades.';
+      // En caso de error de conexión, cargar actividades offline
+      cargarActividadesOffline();
+    } else {
+      errorActividades.value = 'Error inesperado: ' + err.message;
+    }
+    
+  } finally {
+    cargandoActividades.value = false;
+  }
+}
+
+// Función para cargar actividades desde localStorage (modo offline)
+function cargarActividadesOffline() {
+  try {
+    const actividadesOffline = JSON.parse(localStorage.getItem('actividades_offline') || '[]');
+    const actividadesUsuario = actividadesOffline.filter(act => act.usuario_id === userInfo.value.id);
+    
+    // Formatear las actividades offline para que coincidan con el formato del servidor
+    const actividadesFormateadas = actividadesUsuario.map(act => ({
+      id: act.id,
+      usuario_id: act.usuario_id,
+      tipo_actividad: act.tipo_actividad,
+      descripcion: act.descripcion,
+      foto: act.foto_blob || act.foto, // Usar blob si está disponible
+      latitud: act.latitud,
+      longitud: act.longitud,
+      fecha: act.fecha || act.timestamp,
+      offline: true // Marcar como offline
+    }));
+    
+    historialActividades.value = actividadesFormateadas;
+    console.log(`📱 Cargadas ${actividadesFormateadas.length} actividades offline`);
+    
+    if (actividadesFormateadas.length === 0) {
+      errorActividades.value = 'Sin conexión. No hay actividades guardadas offline.';
+    }
+  } catch (error) {
+    console.error('Error al cargar actividades offline:', error);
+    errorActividades.value = 'Error al cargar actividades guardadas localmente.';
+  }
+}
+
+// Función para combinar actividades offline con las del servidor
+function combinarActividadesOffline() {
+  try {
+    const actividadesOffline = JSON.parse(localStorage.getItem('actividades_offline') || '[]');
+    const actividadesUsuarioOffline = actividadesOffline.filter(act => 
+      act.usuario_id === userInfo.value.id && !act.sincronizada
+    );
+    
+    if (actividadesUsuarioOffline.length > 0) {
+      // Formatear actividades offline
+      const actividadesOfflineFormateadas = actividadesUsuarioOffline.map(act => ({
+        id: `offline_${act.id}`,
+        usuario_id: act.usuario_id,
+        tipo_actividad: act.tipo_actividad,
+        descripcion: act.descripcion,
+        foto: act.foto_blob || act.foto,
+        latitud: act.latitud,
+        longitud: act.longitud,
+        fecha: act.fecha || act.timestamp,
+        offline: true
+      }));
+      
+      // Combinar con actividades del servidor
+      historialActividades.value = [
+        ...actividadesOfflineFormateadas,
+        ...historialActividades.value
+      ];
+      
+      // Ordenar por fecha (más recientes primero)
+      historialActividades.value.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      
+      console.log(`📱 Combinadas ${actividadesOfflineFormateadas.length} actividades offline con ${historialActividades.value.length - actividadesOfflineFormateadas.length} del servidor`);
+    }
+  } catch (error) {
+    console.error('Error al combinar actividades offline:', error);
+  }
+}
+
+// Función para obtener colores según el tipo de actividad
+function getTipoActividadColor(tipoActividad) {
+  switch (tipoActividad?.toLowerCase()) {
+    case 'aspersion':
+      return {
+        bg: 'bg-gradient-to-br from-blue-500 to-blue-600',
+        border: 'bg-gradient-to-r from-blue-500 via-cyan-500 to-blue-600',
+        text: 'text-blue-700'
+      };
+    case 'mantenimiento':
+      return {
+        bg: 'bg-gradient-to-br from-orange-500 to-orange-600',
+        border: 'bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600',
+        text: 'text-orange-700'
+      };
+    case 'entrenamiento':
+      return {
+        bg: 'bg-gradient-to-br from-purple-500 to-purple-600',
+        border: 'bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-600',
+        text: 'text-purple-700'
+      };
+    case 'inspeccion':
+      return {
+        bg: 'bg-gradient-to-br from-green-500 to-green-600',
+        border: 'bg-gradient-to-r from-green-500 via-emerald-500 to-green-600',
+        text: 'text-green-700'
+      };
+    case 'monitoreo':
+      return {
+        bg: 'bg-gradient-to-br from-indigo-500 to-indigo-600',
+        border: 'bg-gradient-to-r from-indigo-500 via-blue-500 to-indigo-600',
+        text: 'text-indigo-700'
+      };
+    case 'campo':
+      return {
+        bg: 'bg-gradient-to-br from-green-500 to-green-600',
+        border: 'bg-gradient-to-r from-green-500 via-lime-500 to-green-600',
+        text: 'text-green-700'
+      };
+    case 'gabinete':
+      return {
+        bg: 'bg-gradient-to-br from-gray-500 to-gray-600',
+        border: 'bg-gradient-to-r from-gray-500 via-slate-500 to-gray-600',
+        text: 'text-gray-700'
+      };
+    default:
+      return {
+        bg: 'bg-gradient-to-br from-gray-500 to-gray-600',
+        border: 'bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700',
+        text: 'text-gray-700'
+      };
+  }
+}
+
+// Función para formatear el tipo de actividad
+function formatTipoActividad(tipo) {
+  if (!tipo) return 'Sin tipo';
+  
+  const tipos = {
+    'aspersion': '🚿 Aspersión',
+    'mantenimiento': '🔧 Mantenimiento',
+    'entrenamiento': '🎯 Entrenamiento',
+    'inspeccion': '🔍 Inspección',
+    'monitoreo': '📊 Monitoreo',
+    'campo': '🌾 Trabajo de Campo',
+    'gabinete': '🏢 Trabajo de Gabinete'
+  };
+  
+  return tipos[tipo.toLowerCase()] || tipo.charAt(0).toUpperCase() + tipo.slice(1);
+}
+
+// Función para obtener URL de foto de actividad
+function getFotoActividadUrl(fotoPath) {
+  if (!fotoPath) return '';
+  
+  // Si es un blob URL o data URL, usar directamente
+  if (fotoPath.startsWith('blob:') || fotoPath.startsWith('data:')) {
+    return fotoPath;
+  }
+  
+  // Si es una ruta completa, usar directamente
+  if (fotoPath.startsWith('http')) {
+    return fotoPath;
+  }
+  
+  // Si es solo un nombre de archivo, construir URL con API
+  if (fotoPath.includes('/') || fotoPath.includes('\\')) {
+    const fileName = fotoPath.split(/[/\\]/).pop();
+    return `${API_URL}/fotos/${fileName}`;
+  } else {
+    return `${API_URL}/fotos/${fotoPath}`;
+  }
 }
 
 // Función para abrir una imagen en el modal
@@ -1605,6 +2037,52 @@ function verImagen(url) {
 
 .hover\:shadow-gray-200\/50:hover {
   box-shadow: 0 10px 15px -3px rgba(156, 163, 175, 0.1), 0 4px 6px -2px rgba(156, 163, 175, 0.05);
+}
+
+/* Estilos para los botones de navegación entre secciones */
+.section-nav-container {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.section-nav-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+.section-nav-button.active {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.section-nav-button:not(.active):hover {
+  background: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-nav-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.section-nav-button:hover::before {
+  left: 100%;
 }
 
 /* Estilos específicos para el historial de drones */
