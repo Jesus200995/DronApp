@@ -17,14 +17,14 @@
           <svg class="logo-drone-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <linearGradient id="droneBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#1d4ed8;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#e0f2fe;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#87ceeb;stop-opacity:1" />
               </linearGradient>
               <linearGradient id="propellerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.9" />
-                <stop offset="50%" style="stop-color:#1e40af;stop-opacity:0.7" />
-                <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:0.5" />
+                <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                <stop offset="50%" style="stop-color:#b3e5fc;stop-opacity:0.7" />
+                <stop offset="100%" style="stop-color:#81d4fa;stop-opacity:0.5" />
               </linearGradient>
               <filter id="droneGlow" x="-50%" y="-50%" width="200%" height="200%">
                 <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -34,7 +34,7 @@
                 </feMerge>
               </filter>
               <filter id="droneShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1e3a8a" flood-opacity="0.4"/>
+                <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#87ceeb" flood-opacity="0.4"/>
               </filter>
             </defs>
             
@@ -52,9 +52,9 @@
               
               <!-- Cámara/sensor -->
               <circle cx="50" cy="50" r="4" 
-                      fill="#1e3a8a" filter="url(#droneGlow)"/>
+                      fill="#87ceeb" filter="url(#droneGlow)"/>
               <circle cx="50" cy="50" r="2" 
-                      fill="#3b82f6" opacity="0.9"/>
+                      fill="#ffffff" opacity="0.9"/>
             </g>
             
             <!-- Hélices giratorias -->
@@ -63,7 +63,7 @@
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
               <ellipse cx="32" cy="32" rx="2" ry="8" 
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
-              <circle cx="32" cy="32" r="2" fill="#1e3a8a"/>
+              <circle cx="32" cy="32" r="2" fill="#ffffff"/>
             </g>
             
             <g class="propeller-top-right" transform-origin="68 32">
@@ -71,7 +71,7 @@
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
               <ellipse cx="68" cy="32" rx="2" ry="8" 
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
-              <circle cx="68" cy="32" r="2" fill="#1e3a8a"/>
+              <circle cx="68" cy="32" r="2" fill="#ffffff"/>
             </g>
             
             <g class="propeller-bottom-left" transform-origin="32 68">
@@ -79,7 +79,7 @@
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
               <ellipse cx="32" cy="68" rx="2" ry="8" 
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
-              <circle cx="32" cy="68" r="2" fill="#1e3a8a"/>
+              <circle cx="32" cy="68" r="2" fill="#ffffff"/>
             </g>
             
             <g class="propeller-bottom-right" transform-origin="68 68">
@@ -87,7 +87,7 @@
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
               <ellipse cx="68" cy="68" rx="2" ry="8" 
                        fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
-              <circle cx="68" cy="68" r="2" fill="#1e3a8a"/>
+              <circle cx="68" cy="68" r="2" fill="#ffffff"/>
             </g>
             
             <!-- Luces LED -->
@@ -101,7 +101,7 @@
         <!-- Texto del logo con efecto de brillo -->
         <div class="logo-text">
           <h1 class="brand-name">SEMBRANDO VIDA</h1>
-          <p class="brand-tagline">App de Seguimiento</p>
+          <p class="brand-tagline">Seguimiento de Drones</p>
           <div class="text-underline"></div>
         </div>
       </div>
@@ -507,7 +507,7 @@ const handleKeydown = (event) => {
 .logo-drone-svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 2px 6px rgba(30, 64, 175, 0.3));
+  filter: drop-shadow(0 2px 6px rgba(135, 206, 235, 0.4));
 }
 
 /* Animaciones del dron */
@@ -567,7 +567,7 @@ const handleKeydown = (event) => {
 
 /* Efectos hover para el dron */
 .logo-animation:hover .logo-drone-svg {
-  filter: drop-shadow(0 4px 12px rgba(30, 64, 175, 0.5));
+  filter: drop-shadow(0 4px 12px rgba(135, 206, 235, 0.7));
 }
 
 .logo-animation:hover .drone-body {
@@ -600,7 +600,7 @@ const handleKeydown = (event) => {
   letter-spacing: 0.5px;
   margin: 0;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #93c5fd 10%, #60a5fa 30%, #3b82f6 50%, #2563eb 70%, #1d4ed8 90%);
+  background: linear-gradient(45deg, #ffffff 10%, #e0f2fe 30%, #87ceeb 50%, #87ceeb 70%, #ffffff 90%);
   -webkit-background-clip: text;
   color: transparent;
   background-clip: text;

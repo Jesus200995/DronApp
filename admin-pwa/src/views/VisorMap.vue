@@ -2091,13 +2091,13 @@ watch(filtroTipo, () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Header con diseño de vidrio líquido verde responsivo */
+/* Header con diseño de vidrio líquido azul marino responsivo */
 .page-header {
-  background: linear-gradient(135deg, #4CAF50 0%, #45a049 50%, #2E7D32 100%);
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%);
   color: white;
   padding: clamp(0.3rem, 0.8vw, 0.5rem);
   box-shadow: 
-    0 4px 16px rgba(76, 175, 80, 0.15);
+    0 4px 16px rgba(12, 74, 110, 0.15);
   position: sticky;
   top: 0;
   z-index: 100;
