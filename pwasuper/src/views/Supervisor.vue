@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50">
-    <!-- Header Mobile-First -->
-    <div class="sticky top-0 z-10 bg-white shadow-sm border-b border-gray-200">
-      <div class="px-4 py-3">
+    <!-- Header integrado sin sticky -->
+    <div class="bg-white shadow-sm border-b border-gray-200 mb-4">
+      <div class="max-w-sm mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
           <!-- Logo y título compactos -->
           <div class="flex items-center flex-1 min-w-0">
@@ -30,18 +30,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               <span class="ml-2 hidden sm:inline">{{ loading ? 'Cargando...' : 'Actualizar' }}</span>
-            </button>
-            
-            <!-- Botón de logout - solo icono en móvil -->
-            <button 
-              @click="logout" 
-              class="p-2 sm:px-3 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center"
-              title="Cerrar Sesión"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              <span class="ml-2 hidden sm:inline">Cerrar Sesión</span>
             </button>
           </div>
         </div>
