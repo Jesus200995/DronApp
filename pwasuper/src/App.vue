@@ -234,77 +234,137 @@ function logout() {
       <div class="max-w-sm mx-auto px-4 py-3">
         <div class="flex items-center justify-between">
           <div class="flex items-center">
-            <!-- Dron estático en círculo azul suave -->
-            <div class="relative w-8 h-8 bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 rounded-full shadow-md border border-blue-200 overflow-hidden flex items-center justify-center mr-3">
-              <svg viewBox="0 0 100 100" class="w-6 h-6">
-                <!-- Cuerpo principal del dron con gradiente -->
-                <defs>
-                  <linearGradient id="droneBody" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style="stop-color:#3b82f6"/>
-                    <stop offset="50%" style="stop-color:#1e40af"/>
-                    <stop offset="100%" style="stop-color:#1e3a8a"/>
-                  </linearGradient>
-                  <linearGradient id="propeller" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" style="stop-color:#60a5fa"/>
-                    <stop offset="100%" style="stop-color:#3b82f6"/>
-                  </linearGradient>
-                </defs>
-                
-                <!-- Sombra del dron -->
-                <ellipse cx="52" cy="52" rx="16" ry="6" fill="#000" opacity="0.1"/>
-                
-                <!-- Cuerpo principal del dron -->
-                <ellipse cx="50" cy="50" rx="16" ry="6" fill="url(#droneBody)" stroke="#1e40af" stroke-width="0.5"/>
-                
-                <!-- Hélices giratorias con animación suave -->
-                <g class="animate-spin origin-center" style="animation-duration: 0.8s; animation-timing-function: linear;">
-                  <!-- Hélice superior izquierda -->
-                  <g opacity="0.8">
-                    <circle cx="32" cy="38" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
-                    <ellipse cx="32" cy="38" rx="8" ry="2" fill="#60a5fa" opacity="0.3"/>
-                    <line x1="24" y1="38" x2="40" y2="38" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- Dron futurista con diseño elegante y animación suave -->
+            <div class="relative w-8 h-8 flex items-center justify-center mr-3">
+              <div class="drone-floating">
+                <svg viewBox="0 0 100 100" class="w-8 h-8">
+                  <!-- Definiciones avanzadas -->
+                  <defs>
+                    <linearGradient id="futuristicBody" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#0ea5e9"/>
+                      <stop offset="30%" style="stop-color:#0284c7"/>
+                      <stop offset="70%" style="stop-color:#0369a1"/>
+                      <stop offset="100%" style="stop-color:#075985"/>
+                    </linearGradient>
+                    <linearGradient id="futuristicAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style="stop-color:#06b6d4"/>
+                      <stop offset="50%" style="stop-color:#0891b2"/>
+                      <stop offset="100%" style="stop-color:#0e7490"/>
+                    </linearGradient>
+                    <radialGradient id="propellerGlow" cx="50%" cy="50%" r="50%">
+                      <stop offset="0%" style="stop-color:#60a5fa" stop-opacity="0.8"/>
+                      <stop offset="70%" style="stop-color:#3b82f6" stop-opacity="0.4"/>
+                      <stop offset="100%" style="stop-color:#1d4ed8" stop-opacity="0"/>
+                    </radialGradient>
+                    <filter id="glow">
+                      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                      <feMerge> 
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                      </feMerge>
+                    </filter>
+                  </defs>
+                  
+                  <!-- Aura energética que pulsa -->
+                  <circle cx="50" cy="50" r="40" fill="url(#propellerGlow)" opacity="0.2" class="energy-pulse"/>
+                  
+                  <!-- Cuerpo principal futurista -->
+                  <g class="drone-main-body">
+                    <!-- Casco principal hexagonal -->
+                    <polygon points="35,45 50,35 65,45 65,55 50,65 35,55" 
+                             fill="url(#futuristicBody)" 
+                             stroke="#0369a1" 
+                             stroke-width="0.8"
+                             filter="url(#glow)"/>
+                    
+                    <!-- Panel superior con líneas tech -->
+                    <polygon points="38,47 50,39 62,47 62,53 50,61 38,53" 
+                             fill="url(#futuristicAccent)" 
+                             opacity="0.9"/>
+                    
+                    <!-- Líneas de diseño tech -->
+                    <line x1="42" y1="50" x2="58" y2="50" stroke="#60a5fa" stroke-width="1" opacity="0.8"/>
+                    <line x1="46" y1="46" x2="54" y2="46" stroke="#60a5fa" stroke-width="0.5" opacity="0.6"/>
+                    <line x1="46" y1="54" x2="54" y2="54" stroke="#60a5fa" stroke-width="0.5" opacity="0.6"/>
+                    
+                    <!-- Núcleo central con pulso -->
+                    <circle cx="50" cy="50" r="4" fill="#1e40af" stroke="#3b82f6" stroke-width="1"/>
+                    <circle cx="50" cy="50" r="2.5" fill="#60a5fa" opacity="0.8" class="core-pulse"/>
+                    <circle cx="50" cy="50" r="1" fill="#ffffff" opacity="0.9"/>
                   </g>
                   
-                  <!-- Hélice superior derecha -->
-                  <g opacity="0.8">
-                    <circle cx="68" cy="38" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
-                    <ellipse cx="68" cy="38" rx="8" ry="2" fill="#60a5fa" opacity="0.3"/>
-                    <line x1="60" y1="38" x2="76" y2="38" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  <!-- Brazos extendidos con estilo futurista -->
+                  <g class="drone-arms">
+                    <!-- Brazo superior izquierdo -->
+                    <path d="M 42 42 L 28 28 L 25 31 L 39 45" fill="url(#futuristicAccent)" opacity="0.9"/>
+                    <!-- Brazo superior derecho -->
+                    <path d="M 58 42 L 72 28 L 75 31 L 61 45" fill="url(#futuristicAccent)" opacity="0.9"/>
+                    <!-- Brazo inferior izquierdo -->
+                    <path d="M 42 58 L 28 72 L 25 69 L 39 55" fill="url(#futuristicAccent)" opacity="0.9"/>
+                    <!-- Brazo inferior derecho -->
+                    <path d="M 58 58 L 72 72 L 75 69 L 61 55" fill="url(#futuristicAccent)" opacity="0.9"/>
                   </g>
                   
-                  <!-- Hélice inferior izquierda -->
-                  <g opacity="0.8">
-                    <circle cx="32" cy="62" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
-                    <ellipse cx="32" cy="62" rx="2" ry="8" fill="#60a5fa" opacity="0.3"/>
-                    <line x1="32" y1="54" x2="32" y2="70" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  <!-- Motores en las puntas -->
+                  <g class="drone-motors">
+                    <circle cx="26" cy="26" r="5" fill="url(#futuristicBody)" stroke="#0369a1" stroke-width="0.5"/>
+                    <circle cx="74" cy="26" r="5" fill="url(#futuristicBody)" stroke="#0369a1" stroke-width="0.5"/>
+                    <circle cx="26" cy="74" r="5" fill="url(#futuristicBody)" stroke="#0369a1" stroke-width="0.5"/>
+                    <circle cx="74" cy="74" r="5" fill="url(#futuristicBody)" stroke="#0369a1" stroke-width="0.5"/>
+                    
+                    <!-- Centros de motores -->
+                    <circle cx="26" cy="26" r="2" fill="#1e40af"/>
+                    <circle cx="74" cy="26" r="2" fill="#1e40af"/>
+                    <circle cx="26" cy="74" r="2" fill="#1e40af"/>
+                    <circle cx="74" cy="74" r="2" fill="#1e40af"/>
                   </g>
                   
-                  <!-- Hélice inferior derecha -->
-                  <g opacity="0.8">
-                    <circle cx="68" cy="62" r="7" fill="none" stroke="url(#propeller)" stroke-width="0.8" opacity="0.4"/>
-                    <ellipse cx="68" cy="62" rx="2" ry="8" fill="#60a5fa" opacity="0.3"/>
-                    <line x1="68" y1="54" x2="68" y2="70" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+                  <!-- Hélices con efecto de velocidad -->
+                  <g class="propeller-blur">
+                    <!-- Hélice superior izquierda -->
+                    <g opacity="0.7">
+                      <ellipse cx="26" cy="26" rx="9" ry="1.5" fill="#60a5fa" opacity="0.6"/>
+                      <ellipse cx="26" cy="26" rx="1.5" ry="9" fill="#60a5fa" opacity="0.4"/>
+                      <circle cx="26" cy="26" r="8" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.3"/>
+                    </g>
+                    
+                    <!-- Hélice superior derecha -->
+                    <g opacity="0.7">
+                      <ellipse cx="74" cy="26" rx="9" ry="1.5" fill="#60a5fa" opacity="0.6"/>
+                      <ellipse cx="74" cy="26" rx="1.5" ry="9" fill="#60a5fa" opacity="0.4"/>
+                      <circle cx="74" cy="26" r="8" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.3"/>
+                    </g>
+                    
+                    <!-- Hélice inferior izquierda -->
+                    <g opacity="0.7">
+                      <ellipse cx="26" cy="74" rx="9" ry="1.5" fill="#60a5fa" opacity="0.6"/>
+                      <ellipse cx="26" cy="74" rx="1.5" ry="9" fill="#60a5fa" opacity="0.4"/>
+                      <circle cx="26" cy="74" r="8" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.3"/>
+                    </g>
+                    
+                    <!-- Hélice inferior derecha -->
+                    <g opacity="0.7">
+                      <ellipse cx="74" cy="74" rx="9" ry="1.5" fill="#60a5fa" opacity="0.6"/>
+                      <ellipse cx="74" cy="74" rx="1.5" ry="9" fill="#60a5fa" opacity="0.4"/>
+                      <circle cx="74" cy="74" r="8" fill="none" stroke="#3b82f6" stroke-width="0.5" opacity="0.3"/>
+                    </g>
                   </g>
-                </g>
-                
-                <!-- Brazos del dron con mejores proporciones -->
-                <line x1="34" y1="48" x2="32" y2="38" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
-                <line x1="66" y1="48" x2="68" y2="38" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
-                <line x1="34" y1="52" x2="32" y2="62" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
-                <line x1="66" y1="52" x2="68" y2="62" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
-                
-                <!-- Detalle central del dron -->
-                <rect x="47" y="47" width="6" height="6" rx="1" fill="#1e3a8a" opacity="0.8"/>
-                
-                <!-- Luz LED central con pulso suave -->
-                <circle cx="50" cy="50" r="2" fill="#ef4444" opacity="0.9" class="animate-pulse" style="animation-duration: 2s;"/>
-                
-                <!-- Luces LED en los motores -->
-                <circle cx="32" cy="38" r="1" fill="#10b981" opacity="0.7" class="animate-pulse" style="animation-delay: 0.5s; animation-duration: 1.5s;"/>
-                <circle cx="68" cy="38" r="1" fill="#10b981" opacity="0.7" class="animate-pulse" style="animation-delay: 1s; animation-duration: 1.5s;"/>
-                <circle cx="32" cy="62" r="1" fill="#f59e0b" opacity="0.7" class="animate-pulse" style="animation-delay: 1.5s; animation-duration: 1.5s;"/>
-                <circle cx="68" cy="62" r="1" fill="#f59e0b" opacity="0.7" class="animate-pulse" style="animation-delay: 2s; animation-duration: 1.5s;"/>
-              </svg>
+                  
+                  <!-- LEDs de estado -->
+                  <g class="status-leds">
+                    <circle cx="26" cy="26" r="1" fill="#10b981" class="led-pulse" style="animation-delay: 0s;"/>
+                    <circle cx="74" cy="26" r="1" fill="#ef4444" class="led-pulse" style="animation-delay: 0.5s;"/>
+                    <circle cx="26" cy="74" r="1" fill="#f59e0b" class="led-pulse" style="animation-delay: 1s;"/>
+                    <circle cx="74" cy="74" r="1" fill="#8b5cf6" class="led-pulse" style="animation-delay: 1.5s;"/>
+                  </g>
+                  
+                  <!-- Antena de comunicación -->
+                  <g class="communication">
+                    <line x1="50" y1="35" x2="50" y2="28" stroke="#60a5fa" stroke-width="1"/>
+                    <circle cx="50" cy="28" r="1.5" fill="#ef4444" class="antenna-blink"/>
+                  </g>
+                </svg>
+              </div>
             </div>
             <div>
               <h1 class="text-base font-bold text-blue-800 mb-0">Seguimiento de Drones</h1>
@@ -513,6 +573,112 @@ h1::before {
   }
   100% {
     transform: translateX(100%) translateY(100%) rotate(45deg);
+  }
+}
+
+/* Animaciones del dron futurista - Sin flotación */
+.drone-floating {
+  /* Sin animación de flotación, mantiene posición fija */
+  transform-origin: center;
+}
+
+.drone-main-body {
+  animation: bodyStabilize 3s ease-in-out infinite;
+  transform-origin: 50px 50px;
+}
+
+.drone-arms {
+  /* Sin animación de flexión para mantener estático */
+  transform-origin: 50px 50px;
+}
+
+.propeller-blur {
+  animation: ultraFastSpin 0.15s linear infinite;
+  transform-origin: 50px 50px;
+}
+
+.energy-pulse {
+  animation: energyWave 3s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.core-pulse {
+  animation: coreGlow 2s ease-in-out infinite;
+}
+
+.led-pulse {
+  animation: ledBlink 2s ease-in-out infinite;
+}
+
+.antenna-blink {
+  animation: antennaFlash 1.5s ease-in-out infinite;
+}
+
+/* Estabilización del cuerpo - Solo rotaciones sutiles sin movimiento vertical */
+@keyframes bodyStabilize {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  33% {
+    transform: rotate(0.3deg);
+  }
+  66% {
+    transform: rotate(-0.3deg);
+  }
+}
+
+/* Rotación ultra rápida de hélices */
+@keyframes ultraFastSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Onda de energía - Solo pulso de opacidad sin escalado */
+@keyframes energyWave {
+  0%, 100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* Resplandor del núcleo */
+@keyframes coreGlow {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* Parpadeo de LEDs */
+@keyframes ledBlink {
+  0%, 80%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  90% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+}
+
+/* Flash de antena */
+@keyframes antennaFlash {
+  0%, 90%, 100% {
+    opacity: 0.7;
+  }
+  95% {
+    opacity: 1;
+    transform: scale(1.2);
   }
 }
 </style>
