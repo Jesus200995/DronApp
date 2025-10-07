@@ -11,35 +11,61 @@
       <!-- Header fijo -->
       <div class="fixed top-16 sm:top-20 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-2 sm:pt-3">
         <div class="w-full max-w-md mx-auto">
-          <div class="bg-white shadow-sm border border-gray-200 rounded-lg">
-            <div class="px-4 py-3">
+          <div class="liquid-glass-card relative overflow-hidden backdrop-blur-md bg-white/20 shadow-lg border border-white/30 rounded-xl">
+            <!-- Efecto de reflejo y brillo -->
+            <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-indigo-500/10 opacity-60"></div>
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-xl blur opacity-30 group-hover:opacity-100 transition duration-1000"></div>
+            <div class="absolute inset-0 h-full w-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent opacity-50"></div>
+            
+            <!-- Burbujas animadas de fondo -->
+            <div class="absolute top-1/3 left-5 w-3 h-3 rounded-full bg-blue-300/40 blur-sm liquid-bubble"></div>
+            <div class="absolute top-2/3 right-10 w-5 h-5 rounded-full bg-indigo-300/30 blur-sm liquid-bubble" style="animation-delay: 2s;"></div>
+            <div class="absolute bottom-1/4 left-1/2 w-4 h-4 rounded-full bg-sky-300/30 blur-sm liquid-bubble" style="animation-delay: 3.5s;"></div>
+            
+            <!-- Contenido real -->
+            <div class="px-4 py-3 relative z-10">
               <div class="flex items-center justify-between">
           <!-- Logo y título compactos -->
           <div class="flex items-center flex-1 min-w-0">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-8 h-8 sm:w-10 sm:h-10 glass-icon-container flex items-center justify-center mr-3 flex-shrink-0 relative overflow-hidden">
+              <!-- Efecto de brillo en movimiento -->
+              <div class="absolute inset-0 liquid-shine"></div>
+              <!-- Icono -->
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
               </svg>
             </div>
             <div class="min-w-0">
-              <h1 class="text-sm sm:text-base font-bold text-gray-900 truncate">Panel Supervisor</h1>
-              <p class="text-xs text-gray-600 hidden sm:block">Gestión de solicitudes</p>
+              <h1 class="liquid-title text-sm sm:text-base font-bold truncate">Panel Supervisor</h1>
+              <p class="text-xs text-blue-900/70 hidden sm:block font-medium">Gestión de solicitudes</p>
             </div>
           </div>
           
           <!-- Botones de acción compactos -->
           <div class="flex items-center space-x-2">
-            <!-- Botón de recargar - solo icono en móvil -->
+            <!-- Botón de recargar con efecto vidrio líquido -->
             <button 
               @click="cargarSolicitudes" 
               :disabled="loading"
-              class="p-2 sm:px-3 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+              class="liquid-glass-button group relative overflow-hidden px-3 py-2 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed flex items-center"
               :title="loading ? 'Cargando...' : 'Actualizar'"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="{ 'animate-spin': loading }">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <span class="ml-2 hidden sm:inline">{{ loading ? 'Cargando...' : 'Actualizar' }}</span>
+              <!-- Fondo con efecto de vidrio líquido -->
+              <div class="absolute inset-0 bg-gradient-to-br from-blue-400/80 via-blue-500/70 to-blue-600/80 rounded-full backdrop-blur-sm"></div>
+              
+              <!-- Efecto de brillo líquido -->
+              <div class="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+              
+              <!-- Contenido del botón -->
+              <div class="relative flex items-center justify-center space-x-1.5 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="{ 'animate-spin': loading }">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span class="ml-1 hidden sm:inline text-white font-medium text-sm">{{ loading ? 'Cargando...' : 'Actualizar' }}</span>
+              </div>
+              
+              <!-- Sombra interna para efecto 3D -->
+              <div class="absolute inset-1 rounded-full shadow-inner opacity-30"></div>
             </button>
           </div>
         </div>
@@ -615,6 +641,124 @@ function logout() {
   100% {
     box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
     opacity: 1;
+  }
+}
+
+/* Estilos de vidrio líquido para el panel */
+.liquid-glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.liquid-glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px 0 rgba(31, 38, 135, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Efecto de título con gradiente */
+.liquid-title {
+  background: linear-gradient(
+    90deg, 
+    #1e40af 0%, 
+    #3b82f6 25%, 
+    #93c5fd 50%, 
+    #3b82f6 75%, 
+    #1e40af 100%
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gradient-wave 8s ease-in-out infinite;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  letter-spacing: -0.015em;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.2);
+}
+
+/* Contenedor del icono de vidrio */
+.glass-icon-container {
+  background: linear-gradient(135deg, #3b82f6, #1e40af);
+  border-radius: 12px;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-icon-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 12px rgba(0, 0, 0, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+
+/* Efecto de brillo moviéndose */
+.liquid-shine {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 45%,
+    rgba(255, 255, 255, 0.1) 48%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0.1) 52%,
+    transparent 55%
+  );
+  animation: liquid-shine-move 3s infinite;
+  transform: rotate(25deg);
+}
+
+/* Animación de burbujas flotantes */
+.liquid-bubble {
+  animation: liquid-bubble-float 7s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes liquid-shine-move {
+  0% {
+    top: -50%;
+    left: -50%;
+  }
+  100% {
+    top: 150%;
+    left: 150%;
+  }
+}
+
+@keyframes gradient-wave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes liquid-bubble-float {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-15px) scale(1.1);
+    opacity: 0.8;
   }
 }
 
