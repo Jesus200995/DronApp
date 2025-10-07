@@ -234,14 +234,23 @@ async function login() {
     // Obtener datos del usuario desde la respuesta
     const userData = response.data;
     
+    console.log('✅ Datos del usuario recibidos:', userData);
+    console.log('🎭 Rol del usuario:', userData.rol);
+    
     // Guardar datos del usuario en localStorage
     localStorage.setItem('user', JSON.stringify(userData));
     
     // Establecer bandera para mostrar mensaje de bienvenida
     sessionStorage.setItem('justLoggedIn', 'true');
     
-    // Forzar recarga de la página para asegurar que el estado se actualice correctamente
-    window.location.href = '/';
+    // Redirigir según el rol del usuario
+    if (userData.rol === 'supervisor') {
+      console.log('🎯 Redirigiendo a vista de supervisor...');
+      window.location.href = '/supervisor';
+    } else {
+      console.log('🎯 Redirigiendo a vista de técnico (home)...');
+      window.location.href = '/';
+    }
   } catch (error) {
     console.error('Error de inicio de sesión:', error);
     

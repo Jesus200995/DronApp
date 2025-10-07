@@ -644,9 +644,10 @@ async def login(usuario: UserLogin):
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
         
-        # Buscar usuario por correo en la nueva tabla usuarios
+        # Buscar usuario por correo en la nueva tabla usuarios (con rol)
         query = """
-        SELECT id, correo, nombre, puesto, supervisor, curp, telefono, fecha_registro 
+        SELECT id, correo, nombre, puesto, supervisor, curp, telefono, fecha_registro,
+               COALESCE(rol, 'tecnico') as rol
         FROM usuarios 
         WHERE correo = %s
         """
@@ -677,7 +678,9 @@ async def login(usuario: UserLogin):
         if not password_valid:
             raise HTTPException(status_code=401, detail="Credenciales incorrectas")
         
-        # Devolver datos del usuario con la nueva estructura
+        print(f"✅ Login exitoso - Usuario: {user[2]}, Rol: {user[8]}")
+        
+        # Devolver datos del usuario con la nueva estructura incluyendo el rol
         return {
             "id": user[0],
             "correo": user[1],
@@ -686,7 +689,8 @@ async def login(usuario: UserLogin):
             "supervisor": user[4],
             "curp": user[5],
             "telefono": user[6],
-            "fecha_registro": user[7].isoformat() if user[7] else None
+            "fecha_registro": user[7].isoformat() if user[7] else None,
+            "rol": user[8]  # Campo rol agregado
         }
         
     except HTTPException:
@@ -817,6 +821,139 @@ def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
     except Exception as e:
         print(f"❌ Error en admin login: {e}")
         raise HTTPException(status_code=500, detail=f"Error en autenticación: {str(e)}")
+
+# ==================== ENDPOINTS DEL SUPERVISOR ====================
+
+@app.get("/supervisor/solicitudes")
+async def obtener_solicitudes_pendientes():
+    """Obtener todas las solicitudes pendientes para supervisor"""
+    try:
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        
+        # Consulta para obtener solicitudes pendientes con información del técnico
+        query = """
+        SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, s.latitud, s.longitud, 
+               s.nombre_foto, s.checklist_json, s.observaciones, s.estado,
+               u.nombre as tecnico_nombre, u.correo as tecnico_correo
+        FROM solicitudes_dron s
+        JOIN usuarios u ON s.usuario_id = u.id
+        WHERE s.estado = 'pendiente'
+        ORDER BY s.fecha_hora DESC
+        """
+        
+        cursor.execute(query)
+        solicitudes = cursor.fetchall()
+        
+        resultado = []
+        for solicitud in solicitudes:
+            # Parsear checklist JSON
+            checklist_data = {}
+            try:
+                checklist_data = json.loads(solicitud[7]) if solicitud[7] else {}
+            except:
+                checklist_data = {}
+            
+            resultado.append({
+                "id": solicitud[0],
+                "usuario_id": solicitud[1],
+                "tipo": solicitud[2],
+                "fecha_hora": solicitud[3].isoformat() if solicitud[3] else None,
+                "latitud": solicitud[4],
+                "longitud": solicitud[5],
+                "foto_url": f"/fotos/{solicitud[6]}" if solicitud[6] else None,
+                "checklist": checklist_data,
+                "observaciones": solicitud[8],
+                "estado": solicitud[9],
+                "tecnico": {
+                    "nombre": solicitud[10],
+                    "correo": solicitud[11]
+                }
+            })
+        
+        return {"solicitudes": resultado}
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo solicitudes pendientes: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@app.put("/supervisor/solicitudes/{solicitud_id}/aprobar")
+async def aprobar_solicitud(solicitud_id: int):
+    """Aprobar una solicitud pendiente"""
+    try:
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        
+        # Verificar que la solicitud existe y está pendiente
+        cursor.execute(
+            "SELECT id, estado FROM solicitudes_dron WHERE id = %s",
+            (solicitud_id,)
+        )
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        if solicitud[1] != 'pendiente':
+            raise HTTPException(status_code=400, detail="La solicitud no está pendiente")
+        
+        # Actualizar estado a aprobado
+        cursor.execute(
+            "UPDATE solicitudes_dron SET estado = 'aprobado', fecha_aprobacion = NOW() WHERE id = %s",
+            (solicitud_id,)
+        )
+        
+        conn.commit()
+        
+        print(f"✅ Solicitud {solicitud_id} aprobada por supervisor")
+        
+        return {"success": True, "message": "Solicitud aprobada exitosamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error aprobando solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+@app.put("/supervisor/solicitudes/{solicitud_id}/rechazar")
+async def rechazar_solicitud(solicitud_id: int, motivo: str = Form("")):
+    """Rechazar una solicitud pendiente"""
+    try:
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        
+        # Verificar que la solicitud existe y está pendiente
+        cursor.execute(
+            "SELECT id, estado FROM solicitudes_dron WHERE id = %s",
+            (solicitud_id,)
+        )
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        if solicitud[1] != 'pendiente':
+            raise HTTPException(status_code=400, detail="La solicitud no está pendiente")
+        
+        # Actualizar estado a rechazado
+        cursor.execute(
+            "UPDATE solicitudes_dron SET estado = 'rechazado', motivo_rechazo = %s, fecha_rechazo = NOW() WHERE id = %s",
+            (motivo, solicitud_id)
+        )
+        
+        conn.commit()
+        
+        print(f"❌ Solicitud {solicitud_id} rechazada por supervisor. Motivo: {motivo}")
+        
+        return {"success": True, "message": "Solicitud rechazada exitosamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error rechazando solicitud: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 # ==================== ENDPOINTS DE SOLICITUDES DE DRONES ====================
 
