@@ -12,95 +12,89 @@
     <!-- Cabecera del sidebar con logo animado -->
     <div class="sidebar-header">
       <div class="logo-container">
-        <!-- Flor SVG girando como en LoginView -->
+        <!-- Dron SVG animado -->
         <div class="logo-animation">
-          <svg class="logo-flower-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <svg class="logo-drone-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
-              <linearGradient id="petalGradientSidebar" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#dcfce7;stop-opacity:1" />
-                <stop offset="30%" style="stop-color:#bbf7d0;stop-opacity:1" />
-                <stop offset="60%" style="stop-color:#86efac;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#4ade80;stop-opacity:1" />
+              <linearGradient id="droneBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#1d4ed8;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
               </linearGradient>
-              <linearGradient id="centerGradientSidebar" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#16a34a;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#15803d;stop-opacity:1" />
+              <linearGradient id="propellerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.9" />
+                <stop offset="50%" style="stop-color:#1e40af;stop-opacity:0.7" />
+                <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:0.5" />
               </linearGradient>
-              <filter id="petalGlowSidebar" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+              <filter id="droneGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                 <feMerge> 
                   <feMergeNode in="coloredBlur"/>
                   <feMergeNode in="SourceGraphic"/>
                 </feMerge>
               </filter>
-              <filter id="centerShadowSidebar" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#15803d" flood-opacity="0.4"/>
+              <filter id="droneShadow" x="-50%" y="-50%" width="200%" height="200%">
+                <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#1e3a8a" flood-opacity="0.4"/>
               </filter>
             </defs>
             
-            <!-- Grupo de la flor que girará como una unidad -->
-            <g class="flower-rotating-sidebar">
-              <!-- Pétalos de la flor (8 pétalos) -->
-              <!-- Pétalo superior -->
-              <ellipse cx="50" cy="25" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"/>
+            <!-- Cuerpo principal del dron -->
+            <g class="drone-body">
+              <!-- Cuerpo central -->
+              <ellipse cx="50" cy="50" rx="16" ry="8" 
+                       fill="url(#droneBodyGradient)" filter="url(#droneShadow)"/>
               
-              <!-- Pétalo superior derecho -->
-              <ellipse cx="65" cy="35" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(45 65 35)"/>
+              <!-- Brazos del dron -->
+              <rect x="25" y="48" width="50" height="4" rx="2" 
+                    fill="url(#droneBodyGradient)" filter="url(#droneGlow)"/>
+              <rect x="48" y="25" width="4" height="50" rx="2" 
+                    fill="url(#droneBodyGradient)" filter="url(#droneGlow)"/>
               
-              <!-- Pétalo derecho -->
-              <ellipse cx="75" cy="50" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(90 75 50)"/>
-              
-              <!-- Pétalo inferior derecho -->
-              <ellipse cx="65" cy="65" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(135 65 65)"/>
-              
-              <!-- Pétalo inferior -->
-              <ellipse cx="50" cy="75" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(180 50 75)"/>
-              
-              <!-- Pétalo inferior izquierdo -->
-              <ellipse cx="35" cy="65" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(225 35 65)"/>
-              
-              <!-- Pétalo izquierdo -->
-              <ellipse cx="25" cy="50" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(270 25 50)"/>
-              
-              <!-- Pétalo superior izquierdo -->
-              <ellipse cx="35" cy="35" rx="8" ry="15" 
-                       fill="url(#petalGradientSidebar)" filter="url(#petalGlowSidebar)"
-                       transform="rotate(315 35 35)"/>
-              
-              <!-- Centro de la flor -->
-              <circle cx="50" cy="50" r="12" 
-                      fill="url(#centerGradientSidebar)" filter="url(#centerShadowSidebar)"/>
-              
-              <!-- Detalles del centro -->
-              <circle cx="50" cy="50" r="8" 
-                      fill="#22c55e" opacity="0.8"/>
-              <circle cx="47" cy="47" r="3" 
-                      fill="#86efac" opacity="0.6"/>
-              
-              <!-- Pequeños detalles en los pétalos -->
-              <circle cx="50" cy="30" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="62" cy="38" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="70" cy="50" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="62" cy="62" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="50" cy="70" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="38" cy="62" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="30" cy="50" r="1.5" fill="#22c55e" opacity="0.7"/>
-              <circle cx="38" cy="38" r="1.5" fill="#22c55e" opacity="0.7"/>
+              <!-- Cámara/sensor -->
+              <circle cx="50" cy="50" r="4" 
+                      fill="#1e3a8a" filter="url(#droneGlow)"/>
+              <circle cx="50" cy="50" r="2" 
+                      fill="#3b82f6" opacity="0.9"/>
             </g>
+            
+            <!-- Hélices giratorias -->
+            <g class="propeller-top-left" transform-origin="32 32">
+              <ellipse cx="32" cy="32" rx="8" ry="2" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <ellipse cx="32" cy="32" rx="2" ry="8" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <circle cx="32" cy="32" r="2" fill="#1e3a8a"/>
+            </g>
+            
+            <g class="propeller-top-right" transform-origin="68 32">
+              <ellipse cx="68" cy="32" rx="8" ry="2" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <ellipse cx="68" cy="32" rx="2" ry="8" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <circle cx="68" cy="32" r="2" fill="#1e3a8a"/>
+            </g>
+            
+            <g class="propeller-bottom-left" transform-origin="32 68">
+              <ellipse cx="32" cy="68" rx="8" ry="2" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <ellipse cx="32" cy="68" rx="2" ry="8" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <circle cx="32" cy="68" r="2" fill="#1e3a8a"/>
+            </g>
+            
+            <g class="propeller-bottom-right" transform-origin="68 68">
+              <ellipse cx="68" cy="68" rx="8" ry="2" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <ellipse cx="68" cy="68" rx="2" ry="8" 
+                       fill="url(#propellerGradient)" filter="url(#droneGlow)"/>
+              <circle cx="68" cy="68" r="2" fill="#1e3a8a"/>
+            </g>
+            
+            <!-- Luces LED -->
+            <circle cx="32" cy="32" r="1.5" fill="#ef4444" opacity="0.8" class="led-light"/>
+            <circle cx="68" cy="32" r="1.5" fill="#22c55e" opacity="0.8" class="led-light"/>
+            <circle cx="32" cy="68" r="1.5" fill="#22c55e" opacity="0.8" class="led-light"/>
+            <circle cx="68" cy="68" r="1.5" fill="#ef4444" opacity="0.8" class="led-light"/>
           </svg>
         </div>
         
@@ -386,9 +380,9 @@ const handleKeydown = (event) => {
 
 /* Variables de colores */
 :root {
-  --primary-dark: #1B5E20;
-  --primary: #2E7D32;
-  --primary-light: #4CAF50;
+  --primary-dark: #0c1427;
+  --primary: #1a202c;
+  --primary-light: #2d3748;
   --accent: #FFFFFF;
   --accent-light: #E8F5E9;
   --accent-very-light: #F1F8E9;
@@ -418,9 +412,11 @@ const handleKeydown = (event) => {
   max-width: 240px;
   min-width: 200px;
   background: linear-gradient(135deg, 
-    #388E3C 0%, 
-    #2E7D32 50%, 
-    #1B5E20 100%);
+    #1e3a8a 0%, 
+    #1e40af 25%,
+    #1d4ed8 50%, 
+    #1e3a8a 75%,
+    #0c1427 100%);
   color: var(--text-light);
   display: flex;
   flex-direction: column;
@@ -507,20 +503,42 @@ const handleKeydown = (event) => {
   justify-content: center;
 }
 
-/* SVG de la flor girando como en LoginView */
-.logo-flower-svg {
+/* SVG del dron animado */
+.logo-drone-svg {
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 2px 6px rgba(30, 64, 175, 0.3));
 }
 
-/* Animaciones del logo de flor girando igual que en LoginView */
-.flower-rotating-sidebar {
-  animation: smoothRotationSidebar 6s linear infinite;
+/* Animaciones del dron */
+.drone-body {
+  animation: droneFloat 3s ease-in-out infinite;
   transform-origin: 50px 50px;
 }
 
-@keyframes smoothRotationSidebar {
+.propeller-top-left, .propeller-bottom-right {
+  animation: propellerRotateClockwise 0.1s linear infinite;
+}
+
+.propeller-top-right, .propeller-bottom-left {
+  animation: propellerRotateCounterClockwise 0.1s linear infinite;
+}
+
+.led-light {
+  animation: ledBlink 1.5s ease-in-out infinite;
+}
+
+/* Keyframes para las animaciones */
+@keyframes droneFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes propellerRotateClockwise {
   from {
     transform: rotate(0deg);
   }
@@ -529,13 +547,41 @@ const handleKeydown = (event) => {
   }
 }
 
-/* Efectos hover para la nueva animación SVG */
-.logo-animation:hover .logo-flower-svg {
-  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+@keyframes propellerRotateCounterClockwise {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
-.logo-animation:hover .flower-rotating-sidebar {
-  animation-duration: 4s;
+@keyframes ledBlink {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Efectos hover para el dron */
+.logo-animation:hover .logo-drone-svg {
+  filter: drop-shadow(0 4px 12px rgba(30, 64, 175, 0.5));
+}
+
+.logo-animation:hover .drone-body {
+  animation-duration: 2s;
+}
+
+.logo-animation:hover .propeller-top-left,
+.logo-animation:hover .propeller-bottom-right {
+  animation-duration: 0.05s;
+}
+
+.logo-animation:hover .propeller-top-right,
+.logo-animation:hover .propeller-bottom-left {
+  animation-duration: 0.05s;
 }
 
 .logo-text {
@@ -554,7 +600,7 @@ const handleKeydown = (event) => {
   letter-spacing: 0.5px;
   margin: 0;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #F1F8E9 10%, #E8F5E8 30%, #DCEDC8 50%, #FFF9C4 70%, #FFEB3B 90%);
+  background: linear-gradient(45deg, #93c5fd 10%, #60a5fa 30%, #3b82f6 50%, #2563eb 70%, #1d4ed8 90%);
   -webkit-background-clip: text;
   color: transparent;
   background-clip: text;
@@ -586,15 +632,15 @@ const handleKeydown = (event) => {
   height: 3px;
   background: linear-gradient(90deg, 
     transparent 0%,
-    #1B5E20 25%,
-    #2E7D32 50%,
-    #1B5E20 75%,
+    #1e3a8a 25%,
+    #1e40af 50%,
+    #1e3a8a 75%,
     transparent 100%);
   margin: 8px auto 0 auto;
   border-radius: 2px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(27, 94, 32, 0.3);
+  box-shadow: 0 1px 3px rgba(30, 58, 138, 0.5);
 }
 
 .text-underline::after {
@@ -679,20 +725,20 @@ const handleKeydown = (event) => {
 
 .quick-link.geoportal {
   color: white;
-  background: rgba(46, 125, 50, 0.8);
+  background: rgba(30, 58, 138, 0.9);
 }
 
 .quick-link.geoportal:hover {
-  background: rgba(46, 125, 50, 0.9);
+  background: rgba(30, 58, 138, 1);
 }
 
 .quick-link.app-movil {
   color: white;
-  background: linear-gradient(135deg, rgba(38, 166, 154, 0.7) 0%, rgba(33, 150, 243, 0.7) 100%);
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.8) 0%, rgba(29, 78, 216, 0.8) 100%);
 }
 
 .quick-link.app-movil:hover {
-  background: linear-gradient(135deg, rgba(38, 166, 154, 0.8) 0%, rgba(33, 150, 243, 0.8) 100%);
+  background: linear-gradient(135deg, rgba(30, 64, 175, 1) 0%, rgba(29, 78, 216, 1) 100%);
 }
 
 .quick-link.resumen-ejecutivo {
