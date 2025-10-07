@@ -24,57 +24,47 @@
             
             <!-- Contenido real -->
             <div class="px-4 py-3 relative z-10">
-              <div class="flex items-center justify-between">
-          <!-- Logo y título compactos -->
-          <div class="flex items-center flex-1 min-w-0">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 glass-icon-container flex items-center justify-center mr-3 flex-shrink-0 relative overflow-hidden">
-              <!-- Efecto de brillo en movimiento -->
-              <div class="absolute inset-0 liquid-shine"></div>
-              <!-- Icono -->
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-white relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
-            </div>
-            <div class="min-w-0">
-              <h1 class="liquid-title text-sm sm:text-base font-bold truncate">Panel Supervisor</h1>
-              <p class="text-xs text-blue-900/70 hidden sm:block font-medium">Gestión de solicitudes</p>
-            </div>
-          </div>
-          
-          <!-- Botones de acción compactos -->
-          <div class="flex items-center space-x-2">
-            <!-- Botón de recargar con efecto vidrio líquido -->
-            <button 
-              @click="cargarSolicitudes" 
-              :disabled="loading"
-              class="liquid-glass-button group relative overflow-hidden px-3 py-2 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed flex items-center"
-              :title="loading ? 'Cargando...' : 'Actualizar'"
-            >
-              <!-- Fondo con efecto de vidrio líquido -->
-              <div class="absolute inset-0 bg-gradient-to-br from-blue-400/80 via-blue-500/70 to-blue-600/80 rounded-full backdrop-blur-sm"></div>
-              
-              <!-- Efecto de brillo líquido -->
-              <div class="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-              
-              <!-- Contenido del botón -->
-              <div class="relative flex items-center justify-center space-x-1.5 z-10">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="{ 'animate-spin': loading }">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                <span class="ml-1 hidden sm:inline text-white font-medium text-sm">{{ loading ? 'Cargando...' : 'Actualizar' }}</span>
+              <!-- Contenedor con título centrado y botón a la derecha -->
+              <div class="flex justify-between items-center">
+                <!-- Espacio vacío para balancear el diseño -->
+                <div class="w-9 h-9"></div>
+                
+                <!-- Título centrado -->
+                <div class="flex flex-col items-center">
+                  <h1 class="liquid-title text-sm sm:text-base font-bold">Panel Supervisor</h1>
+                  <p class="text-xs text-blue-900/70 font-medium mt-1">Gestión de solicitudes</p>
+                </div>
+                
+                <!-- Botón de recargar con efecto vidrio líquido a la derecha -->
+                <button 
+                  @click="cargarSolicitudes" 
+                  :disabled="loading"
+                  class="liquid-glass-button group relative overflow-hidden px-2.5 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed flex items-center w-9 h-9 justify-center"
+                  :title="loading ? 'Cargando...' : 'Actualizar'"
+                  >
+                  <!-- Fondo con efecto de vidrio líquido -->
+                  <div class="absolute inset-0 bg-gradient-to-br from-blue-400/80 via-blue-500/70 to-blue-600/80 rounded-full backdrop-blur-sm"></div>
+                  
+                  <!-- Efecto de brillo líquido -->
+                  <div class="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
+                  
+                  <!-- Contenido del botón -->
+                  <div class="relative flex items-center justify-center z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" :class="{ 'animate-spin': loading }">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  </div>
+                  
+                  <!-- Sombra interna para efecto 3D -->
+                  <div class="absolute inset-1 rounded-full shadow-inner opacity-30"></div>
+                </button>
               </div>
-              
-              <!-- Sombra interna para efecto 3D -->
-              <div class="absolute inset-1 rounded-full shadow-inner opacity-30"></div>
-            </button>
-          </div>
-        </div>
-      </div>
+            </div>
             </div>
           </div>
           
           <!-- Título y verde lineal -->
-          <div class="bg-transparent rounded-xl p-1">
+          <div class="bg-transparent rounded-xl p-1 flex justify-center">
             <div class="green-line mb-0"></div>
           </div>
         </div>
