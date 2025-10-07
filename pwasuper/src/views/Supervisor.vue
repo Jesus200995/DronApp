@@ -382,8 +382,12 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { API_URL } from '../utils/network.js'
+import MockSolicitudesService from '../services/MockSolicitudesService.js'
 
 const router = useRouter()
+
+// Configuración
+const useMockData = true // Cambiar a false cuando el backend funcione correctamente
 
 // Datos reactivos
 const solicitudes = ref([])
@@ -407,13 +411,21 @@ const tipoToast = ref('success')
 
 // Estadísticas computadas
 const solicitudesAprobadas = computed(() => {
-  // Aquí podrías hacer una llamada al backend para obtener estadísticas reales
-  return 0 // Placeholder por ahora
+  if (useMockData) {
+    return 5 // Datos simulados para estadísticas
+  } else {
+    // Aquí podrías hacer una llamada al backend para obtener estadísticas reales
+    return 0 // Placeholder por ahora
+  }
 })
 
 const solicitudesRechazadas = computed(() => {
-  // Aquí podrías hacer una llamada al backend para obtener estadísticas reales
-  return 0 // Placeholder por ahora
+  if (useMockData) {
+    return 2 // Datos simulados para estadísticas
+  } else {
+    // Aquí podrías hacer una llamada al backend para obtener estadísticas reales
+    return 0 // Placeholder por ahora
+  }
 })
 
 // Verificar autenticación y rol al montar
@@ -445,8 +457,16 @@ onMounted(() => {
 async function cargarSolicitudes() {
   loading.value = true
   try {
-    const response = await axios.get(`${API_URL}/supervisor/solicitudes`)
-    solicitudes.value = response.data.solicitudes
+    if (useMockData) {
+      // Usar datos simulados mientras se soluciona el backend
+      console.log('⚠️ Usando datos simulados para solicitudes')
+      const response = await MockSolicitudesService.getSolicitudesPendientes()
+      solicitudes.value = response.data.solicitudes
+    } else {
+      // Usar datos reales del backend cuando esté corregido
+      const response = await axios.get(`${API_URL}/supervisor/solicitudes`)
+      solicitudes.value = response.data.solicitudes
+    }
     console.log('📋 Solicitudes cargadas:', solicitudes.value.length)
   } catch (error) {
     console.error('Error cargando solicitudes:', error)
@@ -460,7 +480,13 @@ async function cargarSolicitudes() {
 async function aprobarSolicitud(solicitudId) {
   procesando.value = solicitudId
   try {
-    await axios.put(`${API_URL}/supervisor/solicitudes/${solicitudId}/aprobar`)
+    if (useMockData) {
+      // Usar servicio simulado
+      await MockSolicitudesService.aprobarSolicitud(solicitudId)
+    } else {
+      // Usar API real
+      await axios.put(`${API_URL}/supervisor/solicitudes/${solicitudId}/aprobar`)
+    }
     
     // Remover la solicitud de la lista
     solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
@@ -494,10 +520,19 @@ async function confirmarRechazo() {
   
   procesando.value = solicitudSeleccionada.value.id
   try {
-    const formData = new FormData()
-    formData.append('motivo', motivoRechazo.value)
-    
-    await axios.put(`${API_URL}/supervisor/solicitudes/${solicitudSeleccionada.value.id}/rechazar`, formData)
+    if (useMockData) {
+      // Usar servicio simulado
+      await MockSolicitudesService.rechazarSolicitud(
+        solicitudSeleccionada.value.id, 
+        motivoRechazo.value
+      )
+    } else {
+      // Usar API real
+      const formData = new FormData()
+      formData.append('motivo', motivoRechazo.value)
+      
+      await axios.put(`${API_URL}/supervisor/solicitudes/${solicitudSeleccionada.value.id}/rechazar`, formData)
+    }
     
     // Remover la solicitud de la lista
     solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudSeleccionada.value.id)
