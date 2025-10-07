@@ -4,10 +4,10 @@
     <div class="liquid-background">
       <div class="gradient-overlay"></div>
       
-      <!-- Elementos decorativos similares a Home.vue -->
-      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
-      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-green-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse-slow" style="animation-delay: 2s;"></div>
-      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-green-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse-slow" style="animation-delay: 4s;"></div>
+      <!-- Elementos decorativos con tema azul -->
+      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
+      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-sky-300 rounded-full mix-blend-multiply filter blur-xl opacity-25 animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-cyan-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse-slow" style="animation-delay: 4s;"></div>
       
       <div class="liquid-blob blob1"></div>
       <div class="liquid-blob blob2"></div>
@@ -25,102 +25,107 @@
       <!-- Header con branding renovado -->
       <div class="login-header">
         <div class="logo-container">
-          <!-- Nueva flor estática girando -->
+          <!-- Dron blanco con azul fuerte animado -->
           <div class="logo-bg">
             <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
               <defs>
-                <linearGradient id="petalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#dcfce7;stop-opacity:1" />
-                  <stop offset="30%" style="stop-color:#bbf7d0;stop-opacity:1" />
-                  <stop offset="60%" style="stop-color:#86efac;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#4ade80;stop-opacity:1" />
+                <linearGradient id="droneBodyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                  <stop offset="30%" style="stop-color:#f0f9ff;stop-opacity:1" />
+                  <stop offset="70%" style="stop-color:#0284c7;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#0c4a6e;stop-opacity:1" />
                 </linearGradient>
-                <linearGradient id="centerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
-                  <stop offset="50%" style="stop-color:#16a34a;stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:#15803d;stop-opacity:1" />
+                <linearGradient id="propellerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                  <stop offset="50%" style="stop-color:#0ea5e9;stop-opacity:0.8" />
+                  <stop offset="100%" style="stop-color:#0c4a6e;stop-opacity:0.7" />
                 </linearGradient>
-                <filter id="petalGlow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+                <linearGradient id="armGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#0369a1;stop-opacity:1" />
+                </linearGradient>
+                <filter id="droneGlow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
                   <feMerge> 
                     <feMergeNode in="coloredBlur"/>
                     <feMergeNode in="SourceGraphic"/>
                   </feMerge>
                 </filter>
-                <filter id="centerShadow" x="-50%" y="-50%" width="200%" height="200%">
-                  <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#15803d" flood-opacity="0.4"/>
+                <filter id="droneShadow" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0c4a6e" flood-opacity="0.4"/>
                 </filter>
               </defs>
               
-              <!-- Grupo de la flor que girará como una unidad -->
-              <g class="flower-rotating">
-                <!-- Pétalos de la flor (8 pétalos) -->
-                <!-- Pétalo superior -->
-                <ellipse cx="50" cy="25" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"/>
+              <!-- Grupo del dron completo -->
+              <g class="drone-body">
+                <!-- Brazos del dron -->
+                <rect x="20" y="48" width="60" height="4" rx="2" 
+                      fill="url(#armGradient)" filter="url(#droneShadow)"/>
+                <rect x="48" y="20" width="4" height="60" rx="2" 
+                      fill="url(#armGradient)" filter="url(#droneShadow)"/>
                 
-                <!-- Pétalo superior derecho -->
-                <ellipse cx="65" cy="35" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(45 65 35)"/>
+                <!-- Cuerpo central del dron -->
+                <ellipse cx="50" cy="50" rx="16" ry="10" 
+                         fill="url(#droneBodyGradient)" filter="url(#droneShadow)"/>
                 
-                <!-- Pétalo derecho -->
-                <ellipse cx="75" cy="50" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(90 75 50)"/>
+                <!-- Cámara central -->
+                <circle cx="50" cy="50" r="6" 
+                        fill="#0c4a6e" filter="url(#droneGlow)"/>
+                <circle cx="50" cy="50" r="4" 
+                        fill="#0ea5e9"/>
+                <circle cx="48" cy="48" r="2" 
+                        fill="#ffffff" opacity="0.8"/>
                 
-                <!-- Pétalo inferior derecho -->
-                <ellipse cx="65" cy="65" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(135 65 65)"/>
+                <!-- Hélices giratorias -->
+                <!-- Hélice superior izquierda -->
+                <g class="propeller-1" style="transform-origin: 25px 25px;">
+                  <circle cx="25" cy="25" r="8" fill="url(#propellerGradient)" opacity="0.7"/>
+                  <ellipse cx="25" cy="25" rx="7" ry="2" fill="url(#propellerGradient)"/>
+                  <ellipse cx="25" cy="25" rx="2" ry="7" fill="url(#propellerGradient)"/>
+                  <circle cx="25" cy="25" r="2" fill="#0c4a6e"/>
+                </g>
                 
-                <!-- Pétalo inferior -->
-                <ellipse cx="50" cy="75" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(180 50 75)"/>
+                <!-- Hélice superior derecha -->
+                <g class="propeller-2" style="transform-origin: 75px 25px;">
+                  <circle cx="75" cy="25" r="8" fill="url(#propellerGradient)" opacity="0.7"/>
+                  <ellipse cx="75" cy="25" rx="7" ry="2" fill="url(#propellerGradient)"/>
+                  <ellipse cx="75" cy="25" rx="2" ry="7" fill="url(#propellerGradient)"/>
+                  <circle cx="75" cy="25" r="2" fill="#0c4a6e"/>
+                </g>
                 
-                <!-- Pétalo inferior izquierdo -->
-                <ellipse cx="35" cy="65" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(225 35 65)"/>
+                <!-- Hélice inferior izquierda -->
+                <g class="propeller-3" style="transform-origin: 25px 75px;">
+                  <circle cx="25" cy="75" r="8" fill="url(#propellerGradient)" opacity="0.7"/>
+                  <ellipse cx="25" cy="75" rx="7" ry="2" fill="url(#propellerGradient)"/>
+                  <ellipse cx="25" cy="75" rx="2" ry="7" fill="url(#propellerGradient)"/>
+                  <circle cx="25" cy="75" r="2" fill="#0c4a6e"/>
+                </g>
                 
-                <!-- Pétalo izquierdo -->
-                <ellipse cx="25" cy="50" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(270 25 50)"/>
+                <!-- Hélice inferior derecha -->
+                <g class="propeller-4" style="transform-origin: 75px 75px;">
+                  <circle cx="75" cy="75" r="8" fill="url(#propellerGradient)" opacity="0.7"/>
+                  <ellipse cx="75" cy="75" rx="7" ry="2" fill="url(#propellerGradient)"/>
+                  <ellipse cx="75" cy="75" rx="2" ry="7" fill="url(#propellerGradient)"/>
+                  <circle cx="75" cy="75" r="2" fill="#0c4a6e"/>
+                </g>
                 
-                <!-- Pétalo superior izquierdo -->
-                <ellipse cx="35" cy="35" rx="8" ry="15" 
-                         fill="url(#petalGradient)" filter="url(#petalGlow)"
-                         transform="rotate(315 35 35)"/>
+                <!-- LEDs de navegación -->
+                <circle cx="25" cy="25" r="1.5" fill="#ef4444" class="led-blink" opacity="0.9"/>
+                <circle cx="75" cy="25" r="1.5" fill="#22c55e" class="led-blink" opacity="0.9"/>
+                <circle cx="25" cy="75" r="1.5" fill="#22c55e" class="led-blink" opacity="0.9"/>
+                <circle cx="75" cy="75" r="1.5" fill="#ef4444" class="led-blink" opacity="0.9"/>
                 
-                <!-- Centro de la flor -->
-                <circle cx="50" cy="50" r="12" 
-                        fill="url(#centerGradient)" filter="url(#centerShadow)"/>
-                
-                <!-- Detalles del centro -->
-                <circle cx="50" cy="50" r="8" 
-                        fill="#22c55e" opacity="0.8"/>
-                <circle cx="47" cy="47" r="3" 
-                        fill="#86efac" opacity="0.6"/>
-                
-                <!-- Pequeños detalles en los pétalos -->
-                <circle cx="50" cy="30" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="62" cy="38" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="70" cy="50" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="62" cy="62" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="50" cy="70" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="38" cy="62" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="30" cy="50" r="1.5" fill="#22c55e" opacity="0.7"/>
-                <circle cx="38" cy="38" r="1.5" fill="#22c55e" opacity="0.7"/>
+                <!-- Detalles adicionales del dron -->
+                <rect x="46" y="45" width="8" height="2" rx="1" fill="#ffffff" opacity="0.7"/>
+                <rect x="46" y="53" width="8" height="2" rx="1" fill="#ffffff" opacity="0.7"/>
               </g>
             </svg>
           </div>
         </div>
         
         <div class="brand-text">
-          <h1 class="main-title">SEMBRANDO VIDA</h1>
-          <p class="subtitle">Administración de app de seguimiento</p>
+          <h1 class="main-title">SEGUIMIENTO DE DRONES</h1>
+          <p class="subtitle">Administración de vigilancia aérea</p>
         </div>
       </div>
       
@@ -273,14 +278,14 @@ const login = async () => {
    VARIABLES Y CONFIGURACIÓN BASE
    =================================== */
 :root {
-  --primary-green: #2e7d32;
-  --secondary-green: #4caf50;
-  --light-green: #66bb6a;
-  --accent-green: #81c784;
+  --primary-navy: #0c4a6e;
+  --secondary-navy: #0369a1;
+  --light-navy: #0284c7;
+  --accent-navy: #0ea5e9;
   --white: #ffffff;
   --glass-white: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(255, 255, 255, 0.2);
-  --shadow-primary: rgba(46, 125, 50, 0.3);
+  --shadow-primary: rgba(12, 74, 110, 0.3);
   --shadow-dark: rgba(0, 0, 0, 0.1);
 }
 
@@ -309,13 +314,13 @@ const login = async () => {
   height: 100%;
   background: linear-gradient(135deg, 
     #ffffff 0%, 
-    #f8fffe 15%, 
-    #f0fdf4 30%, 
-    #ecfdf5 45%, 
-    #d1fae5 60%, 
-    #a7f3d0 75%, 
-    #86efac 90%, 
-    #6ee7b7 100%
+    #f0f9ff 15%, 
+    #e0f2fe 30%, 
+    #b3e5fc 45%, 
+    #81d4fa 60%, 
+    #4fc3f7 75%, 
+    #29b6f6 90%, 
+    #03a9f4 100%
   );
   z-index: 0;
 }
@@ -334,19 +339,19 @@ const login = async () => {
   width: 100%;
   height: 100%;
   background: radial-gradient(circle at 25% 25%, 
-    rgba(167, 243, 208, 0.2) 0%, 
+    rgba(79, 195, 247, 0.2) 0%, 
     transparent 70%
   ),
   radial-gradient(circle at 75% 25%, 
-    rgba(134, 239, 172, 0.15) 0%, 
+    rgba(41, 182, 246, 0.15) 0%, 
     transparent 65%
   ),
   radial-gradient(circle at 25% 75%, 
-    rgba(110, 231, 183, 0.12) 0%, 
+    rgba(3, 169, 244, 0.12) 0%, 
     transparent 60%
   ),
   radial-gradient(circle at 75% 75%, 
-    rgba(74, 222, 128, 0.1) 0%, 
+    rgba(2, 132, 199, 0.1) 0%, 
     transparent 55%
   );
 }
@@ -360,8 +365,8 @@ const login = async () => {
     rgba(248, 255, 254, 0.5) 20%, 
     rgba(240, 253, 244, 0.4) 40%, 
     rgba(236, 253, 245, 0.35) 60%, 
-    rgba(209, 250, 229, 0.3) 80%, 
-    rgba(167, 243, 208, 0.25) 100%
+    rgba(129, 212, 250, 0.3) 80%, 
+    rgba(79, 195, 247, 0.25) 100%
   );
   backdrop-filter: blur(60px);
   filter: blur(2px);
@@ -463,7 +468,7 @@ const login = async () => {
     rgba(248, 255, 254, 0.7) 25%, 
     rgba(240, 253, 244, 0.6) 50%, 
     rgba(236, 253, 245, 0.4) 75%, 
-    rgba(209, 250, 229, 0.3) 90%, 
+    rgba(129, 212, 250, 0.3) 90%, 
     transparent 100%
   );
   border-radius: 50%;
@@ -472,7 +477,7 @@ const login = async () => {
   animation: particleFloat var(--duration) ease-in-out infinite;
   animation-delay: var(--delay);
   opacity: 0.8;
-  box-shadow: 0 0 8px rgba(167, 243, 208, 0.3);
+  box-shadow: 0 0 8px rgba(79, 195, 247, 0.3);
 }
 
 @keyframes particleFloat {
@@ -525,7 +530,7 @@ const login = async () => {
   height: 2px;
   background: linear-gradient(90deg, 
     transparent 0%, 
-    var(--secondary-green) 50%, 
+    var(--secondary-navy) 50%, 
     transparent 100%
   );
   animation: topGlow 3s ease-in-out infinite;
@@ -618,13 +623,31 @@ const login = async () => {
   filter: drop-shadow(0 3px 10px var(--shadow-primary));
 }
 
-/* Animaciones del logo de flor girando */
-.flower-rotating {
-  animation: smoothRotation 6s linear infinite;
+/* Animaciones del dron */
+.drone-body {
+  animation: droneHover 4s ease-in-out infinite;
   transform-origin: 50px 50px;
 }
 
-@keyframes smoothRotation {
+@keyframes droneHover {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(1deg);
+  }
+}
+
+/* Animaciones de las hélices */
+.propeller-1, .propeller-4 {
+  animation: propellerSpin 0.1s linear infinite;
+}
+
+.propeller-2, .propeller-3 {
+  animation: propellerSpinReverse 0.1s linear infinite;
+}
+
+@keyframes propellerSpin {
   from {
     transform: rotate(0deg);
   }
@@ -633,54 +656,26 @@ const login = async () => {
   }
 }
 
-/* Sin animaciones individuales de pétalos para evitar conflictos */
-.petal {
-  opacity: 0.95;
-}
-
-/* Animación sutil del centro de la flor */
-.flower-center {
-  animation: centerPulse 4s ease-in-out infinite;
-}
-
-@keyframes centerPulse {
-  0%, 100% {
-    r: 12;
-    opacity: 1;
+@keyframes propellerSpinReverse {
+  from {
+    transform: rotate(0deg);
   }
-  50% {
-    r: 13;
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+/* Animación de LEDs parpadeantes */
+.led-blink {
+  animation: ledFlash 1.2s ease-in-out infinite;
+}
+
+@keyframes ledFlash {
+  0%, 100% {
     opacity: 0.9;
   }
-}
-
-/* Animación de los detalles del centro */
-.center-detail {
-  animation: detailRotate 4s ease-in-out infinite reverse;
-}
-
-@keyframes detailRotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Animación del highlight */
-.center-highlight {
-  animation: highlightShimmer 2.5s ease-in-out infinite;
-}
-
-@keyframes highlightShimmer {
-  0%, 100% {
-    opacity: 0.4;
-    r: 3;
-  }
   50% {
-    opacity: 0.8;
-    r: 4;
+    opacity: 0.3;
   }
 }
 
@@ -700,22 +695,22 @@ const login = async () => {
   display: block;
   line-height: 1.2;
   white-space: nowrap;
-  color: #4ade80;
+  color: #0ea5e9;
   background: linear-gradient(
     90deg,
-    #4ade80 0%,
-    #22c55e 25%,
+    #0ea5e9 0%,
+    #0284c7 25%,
     #ffffff 50%,
-    #22c55e 75%,
-    #4ade80 100%
+    #0284c7 75%,
+    #0ea5e9 100%
   );
   background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: lightSweep 3s ease-in-out infinite;
-  text-shadow: 0 2px 4px rgba(74, 222, 128, 0.3);
-  -webkit-text-stroke: 0.5px #15803d;
+  text-shadow: 0 2px 4px rgba(14, 165, 233, 0.3);
+  -webkit-text-stroke: 0.5px #0c4a6e;
   text-transform: uppercase;
 }
 
@@ -742,7 +737,7 @@ const login = async () => {
 }
 
 .subtitle {
-  color: var(--secondary-green);
+  color: var(--secondary-navy);
   font-size: 12px;
   font-weight: 500;
   margin: 0;
@@ -767,7 +762,7 @@ const login = async () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--primary-green);
+  color: var(--primary-navy);
   margin-bottom: 8px;
   font-weight: 600;
   font-size: 12px;
@@ -787,29 +782,29 @@ const login = async () => {
 .input-container input {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid rgba(76, 175, 80, 0.2);
+  border: 2px solid rgba(2, 132, 199, 0.2);
   border-radius: 12px;
   font-size: 14px;
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--primary-green);
+  color: var(--primary-navy);
   font-weight: 500;
   box-sizing: border-box;
 }
 
 .input-container input::placeholder {
-  color: rgba(76, 175, 80, 0.5);
+  color: rgba(2, 132, 199, 0.5);
   font-weight: 400;
 }
 
 .input-container input:focus {
   outline: none;
-  border-color: var(--secondary-green);
+  border-color: var(--secondary-navy);
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 
-    0 0 0 4px rgba(76, 175, 80, 0.1),
-    0 8px 25px rgba(76, 175, 80, 0.15);
+    0 0 0 4px rgba(2, 132, 199, 0.1),
+    0 8px 25px rgba(2, 132, 199, 0.15);
   transform: translateY(-2px);
 }
 
@@ -828,7 +823,7 @@ const login = async () => {
   border-radius: 14px;
   background: linear-gradient(45deg, 
     transparent 0%, 
-    rgba(76, 175, 80, 0.1) 50%, 
+    rgba(2, 132, 199, 0.1) 50%, 
     transparent 100%
   );
   opacity: 0;
@@ -846,8 +841,8 @@ const login = async () => {
 .login-btn {
   width: 100%;
   background: linear-gradient(135deg, 
-    var(--secondary-green) 0%, 
-    var(--primary-green) 100%
+    var(--secondary-navy) 0%, 
+    var(--primary-navy) 100%
   );
   color: var(--white);
   border: none;
@@ -905,12 +900,12 @@ const login = async () => {
 
 .login-btn:hover:not(:disabled) {
   background: linear-gradient(135deg, 
-    var(--primary-green) 0%, 
-    #1b5e20 100%
+    var(--primary-navy) 0%, 
+    #064e3b 100%
   );
   transform: translateY(-3px);
   box-shadow: 
-    0 12px 35px rgba(46, 125, 50, 0.4),
+    0 12px 35px rgba(12, 74, 110, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
@@ -921,7 +916,7 @@ const login = async () => {
 .login-btn:active:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 
-    0 6px 20px rgba(46, 125, 50, 0.3),
+    0 6px 20px rgba(12, 74, 110, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
@@ -1180,7 +1175,7 @@ const login = async () => {
     font-weight: 800;
     margin-bottom: 15px;
     line-height: 1.1;
-    text-shadow: 0 2px 6px rgba(74, 222, 128, 0.4);
+    text-shadow: 0 2px 6px rgba(14, 165, 233, 0.4);
   }
   
   .subtitle {
