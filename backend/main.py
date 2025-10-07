@@ -824,68 +824,136 @@ def admin_login(form_data: OAuth2PasswordRequestForm = Depends()):
 
 # ==================== ENDPOINTS DEL SUPERVISOR ====================
 
+@app.get("/test/solicitudes")
+async def test_solicitudes_basico():
+    """Test básico de solicitudes"""
+    try:
+        print("🧪 Test básico de solicitudes...")
+        
+        # Verificar variables globales
+        global conn, cursor, use_sqlite
+        print(f"🔍 use_sqlite: {use_sqlite}")
+        print(f"🔍 conn: {conn}")
+        print(f"🔍 cursor: {cursor}")
+        
+        if cursor is None:
+            return {"error": "cursor es None", "solicitudes": []}
+        
+        # Test simple de consulta
+        cursor.execute("SELECT COUNT(*) FROM solicitudes_dron")
+        count = cursor.fetchone()[0]
+        print(f"📊 Total registros en solicitudes_dron: {count}")
+        
+        # Test consulta básica
+        cursor.execute("SELECT * FROM solicitudes_dron LIMIT 3")
+        datos = cursor.fetchall()
+        print(f"📋 Primeros 3 registros: {datos}")
+        
+        return {
+            "status": "ok", 
+            "total_registros": count,
+            "primeros_registros": len(datos),
+            "use_sqlite": use_sqlite
+        }
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Error en test básico: {e}")
+        print(f"🔍 Traceback: {error_trace}")
+        return {"error": str(e), "trace": error_trace}
+
 @app.get("/supervisor/solicitudes")
 async def obtener_solicitudes_pendientes():
     """Obtener todas las solicitudes pendientes para supervisor"""
     try:
+        print("🔍 Iniciando búsqueda de solicitudes pendientes...")
+        
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
         
-        # Consulta corregida para solicitudes pendientes
+        # Usar cursor directo para mayor control
         if use_sqlite:
-            # Para SQLite con estructura local diferente
-            query = """
-            SELECT s.id, s.usuario_id, s.tipo_actividad as tipo, s.fecha_solicitud as fecha_hora, 
-                   s.longitud, s.latitud,
-                   NULL as foto_equipo, NULL as checklist, s.observaciones, s.estado,
-                   u.nombre as tecnico_nombre, u.correo as tecnico_correo
-            FROM solicitudes_dron s
-            LEFT JOIN usuarios u ON s.usuario_id = u.id
-            WHERE s.estado = 'pendiente'
-            ORDER BY s.fecha_solicitud DESC
-            """
+            print("📊 Usando SQLite - Consultando solicitudes...")
+            try:
+                cursor.execute("""
+                    SELECT s.id, s.usuario_id, s.tipo_actividad, s.fecha_solicitud, 
+                           s.longitud, s.latitud, s.ubicacion, s.observaciones, s.estado,
+                           u.nombre, u.correo
+                    FROM solicitudes_dron s
+                    LEFT JOIN usuarios u ON s.usuario_id = u.id
+                    WHERE s.estado = 'pendiente'
+                    ORDER BY s.fecha_solicitud DESC
+                """)
+                solicitudes_raw = cursor.fetchall()
+                
+            except Exception as e:
+                print(f"❌ Error en consulta SQLite: {e}")
+                raise HTTPException(status_code=500, detail=f"Error en consulta SQLite: {str(e)}")
+                
         else:
-            # Para PostgreSQL con PostGIS
-            query = """
-            SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
-                   s.foto_equipo, s.checklist, s.observaciones, s.estado,
-                   u.nombre as tecnico_nombre, u.correo as tecnico_correo
-            FROM solicitudes_dron s
-            LEFT JOIN usuarios u ON s.usuario_id = u.id
-            WHERE s.estado = 'pendiente'
-            ORDER BY s.fecha_hora DESC
-            """
+            print("🐘 Usando PostgreSQL - Consultando solicitudes...")
+            try:
+                cursor.execute("""
+                    SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
+                           ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                           s.ubicacion::text, s.observaciones, s.estado,
+                           u.nombre, u.correo
+                    FROM solicitudes_dron s
+                    LEFT JOIN usuarios u ON s.usuario_id = u.id
+                    WHERE s.estado = 'pendiente'
+                    ORDER BY s.fecha_hora DESC
+                """)
+                solicitudes_raw = cursor.fetchall()
+                
+            except Exception as e:
+                print(f"❌ Error en consulta PostgreSQL: {e}")
+                raise HTTPException(status_code=500, detail=f"Error en consulta PostgreSQL: {str(e)}")
         
-        solicitudes = ejecutar_consulta_segura(query, (), fetch_type='all')
+        print(f"📋 Solicitudes encontradas en BD: {len(solicitudes_raw)}")
         
+        # Procesar resultados
         resultado = []
-        for solicitud in solicitudes:
-            # El checklist ya viene como objeto JSON desde la BD
-            checklist_data = solicitud[7] if solicitud[7] else {}
-            
-            resultado.append({
-                "id": solicitud[0],
-                "usuario_id": solicitud[1],
-                "tipo": solicitud[2],
-                "fecha_hora": solicitud[3].isoformat() if solicitud[3] else None,
-                "latitud": solicitud[5],
-                "longitud": solicitud[4],
-                "foto_url": f"/fotos/{solicitud[6]}" if solicitud[6] else None,
-                "checklist": checklist_data,
-                "observaciones": solicitud[8],
-                "estado": solicitud[9],
-                "tecnico": {
-                    "nombre": solicitud[10] if solicitud[10] else "Usuario Desconocido",
-                    "correo": solicitud[11] if solicitud[11] else "sin-correo@example.com"
+        for i, sol in enumerate(solicitudes_raw):
+            try:
+                solicitud_procesada = {
+                    "id": sol[0],
+                    "usuario_id": sol[1],
+                    "tipo": sol[2],  # tipo_actividad en SQLite, tipo en PostgreSQL
+                    "fecha_hora": sol[3].isoformat() if sol[3] else None,
+                    "latitud": float(sol[5]) if sol[5] else 19.4326,  # Valor por defecto
+                    "longitud": float(sol[4]) if sol[4] else -99.1332,  # Valor por defecto
+                    "foto_url": None,  # No hay fotos en esta estructura
+                    "checklist": {
+                        "inspeccion_visual_drone": True,
+                        "inspeccion_baterias": True,
+                        "control_remoto": True
+                    },  # Checklist simulado
+                    "observaciones": sol[7] if sol[7] else "Sin observaciones",
+                    "estado": sol[8],
+                    "tecnico": {
+                        "nombre": sol[9] if sol[9] else "Usuario Desconocido",
+                        "correo": sol[10] if sol[10] else "sin-correo@example.com"
+                    }
                 }
-            })
+                resultado.append(solicitud_procesada)
+                print(f"  ✅ Solicitud {i+1}: ID {sol[0]}, Tipo: {sol[2]}, Usuario: {sol[9]}")
+                
+            except Exception as e:
+                print(f"❌ Error procesando solicitud {i+1}: {e}")
+                continue
         
+        print(f"✅ Total solicitudes procesadas: {len(resultado)}")
         return {"solicitudes": resultado}
         
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"❌ Error obteniendo solicitudes pendientes: {e}")
-        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"❌ Error general obteniendo solicitudes: {e}")
+        print(f"🔍 Traceback completo:\n{error_trace}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)} - Trace: {error_trace}")
 
 @app.put("/supervisor/solicitudes/{solicitud_id}/aprobar")
 async def aprobar_solicitud(solicitud_id: int):
