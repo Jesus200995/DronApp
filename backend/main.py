@@ -831,44 +831,53 @@ async def obtener_solicitudes_pendientes():
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
         
-        # Consulta para obtener solicitudes pendientes con información del técnico
-        query = """
-        SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-               NULL as longitud, NULL as latitud,
-               s.foto_equipo as nombre_foto, s.checklist, s.observaciones, s.estado,
-               u.nombre as tecnico_nombre, u.correo as tecnico_correo
-        FROM solicitudes_dron s
-        JOIN usuarios u ON s.usuario_id = u.id
-        WHERE s.estado = 'pendiente'
-        ORDER BY s.fecha_hora DESC
-        """
+        # Consulta corregida para solicitudes pendientes
+        if use_sqlite:
+            # Para SQLite no tenemos funciones geográficas
+            query = """
+            SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
+                   NULL as longitud, NULL as latitud,
+                   s.foto_equipo, s.checklist, s.observaciones, s.estado,
+                   u.nombre as tecnico_nombre, u.correo as tecnico_correo
+            FROM solicitudes_dron s
+            LEFT JOIN usuarios u ON s.usuario_id = u.id
+            WHERE s.estado = 'pendiente'
+            ORDER BY s.fecha_hora DESC
+            """
+        else:
+            # Para PostgreSQL con PostGIS
+            query = """
+            SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
+                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                   s.foto_equipo, s.checklist, s.observaciones, s.estado,
+                   u.nombre as tecnico_nombre, u.correo as tecnico_correo
+            FROM solicitudes_dron s
+            LEFT JOIN usuarios u ON s.usuario_id = u.id
+            WHERE s.estado = 'pendiente'
+            ORDER BY s.fecha_hora DESC
+            """
         
-        cursor.execute(query)
-        solicitudes = cursor.fetchall()
+        solicitudes = ejecutar_consulta_segura(query, (), fetch_type='all')
         
         resultado = []
         for solicitud in solicitudes:
-            # Parsear checklist JSON
-            checklist_data = {}
-            try:
-                checklist_data = solicitud[7] if solicitud[7] else {}
-            except:
-                checklist_data = {}
+            # El checklist ya viene como objeto JSON desde la BD
+            checklist_data = solicitud[7] if solicitud[7] else {}
             
             resultado.append({
                 "id": solicitud[0],
                 "usuario_id": solicitud[1],
                 "tipo": solicitud[2],
                 "fecha_hora": solicitud[3].isoformat() if solicitud[3] else None,
-                "latitud": solicitud[4],
-                "longitud": solicitud[5],
+                "latitud": solicitud[5],
+                "longitud": solicitud[4],
                 "foto_url": f"/fotos/{solicitud[6]}" if solicitud[6] else None,
                 "checklist": checklist_data,
                 "observaciones": solicitud[8],
                 "estado": solicitud[9],
                 "tecnico": {
-                    "nombre": solicitud[10],
-                    "correo": solicitud[11]
+                    "nombre": solicitud[10] if solicitud[10] else "Usuario Desconocido",
+                    "correo": solicitud[11] if solicitud[11] else "sin-correo@example.com"
                 }
             })
         
