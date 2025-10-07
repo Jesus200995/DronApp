@@ -11,11 +11,11 @@
       <!-- Header fijo -->
       <div class="fixed top-16 sm:top-20 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-2 sm:pt-3">
         <div class="w-full max-w-md mx-auto">
-          <div class="liquid-glass-card relative overflow-hidden backdrop-blur-md bg-white/20 shadow-lg border border-white/30 rounded-xl">
+          <div class="liquid-glass-card relative overflow-hidden backdrop-blur-md bg-white/50 shadow-lg border border-white/50 rounded-xl">
             <!-- Efecto de reflejo y brillo -->
-            <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-indigo-500/10 opacity-60"></div>
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-xl blur opacity-30 group-hover:opacity-100 transition duration-1000"></div>
-            <div class="absolute inset-0 h-full w-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent opacity-50"></div>
+            <div class="absolute inset-0 bg-gradient-to-tr from-blue-500/15 via-transparent to-indigo-500/15 opacity-70"></div>
+            <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-indigo-600/20 rounded-xl blur opacity-40 group-hover:opacity-100 transition duration-1000"></div>
+            <div class="absolute inset-0 h-full w-full bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-white/70 via-white/30 to-transparent opacity-70"></div>
             
             <!-- Burbujas animadas de fondo -->
             <div class="absolute top-1/3 left-5 w-3 h-3 rounded-full bg-blue-300/40 blur-sm liquid-bubble"></div>
@@ -636,24 +636,24 @@ function logout() {
 
 /* Estilos de vidrio líquido para el panel */
 .liquid-glass-card {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.35);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   box-shadow: 
     0 8px 32px 0 rgba(31, 38, 135, 0.15),
-    0 0 0 1px rgba(255, 255, 255, 0.05),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+    0 0 0 1px rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
 }
 
 .liquid-glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
   box-shadow: 
-    0 8px 32px 0 rgba(31, 38, 135, 0.2),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    0 8px 32px 0 rgba(31, 38, 135, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 /* Efecto de título con gradiente */
