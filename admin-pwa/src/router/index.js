@@ -2,14 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import authService from '../services/authService'
 import LoginView from '../views/LoginView.vue'
 import DashboardView from '../views/DashboardView.vue'
-import UsuariosView from '../views/UsuariosView.vue'
-import HistorialesView from '../views/HistorialesView.vue'
-import RegistrosView from '../views/RegistrosView.vue'
 import ConfiguracionView from '../views/ConfiguracionView.vue'
-import AsistenciaView from '../views/AsistenciaView.vue'
 import VisorMapView from '../views/VisorMap.vue'
-import NotificacionesView from '../views/NotificacionesView.vue'
-import PermisosView from '../views/PermisosView.vue'
 
 const routes = [
   {
@@ -28,45 +22,9 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/usuarios',
-    name: 'Usuarios',
-    component: UsuariosView,
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  {
-    path: '/historiales',
-    name: 'Historiales',
-    component: HistorialesView,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/asistencia',
-    name: 'Asistencia',
-    component: AsistenciaView,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/registros',
-    name: 'Registros',
-    component: RegistrosView,
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/configuracion',
     name: 'Configuracion',
     component: ConfiguracionView,
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
-  {
-    path: '/notificaciones',
-    name: 'Notificaciones',
-    component: NotificacionesView,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/permisos',
-    name: 'Permisos',
-    component: PermisosView,
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {

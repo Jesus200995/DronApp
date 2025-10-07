@@ -482,8 +482,8 @@ import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import axios from 'axios'
 import mapboxgl from 'mapbox-gl'
-import { usuariosService } from '../services/usuariosService.js'
-import asistenciasService from '../services/asistenciasService.js'
+// import { usuariosService } from '../services/usuariosService.js' // Servicio eliminado
+// import asistenciasService from '../services/asistenciasService.js' // Servicio eliminado
 import { estadisticasService } from '../services/estadisticasService.js'
 import healthCheckService from '../services/healthCheckService.js'
 
@@ -627,7 +627,8 @@ const cargarDatos = async () => {
     if (registrosData.status === 'fulfilled') {
       console.log('✅ Registros cargados exitosamente')
       const registrosRaw = Array.isArray(registrosData.value) ? registrosData.value : (registrosData.value.registros || [])
-      registrosEnriquecidos = await usuariosService.enriquecerRegistrosConUsuarios(registrosRaw)
+      // registrosEnriquecidos = await usuariosService.enriquecerRegistrosConUsuarios(registrosRaw) // Servicio eliminado
+      registrosEnriquecidos = registrosRaw // Usar registros sin enriquecer
       registros.value = registrosEnriquecidos
     } else {
       console.error('❌ Error al cargar registros:', registrosData.reason)
@@ -742,7 +743,8 @@ const cargarAsistenciasConReintentos = async (maxReintentos = 3) => {
     try {
       console.log(`🔄 Intento ${intento}/${maxReintentos} - Cargando asistencias...`)
       
-      return await asistenciasService.obtenerAsistenciasConUsuarios()
+      // return await asistenciasService.obtenerAsistenciasConUsuarios() // Servicio eliminado
+      return [] // Retornar array vacío
       
     } catch (err) {
       console.error(`❌ Error en intento ${intento} al cargar asistencias:`, err.message)
@@ -769,7 +771,8 @@ const cargarUsuariosConReintentos = async (maxReintentos = 3) => {
     try {
       console.log(`🔄 Intento ${intento}/${maxReintentos} - Cargando usuarios...`)
       
-      return await usuariosService.obtenerUsuarios()
+      // return await usuariosService.obtenerUsuarios() // Servicio eliminado
+      return [] // Retornar array vacío
       
     } catch (err) {
       console.error(`❌ Error en intento ${intento} al cargar usuarios:`, err.message)
@@ -838,7 +841,8 @@ const cargarTotalUsuarios = async () => {
     console.log('👥 Obteniendo total de usuarios registrados...')
     
     // Usar el servicio de usuarios para obtener todos los usuarios
-    const usuarios = await usuariosService.obtenerUsuarios()
+    // const usuarios = await usuariosService.obtenerUsuarios() // Servicio eliminado
+    const usuarios = [] // Array vacío temporal
     
     // Actualizar el contador con formato localizado
     totalUsuariosRegistrados.value = usuarios.length.toLocaleString('es')

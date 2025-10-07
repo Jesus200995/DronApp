@@ -426,8 +426,8 @@ import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Sidebar from '../components/Sidebar.vue'
-import { usuariosService } from '../services/usuariosService.js'
-import asistenciasService from '../services/asistenciasService.js'
+// import { usuariosService } from '../services/usuariosService.js' // Servicio eliminado
+// import asistenciasService from '../services/asistenciasService.js' // Servicio eliminado
 import { estadisticasService } from '../services/estadisticasService.js'
 
 const router = useRouter()
@@ -716,15 +716,18 @@ const cargarRegistros = async () => {
           'Content-Type': 'application/json'
         }
       }),
-      asistenciasService.obtenerAsistenciasConUsuarios(),
-      usuariosService.obtenerUsuarios()
+      // asistenciasService.obtenerAsistenciasConUsuarios(), // Servicio eliminado
+      // usuariosService.obtenerUsuarios() // Servicio eliminado
+      Promise.resolve([]), // Array vacío para asistencias
+      Promise.resolve([])  // Array vacío para usuarios
     ])
     
     // La respuesta puede ser directamente un array o tener una propiedad específica
     const registrosRaw = Array.isArray(responseRegistros.data) ? responseRegistros.data : (responseRegistros.data.registros || [])
     
     // Enriquecer registros con información de usuarios
-    const registrosEnriquecidos = await usuariosService.enriquecerRegistrosConUsuarios(registrosRaw)
+    // const registrosEnriquecidos = await usuariosService.enriquecerRegistrosConUsuarios(registrosRaw) // Servicio eliminado
+    const registrosEnriquecidos = registrosRaw // Usar registros sin enriquecer
     
     // Guardar datos
     registros.value = registrosEnriquecidos

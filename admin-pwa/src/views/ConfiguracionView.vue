@@ -304,7 +304,7 @@ import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Sidebar from '../components/Sidebar_NEW.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
-import asistenciasService from '../services/asistenciasService.js'
+// import asistenciasService from '../services/asistenciasService.js' // Servicio eliminado
 
 const router = useRouter()
 
@@ -913,7 +913,8 @@ const eliminarTodosRegistros = async () => {
   eliminandoRegistros.value = true
   
   try {
-    const resultado = await asistenciasService.eliminarTodosRegistros()
+    // const resultado = await asistenciasService.eliminarTodosRegistros() // Servicio eliminado
+    const resultado = { status: 'error', message: 'Funcionalidad deshabilitada' } // Temporal
     
     if (resultado.status === 'success') {
       mostrarMensaje(
@@ -934,7 +935,8 @@ const eliminarTodasAsistencias = async () => {
   eliminandoAsistencias.value = true
   
   try {
-    const resultado = await asistenciasService.eliminarTodasAsistencias()
+    // const resultado = await asistenciasService.eliminarTodasAsistencias() // Servicio eliminado
+    const resultado = { status: 'error', message: 'Funcionalidad deshabilitada' } // Temporal
     
     if (resultado.status === 'success') {
       mostrarMensaje(

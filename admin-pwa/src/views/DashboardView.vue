@@ -611,8 +611,6 @@ import { ref, reactive, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
 import Sidebar from '../components/Sidebar_NEW.vue'
-import { usuariosService } from '../services/usuariosService.js'
-import AsistenciasService from '../services/asistenciasService.js'
 import { estadisticasService } from '../services/estadisticasService.js'
 
 const router = useRouter()
@@ -784,11 +782,9 @@ const cargarRegistros = async () => {
     
     // La respuesta puede ser directamente un array o tener una propiedad específica
     const registrosRaw = Array.isArray(response.data) ? response.data : (response.data.registros || [])
-      // Enriquecer registros con información de usuarios reales
-    registros.value = await usuariosService.enriquecerRegistrosConUsuarios(registrosRaw)
-    
-    // También cargar asistencias cuando se actualicen los registros
-    await cargarAsistencias()
+    // Usar registros sin enriquecer ya que eliminamos el servicio de usuarios
+    registros.value = registrosRaw
+
     
     await calcularEstadisticas()
     
@@ -806,30 +802,14 @@ const cargarRegistros = async () => {
   }
 }
 
-const cargarUsuarios = async () => {
-  try {
-    usuarios.value = await usuariosService.obtenerUsuarios()
-    await calcularEstadisticas() // Recalcular con usuarios reales
-    console.log('✅ Usuarios reales cargados en Dashboard:', usuarios.value)
-  } catch (err) {
-    console.error('❌ Error al cargar usuarios desde la base de datos:', err)
-    // Si no se pueden cargar usuarios, usar los únicos de registros
-    if (registros.value.length > 0) {
-      const usuariosUnicos = [...new Set(registros.value.map(r => r.usuario_id))]
-      stats.totalUsuarios = usuariosUnicos.length
-    }
-  }
-}
+// Funciones de carga deshabilitadas - servicios eliminados
+// const cargarUsuarios = async () => {
+//   // Función comentada porque se eliminó usuariosService
+// }
 
-const cargarAsistencias = async () => {
-  try {
-    asistencias.value = await AsistenciasService.obtenerAsistencias()
-    await calcularEstadisticas() // Recalcular con asistencias
-    console.log('✅ Asistencias cargadas en Dashboard:', asistencias.value)
-  } catch (err) {
-    console.error('❌ Error al cargar asistencias:', err)
-  }
-}
+// const cargarAsistencias = async () => {
+//   // Función comentada porque se eliminó asistenciasService
+// }
 
 const calcularEstadisticas = async () => {
   try {
@@ -1077,9 +1057,9 @@ const calcularTiempoTotal = (horaEntrada, horaSalida) => {
 // Nueva función para cargar todos los datos
 const cargarTodosLosDatos = async () => {
   await Promise.all([
-    cargarRegistros(),
-    cargarUsuarios(),
-    cargarAsistencias()
+    cargarRegistros()
+    // cargarUsuarios(), // Comentado - servicio eliminado
+    // cargarAsistencias() // Comentado - servicio eliminado
   ])
 }
 
