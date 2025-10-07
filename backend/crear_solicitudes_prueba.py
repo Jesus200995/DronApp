@@ -57,95 +57,61 @@ def crear_solicitudes_sqlite():
         cursor.execute("DELETE FROM solicitudes_dron WHERE observaciones LIKE '%Prueba automática%'")
         conn.commit()
         
-        # 4. Crear solicitudes de prueba
+        # 4. Crear solicitudes de prueba (usando estructura SQLite real)
         solicitudes_prueba = [
             {
-                'tipo': 'entrada',
+                'tipo_actividad': 'entrada',
                 'usuario_id': usuarios[0][0],
-                'foto_equipo': 'dron_entrada_prueba.jpg',
-                'checklist': json.dumps({
-                    'version': 1,
-                    'checklist': {
-                        'inspeccion_visual_drone': True,
-                        'inspeccion_visual_helices': True,
-                        'inspeccion_baterias': True,
-                        'control_remoto': True,
-                        'inspeccion_movil_tablet': False,
-                        'tarjeta_memoria': True,
-                        'inspeccion_imu': True,
-                        'mapas_offline': True,
-                        'proteccion_gimbal': True,
-                        'analisis_clima': True
-                    }
-                }),
+                'ubicacion': 'Oficina Central',
+                'latitud': 19.4326,
+                'longitud': -99.1332,
                 'observaciones': 'Solicitud de entrada - Prueba automática - Dron en excelente estado',
                 'estado': 'pendiente'
             },
             {
-                'tipo': 'salida',
+                'tipo_actividad': 'salida',
                 'usuario_id': usuarios[0][0],
-                'foto_equipo': 'dron_salida_prueba.jpg',
-                'checklist': json.dumps({
-                    'version': 1,
-                    'checklist': {
-                        'inspeccion_visual_drone': True,
-                        'inspeccion_visual_helices': False,
-                        'inspeccion_baterias': True,
-                        'control_remoto': True,
-                        'inspeccion_movil_tablet': True,
-                        'tarjeta_memoria': True,
-                        'inspeccion_imu': False,
-                        'mapas_offline': False,
-                        'proteccion_gimbal': True,
-                        'analisis_clima': False
-                    }
-                }),
+                'ubicacion': 'Campo de Trabajo',
+                'latitud': 19.4500,
+                'longitud': -99.1200,
                 'observaciones': 'Solicitud de salida - Prueba automática - Batería al 25%, hélices dañadas',
                 'estado': 'pendiente'
             },
             {
-                'tipo': 'entrada',
+                'tipo_actividad': 'entrada',
                 'usuario_id': usuarios[0][0] if len(usuarios) == 1 else usuarios[1][0] if len(usuarios) > 1 else usuarios[0][0],
-                'foto_equipo': 'dron_entrada2_prueba.jpg',
-                'checklist': json.dumps({
-                    'version': 1,
-                    'checklist': {
-                        'inspeccion_visual_drone': True,
-                        'inspeccion_visual_helices': True,
-                        'inspeccion_baterias': False,
-                        'control_remoto': False,
-                        'inspeccion_movil_tablet': True,
-                        'tarjeta_memoria': False
-                    }
-                }),
+                'ubicacion': 'Almacén',
+                'latitud': 19.4200,
+                'longitud': -99.1400,
                 'observaciones': 'Solicitud de entrada - Prueba automática - Problemas con batería y control',
                 'estado': 'pendiente'
             }
         ]
         
-        # Insertar las solicitudes
+        # Insertar las solicitudes usando la estructura SQLite real
         for i, solicitud in enumerate(solicitudes_prueba, 1):
             cursor.execute("""
                 INSERT INTO solicitudes_dron 
-                (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, estado)
-                VALUES (?, ?, datetime('now', 'localtime'), ?, ?, ?, ?)
+                (usuario_id, tipo_actividad, ubicacion, latitud, longitud, observaciones, estado)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (
-                solicitud['tipo'],
                 solicitud['usuario_id'],
-                solicitud['foto_equipo'],
-                solicitud['checklist'],
+                solicitud['tipo_actividad'],
+                solicitud['ubicacion'],
+                solicitud['latitud'],
+                solicitud['longitud'],
                 solicitud['observaciones'],
                 solicitud['estado']
             ))
             
             solicitud_id = cursor.lastrowid
-            print(f"✅ Solicitud {i} de {solicitud['tipo']} creada con ID: {solicitud_id}")
+            print(f"✅ Solicitud {i} de {solicitud['tipo_actividad']} creada con ID: {solicitud_id}")
         
         conn.commit()
         
         # 5. Verificar solicitudes creadas
         cursor.execute("""
-            SELECT s.id, s.tipo, s.usuario_id, s.fecha_hora, s.estado, u.nombre
+            SELECT s.id, s.tipo_actividad, s.usuario_id, s.fecha_solicitud, s.estado, u.nombre
             FROM solicitudes_dron s
             LEFT JOIN usuarios u ON s.usuario_id = u.id
             WHERE s.estado = 'pendiente'

@@ -833,16 +833,16 @@ async def obtener_solicitudes_pendientes():
         
         # Consulta corregida para solicitudes pendientes
         if use_sqlite:
-            # Para SQLite no tenemos funciones geográficas
+            # Para SQLite con estructura local diferente
             query = """
-            SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-                   NULL as longitud, NULL as latitud,
-                   s.foto_equipo, s.checklist, s.observaciones, s.estado,
+            SELECT s.id, s.usuario_id, s.tipo_actividad as tipo, s.fecha_solicitud as fecha_hora, 
+                   s.longitud, s.latitud,
+                   NULL as foto_equipo, NULL as checklist, s.observaciones, s.estado,
                    u.nombre as tecnico_nombre, u.correo as tecnico_correo
             FROM solicitudes_dron s
             LEFT JOIN usuarios u ON s.usuario_id = u.id
             WHERE s.estado = 'pendiente'
-            ORDER BY s.fecha_hora DESC
+            ORDER BY s.fecha_solicitud DESC
             """
         else:
             # Para PostgreSQL con PostGIS
