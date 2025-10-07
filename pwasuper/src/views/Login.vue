@@ -145,15 +145,9 @@
           </button>
         </form>
 
-        <!-- Register Link -->
+        <!-- Forgot Password Link -->
         <div class="text-center mt-4">
           <p class="text-xs text-gray-700">
-            ¿No tienes cuenta?
-            <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 glass-link">
-              Crear cuenta
-            </router-link>
-          </p>
-          <p class="text-xs text-gray-700 mt-1">
             <router-link to="/forgot-password" class="font-medium text-blue-600 hover:text-blue-800 transition-colors duration-200 glass-link">
               ¿Olvidaste tu contraseña?
             </router-link>

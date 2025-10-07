@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
 import ForgotPassword from '../views/ForgotPassword.vue'
 import Home from '../views/Home.vue'
 import Historial from '../views/Historial.vue'
@@ -12,7 +11,6 @@ import Support from '../views/Support.vue'
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: Login },
-  { path: '/register', name: 'Register', component: Register },
   { path: '/forgot-password', name: 'ForgotPassword', component: ForgotPassword },
   { path: '/historial', name: 'Historial', component: Historial },
   { path: '/profile', name: 'Profile', component: Profile },
@@ -30,8 +28,8 @@ router.beforeEach((to, from, next) => {
   const user = localStorage.getItem('user')
   const isLoggedIn = !!user
   
-  // Si intenta acceder a login, register o forgot-password y ya está logueado, redirigir a home
-  if ((to.name === 'Login' || to.name === 'Register' || to.name === 'ForgotPassword') && isLoggedIn) {
+  // Si intenta acceder a login o forgot-password y ya está logueado, redirigir a home
+  if ((to.name === 'Login' || to.name === 'ForgotPassword') && isLoggedIn) {
     next({ name: 'Home' })
   }
   // Si intenta acceder a rutas protegidas sin estar logueado, redirigir a login
