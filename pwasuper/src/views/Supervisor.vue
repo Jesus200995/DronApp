@@ -1,9 +1,19 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50">
-    <!-- Header integrado sin sticky -->
-    <div class="bg-white shadow-sm border-b border-gray-200 mb-4">
-      <div class="max-w-sm mx-auto px-4 py-3">
-        <div class="flex items-center justify-between">
+  <div class="fixed inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 to-sky-50 overflow-hidden">
+    <!-- Elementos decorativos para mejorar el efecto de vidrio -->
+    <div class="absolute inset-0">
+      <div class="absolute top-1/4 left-1/4 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow"></div>
+      <div class="absolute top-3/4 right-1/4 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 2s;"></div>
+      <div class="absolute bottom-1/4 left-1/3 w-72 h-72 bg-sky-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse-slow" style="animation-delay: 4s;"></div>
+    </div>
+    
+    <div class="absolute inset-0 overflow-hidden" style="z-index: 1;">
+      <!-- Header fijo -->
+      <div class="fixed top-16 sm:top-20 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-2 sm:pt-3">
+        <div class="w-full max-w-md mx-auto">
+          <div class="bg-white shadow-sm border border-gray-200 rounded-lg">
+            <div class="px-4 py-3">
+              <div class="flex items-center justify-between">
           <!-- Logo y título compactos -->
           <div class="flex items-center flex-1 min-w-0">
             <div class="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
@@ -34,11 +44,22 @@
           </div>
         </div>
       </div>
-    </div>
+            </div>
+          </div>
+          
+          <!-- Título y verde lineal -->
+          <div class="bg-transparent rounded-xl p-1">
+            <div class="green-line mb-0"></div>
+          </div>
+        </div>
+      </div>
 
-    <!-- Estadísticas Responsivas -->
-    <div class="px-4 mb-4">
-      <div class="grid grid-cols-3 gap-2 sm:gap-4">
+      <!-- Contenido con scroll -->
+      <div class="absolute inset-0 overflow-hidden pt-40 sm:pt-44 pb-2">
+        <div class="page-container w-full max-w-md mx-auto relative z-10 px-2 sm:px-3 lg:px-4 py-1 h-full">
+          <!-- Estadísticas Responsivas -->
+          <div class="mb-4">
+            <div class="grid grid-cols-3 gap-2 sm:gap-4">
         <!-- Tarjeta Pendientes -->
         <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
           <div class="flex flex-col sm:flex-row sm:items-center">
@@ -335,6 +356,8 @@
         <span class="text-xs sm:text-sm font-medium flex-1">{{ mensajeToast }}</span>
       </div>
     </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -573,5 +596,57 @@ function logout() {
 
 .max-h-48::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Barra verde tipo Notificaciones */
+.green-line {
+  width: 40px;
+  height: 1.5px;
+  background: linear-gradient(90deg, #16a34a, #22c55e, #16a34a);
+  border-radius: 1px;
+  animation: line-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes line-glow {
+  0% {
+    box-shadow: 0 0 5px rgba(34, 197, 94, 0.3);
+    opacity: 0.8;
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+    opacity: 1;
+  }
+}
+
+/* Clase para efecto de vidrio realista */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 6px 25px 0 rgba(31, 38, 135, 0.2),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  padding: 0.6rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Animación para elementos decorativos */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 4s ease-in-out infinite;
 }
 </style>
