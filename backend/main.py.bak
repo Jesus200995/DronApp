@@ -833,9 +833,8 @@ async def obtener_solicitudes_pendientes():
         
         # Consulta para obtener solicitudes pendientes con información del técnico
         query = """
-        SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-               ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
-               s.foto_equipo as nombre_foto, s.checklist, s.observaciones, s.estado,
+        SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, s.latitud, s.longitud, 
+               s.nombre_foto, s.checklist_json, s.observaciones, s.estado,
                u.nombre as tecnico_nombre, u.correo as tecnico_correo
         FROM solicitudes_dron s
         JOIN usuarios u ON s.usuario_id = u.id
@@ -851,7 +850,7 @@ async def obtener_solicitudes_pendientes():
             # Parsear checklist JSON
             checklist_data = {}
             try:
-                checklist_data = solicitud[7] if solicitud[7] else {}
+                checklist_data = json.loads(solicitud[7]) if solicitud[7] else {}
             except:
                 checklist_data = {}
             
