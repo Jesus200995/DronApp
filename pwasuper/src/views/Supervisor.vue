@@ -9,7 +9,7 @@
     
     <div class="absolute inset-0 overflow-hidden" style="z-index: 1;">
       <!-- Header fijo -->
-      <div class="fixed top-2 sm:top-4 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-1 sm:pt-2">
+      <div class="fixed top-12 sm:top-16 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-2 sm:pt-3">
         <div class="w-full max-w-md mx-auto">
           <div class="liquid-glass-card relative overflow-hidden backdrop-blur-md bg-white/50 shadow-lg border border-white/50 rounded-xl">
             <!-- Efecto de reflejo y brillo -->
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Contenido con scroll -->
-      <div class="absolute inset-0 overflow-hidden pt-28 sm:pt-32 pb-2">
+      <div class="absolute inset-0 overflow-hidden pt-36 sm:pt-40 pb-2">
         <div class="page-container w-full max-w-md mx-auto relative z-10 px-2 sm:px-3 lg:px-4 py-1 h-full flex flex-col">
           <!-- Estadísticas Responsivas -->
           <div class="mb-3 flex-shrink-0">
@@ -761,15 +761,6 @@ function logout() {
     min-height: 100dvh; /* Para navegadores que soportan dvh */
   }
   
-  /* Asegurar que el contenido no se desborde */
-  .fixed.inset-0 {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-  
   /* Mejoras para el espaciado en móvil */
   .liquid-glass-card {
     margin-top: 0.5rem;
@@ -779,18 +770,18 @@ function logout() {
 /* Mejorar la visibilidad del scroll en móviles */
 @media (max-width: 640px) {
   .solicitudes-scroll-container {
-    max-height: calc(100vh - 16rem); /* Altura dinámica basada en viewport en móvil */
+    max-height: calc(100vh - 20rem); /* Altura dinámica basada en viewport en móvil */
   }
   
   /* Ajuste del contenedor principal para móvil */
   .page-container {
-    height: calc(100vh - 7rem);
+    height: calc(100vh - 9rem);
   }
 }
 
 @media (min-width: 641px) and (max-width: 768px) {
   .solicitudes-scroll-container {
-    max-height: calc(100vh - 18rem); /* Altura dinámica para tablets */
+    max-height: calc(100vh - 22rem); /* Altura dinámica para tablets */
   }
 }
 
