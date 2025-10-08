@@ -474,14 +474,31 @@
                       </svg>
                       Teléfono *
                     </label>
-                    <input
-                      id="telefono"
-                      v-model="modalAgregar.usuario.telefono"
-                      type="tel"
-                      class="form-input"
-                      placeholder="5512345678"
-                      required
-                    />
+                    <div class="phone-input-container">
+                      <select
+                        v-model="modalAgregar.usuario.codigoPais"
+                        class="country-select"
+                      >
+                        <option value="+52">🇲🇽 +52</option>
+                        <option value="+1">🇺🇸 +1</option>
+                        <option value="+34">🇪🇸 +34</option>
+                        <option value="+44">🇬🇧 +44</option>
+                        <option value="+33">🇫🇷 +33</option>
+                        <option value="+49">🇩🇪 +49</option>
+                        <option value="+39">🇮🇹 +39</option>
+                        <option value="+55">🇧🇷 +55</option>
+                        <option value="+54">🇦🇷 +54</option>
+                        <option value="+57">🇨🇴 +57</option>
+                      </select>
+                      <input
+                        id="telefono"
+                        v-model="modalAgregar.usuario.telefono"
+                        type="tel"
+                        class="form-input phone-number"
+                        placeholder="5512345678"
+                        required
+                      />
+                    </div>
                   </div>
 
                   <!-- Puesto -->
@@ -514,14 +531,71 @@
                       </svg>
                       Contraseña *
                     </label>
-                    <input
-                      id="contrasena"
-                      v-model="modalAgregar.usuario.contrasena"
-                      type="password"
-                      class="form-input"
-                      placeholder="Contraseña segura"
-                      required
-                    />
+                    <div class="password-input-container">
+                      <input
+                        id="contrasena"
+                        v-model="modalAgregar.usuario.contrasena"
+                        :type="modalAgregar.mostrarContrasena ? 'text' : 'password'"
+                        class="form-input password-field"
+                        placeholder="Contraseña segura"
+                        required
+                      />
+                      <button
+                        type="button"
+                        @click="modalAgregar.mostrarContrasena = !modalAgregar.mostrarContrasena"
+                        class="password-toggle"
+                      >
+                        <svg v-if="modalAgregar.mostrarContrasena" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Confirmar Contraseña -->
+                  <div class="form-group">
+                    <label for="confirmarContrasena" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <circle cx="12" cy="16" r="1"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        <path d="M9 17l2 2 4-4" stroke-width="1.5"/>
+                      </svg>
+                      Confirmar Contraseña *
+                    </label>
+                    <div class="password-input-container">
+                      <input
+                        id="confirmarContrasena"
+                        v-model="modalAgregar.usuario.confirmarContrasena"
+                        :type="modalAgregar.mostrarConfirmContrasena ? 'text' : 'password'"
+                        class="form-input password-field"
+                        :class="{ 'error': modalAgregar.usuario.confirmarContrasena && modalAgregar.usuario.contrasena !== modalAgregar.usuario.confirmarContrasena }"
+                        placeholder="Confirmar contraseña"
+                        required
+                      />
+                      <button
+                        type="button"
+                        @click="modalAgregar.mostrarConfirmContrasena = !modalAgregar.mostrarConfirmContrasena"
+                        class="password-toggle"
+                      >
+                        <svg v-if="modalAgregar.mostrarConfirmContrasena" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                          <line x1="1" y1="1" x2="23" y2="23"/>
+                        </svg>
+                      </button>
+                    </div>
+                    <div v-if="modalAgregar.usuario.confirmarContrasena && modalAgregar.usuario.contrasena !== modalAgregar.usuario.confirmarContrasena" class="error-message">
+                      Las contraseñas no coinciden
+                    </div>
                   </div>
 
                   <!-- Rol -->
@@ -642,13 +716,17 @@ const modalAgregar = ref({
   mostrar: false,
   guardando: false,
   error: null,
+  mostrarContrasena: false,
+  mostrarConfirmContrasena: false,
   usuario: {
     nombre: '',
     correo: '',
     curp: '',
+    codigoPais: '+52',
     telefono: '',
     puesto: '',
     contrasena: '',
+    confirmarContrasena: '',
     rol: '',
     supervisor_id: ''
   }
@@ -892,8 +970,16 @@ const crearUsuario = async () => {
     
     if (!usuario.nombre || !usuario.correo || !usuario.curp || 
         !usuario.telefono || !usuario.puesto || !usuario.contrasena || 
-        !usuario.rol) {
+        !usuario.confirmarContrasena || !usuario.rol) {
       throw new Error('Todos los campos marcados con * son obligatorios')
+    }
+
+    if (usuario.contrasena !== usuario.confirmarContrasena) {
+      throw new Error('Las contraseñas no coinciden')
+    }
+
+    if (usuario.contrasena.length < 8) {
+      throw new Error('La contraseña debe tener al menos 8 caracteres')
     }
 
     if (usuario.rol === 'tecnico' && !usuario.supervisor_id) {
@@ -905,7 +991,7 @@ const crearUsuario = async () => {
       nombre: usuario.nombre.trim(),
       correo: usuario.correo.trim().toLowerCase(),
       curp: usuario.curp.trim().toUpperCase(),
-      telefono: usuario.telefono.trim(),
+      telefono: `${usuario.codigoPais}${usuario.telefono.trim()}`,
       puesto: usuario.puesto.trim(),
       contrasena: usuario.contrasena,
       rol: usuario.rol
@@ -2091,6 +2177,88 @@ const logout = () => {
   }
 }
 
+/* Estilos para selector de país y teléfono */
+.phone-input-container {
+  display: flex;
+  gap: 8px;
+}
+
+.country-select {
+  flex: 0 0 120px;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background-color: white;
+  color: #374151;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.country-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.phone-number {
+  flex: 1;
+}
+
+/* Estilos para campos de contraseña */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field {
+  padding-right: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #6b7280;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.password-toggle:hover {
+  color: #374151;
+  background-color: #f3f4f6;
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Mensaje de error específico */
+.error-message {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Input con error */
+.form-input.error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
 @media (max-width: 480px) {
   .page-content {
     padding: 12px;
@@ -2108,6 +2276,15 @@ const logout = () => {
   .action-btn {
     width: 32px;
     height: 32px;
+  }
+
+  .phone-input-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .country-select {
+    flex: none;
   }
 }
 </style>
