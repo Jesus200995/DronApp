@@ -323,6 +323,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar_NEW.vue'
+import { API_CONFIG } from '../config/api.js'
 
 const router = useRouter()
 
@@ -392,31 +393,65 @@ const cargarUsuarios = async () => {
   try {
     console.log('🔄 Cargando usuarios desde API...')
     
-    const response = await fetch('http://localhost:8000/usuarios', {
+    const apiUrl = `${API_CONFIG.baseURL}${API_CONFIG.endpoints.usuarios}`
+    console.log('🔗 URL de la API:', apiUrl)
+    
+    const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       }
     })
     
+    console.log('🌐 Estado de respuesta:', response.status, response.statusText)
+    
     if (!response.ok) {
-      throw new Error(`Error HTTP: ${response.status}`)
+      const errorText = await response.text()
+      console.error('❌ Error del servidor:', errorText)
+      throw new Error(`Error HTTP ${response.status}: ${response.statusText}`)
     }
     
     const data = await response.json()
-    console.log('📊 Respuesta del servidor:', data)
+    console.log('📊 Respuesta del servidor completa:', data)
+    console.log('📊 Tipo de datos recibidos:', typeof data)
     
-    if (data.usuarios && Array.isArray(data.usuarios)) {
+    // Verificar si la respuesta tiene la estructura esperada
+    if (data && data.usuarios && Array.isArray(data.usuarios)) {
+      console.log('📋 Procesando usuarios del array data.usuarios...')
       usuarios.value = data.usuarios.map(usuario => ({
         ...usuario,
         // Normalizar campos para compatibilidad
         nombre_completo: usuario.nombre_completo || usuario.nombre,
         cargo: usuario.cargo || usuario.puesto,
-        rol: usuario.rol || 'tecnico'
+        rol: usuario.rol || (usuario.puesto && usuario.puesto.toLowerCase().includes('supervisor') ? 'supervisor' : 'tecnico')
       }))
-      console.log('✅ Usuarios procesados:', usuarios.value.length)
+      console.log('✅ Usuarios procesados desde data.usuarios:', usuarios.value.length)
+    } else if (Array.isArray(data)) {
+      console.log('📋 Procesando usuarios del array directo...')
+      usuarios.value = data.map(usuario => ({
+        ...usuario,
+        // Normalizar campos para compatibilidad
+        nombre_completo: usuario.nombre_completo || usuario.nombre,
+        cargo: usuario.cargo || usuario.puesto,
+        rol: usuario.rol || (usuario.puesto && usuario.puesto.toLowerCase().includes('supervisor') ? 'supervisor' : 'tecnico')
+      }))
+      console.log('✅ Usuarios procesados desde array directo:', usuarios.value.length)
+    } else if (data && typeof data === 'object' && data.usuarios) {
+      console.log('📋 Procesando usuarios de objeto con propiedad usuarios...')
+      const usuariosArray = Array.isArray(data.usuarios) ? data.usuarios : [data.usuarios]
+      usuarios.value = usuariosArray.map(usuario => ({
+        ...usuario,
+        // Normalizar campos para compatibilidad
+        nombre_completo: usuario.nombre_completo || usuario.nombre,
+        cargo: usuario.cargo || usuario.puesto,
+        rol: usuario.rol || (usuario.puesto && usuario.puesto.toLowerCase().includes('supervisor') ? 'supervisor' : 'tecnico')
+      }))
+      console.log('✅ Usuarios procesados desde objeto:', usuarios.value.length)
     } else {
       console.warn('⚠️ Formato de respuesta inesperado:', data)
+      console.warn('⚠️ Tipo de data:', typeof data)
+      console.warn('⚠️ Claves disponibles:', data ? Object.keys(data) : 'No hay claves')
       usuarios.value = []
     }
     
