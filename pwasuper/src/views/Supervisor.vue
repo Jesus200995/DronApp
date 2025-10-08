@@ -9,7 +9,7 @@
     
     <div class="absolute inset-0 overflow-hidden" style="z-index: 1;">
       <!-- Header fijo -->
-      <div class="fixed top-16 sm:top-20 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-2 sm:pt-3">
+      <div class="fixed top-2 sm:top-4 left-0 right-0 z-20 px-2 sm:px-3 lg:px-4 pt-1 sm:pt-2">
         <div class="w-full max-w-md mx-auto">
           <div class="liquid-glass-card relative overflow-hidden backdrop-blur-md bg-white/50 shadow-lg border border-white/50 rounded-xl">
             <!-- Efecto de reflejo y brillo -->
@@ -71,51 +71,51 @@
       </div>
 
       <!-- Contenido con scroll -->
-      <div class="absolute inset-0 overflow-hidden pt-40 sm:pt-44 pb-2">
-        <div class="page-container w-full max-w-md mx-auto relative z-10 px-2 sm:px-3 lg:px-4 py-1 h-full">
+      <div class="absolute inset-0 overflow-hidden pt-28 sm:pt-32 pb-2">
+        <div class="page-container w-full max-w-md mx-auto relative z-10 px-2 sm:px-3 lg:px-4 py-1 h-full flex flex-col">
           <!-- Estadísticas Responsivas -->
-          <div class="mb-4">
-            <div class="grid grid-cols-3 gap-2 sm:gap-4">
+          <div class="mb-3 flex-shrink-0">
+            <div class="grid grid-cols-3 gap-1.5 sm:gap-3">
         <!-- Tarjeta Pendientes -->
-        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+        <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3">
           <div class="flex flex-col sm:flex-row sm:items-center">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-100 rounded-lg flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 mx-auto sm:mx-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-100 rounded-lg flex items-center justify-center mb-1 sm:mb-0 sm:mr-2 mx-auto sm:mx-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="text-center sm:text-left">
-              <p class="text-lg sm:text-xl font-bold text-gray-900">{{ solicitudes.length }}</p>
+              <p class="text-sm sm:text-lg font-bold text-gray-900">{{ solicitudes.length }}</p>
               <p class="text-xs text-gray-600">Pendientes</p>
             </div>
           </div>
         </div>
         
         <!-- Tarjeta Aprobadas -->
-        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+        <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3">
           <div class="flex flex-col sm:flex-row sm:items-center">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-lg flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 mx-auto sm:mx-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-lg flex items-center justify-center mb-1 sm:mb-0 sm:mr-2 mx-auto sm:mx-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="text-center sm:text-left">
-              <p class="text-lg sm:text-xl font-bold text-gray-900">{{ solicitudesAprobadas }}</p>
+              <p class="text-sm sm:text-lg font-bold text-gray-900">{{ solicitudesAprobadas }}</p>
               <p class="text-xs text-gray-600">Aprobadas</p>
             </div>
           </div>
         </div>
         
         <!-- Tarjeta Rechazadas -->
-        <div class="bg-white rounded-lg shadow-sm p-3 sm:p-4">
+        <div class="bg-white rounded-lg shadow-sm p-2 sm:p-3">
           <div class="flex flex-col sm:flex-row sm:items-center">
-            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-red-100 rounded-lg flex items-center justify-center mb-2 sm:mb-0 sm:mr-3 mx-auto sm:mx-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-lg flex items-center justify-center mb-1 sm:mb-0 sm:mr-2 mx-auto sm:mx-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="text-center sm:text-left">
-              <p class="text-lg sm:text-xl font-bold text-gray-900">{{ solicitudesRechazadas }}</p>
+              <p class="text-sm sm:text-lg font-bold text-gray-900">{{ solicitudesRechazadas }}</p>
               <p class="text-xs text-gray-600">Rechazadas</p>
             </div>
           </div>
@@ -124,18 +124,18 @@
     </div>
 
     <!-- Lista de Solicitudes -->
-    <div class="px-4 pb-4 flex-1 flex flex-col min-h-0">
+    <div class="px-2 sm:px-4 pb-2 sm:pb-4 flex-1 flex flex-col min-h-0">
       <div class="bg-white rounded-lg shadow-sm flex flex-col flex-1 min-h-0">
         <!-- Header de sección compacto -->
-        <div class="p-4 border-b border-gray-200 flex-shrink-0">
-          <h2 class="text-base sm:text-lg font-semibold text-gray-900">Solicitudes Pendientes</h2>
+        <div class="p-3 sm:p-4 border-b border-gray-200 flex-shrink-0">
+          <h2 class="text-sm sm:text-lg font-semibold text-gray-900">Solicitudes Pendientes</h2>
           <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">Revisa y gestiona las solicitudes de entrada y salida de drones</p>
         </div>
         
         <!-- Loading State -->
-        <div v-if="loading" class="p-6 text-center flex-1 flex items-center justify-center">
-          <div class="inline-flex items-center px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg">
-            <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <div v-if="loading" class="p-4 sm:p-6 text-center flex-1 flex items-center justify-center">
+          <div class="inline-flex items-center px-3 py-2 text-xs sm:text-sm text-blue-600 bg-blue-50 rounded-lg">
+            <svg class="animate-spin -ml-1 mr-2 h-3 w-3 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -144,19 +144,19 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="solicitudes.length === 0" class="p-6 text-center flex-1 flex flex-col items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div v-else-if="solicitudes.length === 0" class="p-4 sm:p-6 text-center flex-1 flex flex-col items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-8 w-8 sm:h-10 sm:w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">No hay solicitudes pendientes</h3>
+          <h3 class="mt-2 text-xs sm:text-sm font-medium text-gray-900">No hay solicitudes pendientes</h3>
           <p class="mt-1 text-xs text-gray-500">Todas las solicitudes han sido procesadas.</p>
         </div>
 
         <!-- Solicitudes List - Mobile First Design con Scroll -->
         <div v-else class="divide-y divide-gray-100 overflow-y-auto solicitudes-scroll-container flex-1" ref="solicitudesContainer">
-          <div v-for="solicitud in solicitudes" :key="solicitud.id" class="p-4">
+          <div v-for="solicitud in solicitudes" :key="solicitud.id" class="p-2 sm:p-4">
             <!-- Tarjeta de solicitud responsiva -->
-            <div class="bg-gray-50 rounded-lg p-4 mb-3 border border-gray-200">
+            <div class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-2 sm:mb-3 border border-gray-200">
               <!-- Header compacto -->
               <div class="flex items-start justify-between mb-3">
                 <div class="flex items-center flex-1 min-w-0">
@@ -190,18 +190,18 @@
               <div class="space-y-4">
                 <!-- Foto (siempre visible en móvil) -->
                 <div>
-                  <h4 class="text-xs font-medium text-gray-700 mb-2">Foto del Equipo</h4>
+                  <h4 class="text-xs font-medium text-gray-700 mb-1 sm:mb-2">Foto del Equipo</h4>
                   <div class="relative">
                     <img 
                       v-if="solicitud.foto_url"
                       :src="`${apiBaseUrl}${solicitud.foto_url}`" 
                       :alt="'Foto del dron - ' + solicitud.tipo"
-                      class="w-full h-32 sm:h-40 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
+                      class="w-full h-24 sm:h-32 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
                       @click="abrirImagenModal(solicitud)"
                       @error="manejarErrorImagen"
                     />
-                    <div v-else class="w-full h-32 sm:h-40 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div v-else class="w-full h-24 sm:h-32 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
@@ -754,16 +754,49 @@ function logout() {
   scroll-behavior: smooth;
 }
 
+/* Prevenir overflow horizontal en móviles */
+@media (max-width: 640px) {
+  .bg-gradient-to-br {
+    min-height: 100vh;
+    min-height: 100dvh; /* Para navegadores que soportan dvh */
+  }
+  
+  /* Asegurar que el contenido no se desborde */
+  .fixed.inset-0 {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+  
+  /* Mejoras para el espaciado en móvil */
+  .liquid-glass-card {
+    margin-top: 0.5rem;
+  }
+}
+
 /* Mejorar la visibilidad del scroll en móviles */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .solicitudes-scroll-container {
-    max-height: 70vh; /* Más espacio en móvil */
+    max-height: calc(100vh - 16rem); /* Altura dinámica basada en viewport en móvil */
+  }
+  
+  /* Ajuste del contenedor principal para móvil */
+  .page-container {
+    height: calc(100vh - 7rem);
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  .solicitudes-scroll-container {
+    max-height: calc(100vh - 18rem); /* Altura dinámica para tablets */
   }
 }
 
 @media (min-width: 769px) {
   .solicitudes-scroll-container {
-    max-height: 24rem; /* max-h-96 equivalente */
+    max-height: 20rem; /* Altura fija para desktop */
   }
 }
 
