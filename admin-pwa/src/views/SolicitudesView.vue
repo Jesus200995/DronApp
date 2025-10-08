@@ -312,8 +312,14 @@
       <div class="modal-container modal-detalles" @click.stop>
         <div class="modal-header">
           <h3>
-            <span class="modal-title-icon">📋</span>
-            Solicitud #{{ modalDetalles.solicitud?.id }}
+            <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14,2 14,8 20,8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10,9 9,9 8,9"/>
+            </svg>
+            Detalles de Solicitud #{{ modalDetalles.solicitud?.id }}
           </h3>
           <button @click="cerrarModalDetalles" class="modal-close">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -324,147 +330,189 @@
         </div>
         
         <div class="modal-body" v-if="modalDetalles.solicitud">
-          <!-- Estado y tipo -->
-          <div class="detail-section">
-            <div class="detail-row">
-              <div class="detail-label">Estado:</div>
-              <div class="detail-value">
-                <div class="estado-badge" :class="`estado-${modalDetalles.solicitud.estado}`">
-                  {{ modalDetalles.solicitud.estado.toUpperCase() }}
+          <div class="modal-content-grid">
+            <!-- Columna Izquierda - Información Principal -->
+            <div class="modal-left-column">
+              <!-- Estado y tipo -->
+              <div class="detail-section">
+                <div class="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3l8-8"/>
+                    <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9s4.03-9 9-9c1.66 0 3.22.45 4.56 1.25"/>
+                  </svg>
+                  Estado y Tipo
                 </div>
-              </div>
-            </div>
-            <div class="detail-row">
-              <div class="detail-label">Tipo:</div>
-              <div class="detail-value">
-                <div class="tipo-badge" :class="`tipo-${modalDetalles.solicitud.tipo}`">
-                  <span class="tipo-icon">{{ modalDetalles.solicitud.tipo === 'entrada' ? '📥' : '📤' }}</span>
-                  <span class="tipo-text">{{ modalDetalles.solicitud.tipo.toUpperCase() }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Información del usuario -->
-          <div class="detail-section">
-            <h4 class="section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-              Información del Usuario
-            </h4>
-            <div class="user-detail-card">
-              <div class="user-avatar-detail">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                  <circle cx="12" cy="7" r="4"/>
-                </svg>
-              </div>
-              <div class="user-info-detail">
-                <div class="user-name-detail">{{ modalDetalles.solicitud.usuario?.nombre_completo || modalDetalles.solicitud.tecnico?.nombre || 'Usuario sin nombre' }}</div>
-                <div class="user-cargo-detail">{{ modalDetalles.solicitud.usuario?.cargo || 'Sin cargo' }}</div>
-                <div class="user-contact-detail">
-                  <div v-if="modalDetalles.solicitud.usuario?.correo || modalDetalles.solicitud.tecnico?.correo" class="contact-detail-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                      <polyline points="22,6 12,13 2,6"/>
-                    </svg>
-                    <span>{{ modalDetalles.solicitud.usuario?.correo || modalDetalles.solicitud.tecnico?.correo }}</span>
+                <div class="detail-row">
+                  <div class="detail-label">Estado:</div>
+                  <div class="detail-value">
+                    <div class="estado-badge" :class="`estado-${modalDetalles.solicitud.estado}`">
+                      {{ modalDetalles.solicitud.estado.toUpperCase() }}
+                    </div>
                   </div>
-                  <div v-if="modalDetalles.solicitud.usuario?.curp || modalDetalles.solicitud.tecnico?.curp" class="contact-detail-item">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14,2 14,8 20,8"/>
-                      <line x1="16" y1="13" x2="8" y2="13"/>
-                      <line x1="16" y1="17" x2="8" y2="17"/>
-                      <polyline points="10,9 9,9 8,9"/>
-                    </svg>
-                    <span>CURP: {{ modalDetalles.solicitud.usuario?.curp || modalDetalles.solicitud.tecnico?.curp }}</span>
+                </div>
+                <div class="detail-row">
+                  <div class="detail-label">Tipo:</div>
+                  <div class="detail-value">
+                    <div class="tipo-badge" :class="`tipo-${modalDetalles.solicitud.tipo}`">
+                      <svg v-if="modalDetalles.solicitud.tipo === 'entrada'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M7 16l-4-4m0 0l4-4m-4 4h18"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                      </svg>
+                      <span class="tipo-text">{{ modalDetalles.solicitud.tipo.toUpperCase() }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Fecha y ubicación -->
-          <div class="detail-section">
-            <h4 class="section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 1v6m0 6v6"/>
-                <path d="m15.14 8.86 4.24-4.24M4.86 19.14l4.24-4.24"/>
-                <path d="m8.86 8.86-4.24-4.24M19.14 19.14l-4.24-4.24"/>
-              </svg>
-              Fecha y Ubicación
-            </h4>
-            <div class="detail-row">
-              <div class="detail-label">Fecha y Hora:</div>
-              <div class="detail-value datetime-value">
-                🕒 {{ formatearFecha(modalDetalles.solicitud.fecha_hora) }}
+              <!-- Información del usuario -->
+              <div class="detail-section">
+                <div class="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  Información del Usuario
+                </div>
+                <!-- Información del usuario con diseño moderno -->
+                <div class="user-modern-container">
+                  <div class="user-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                  <div class="user-content-modern">
+                    <div class="user-main-info">
+                      <div class="user-name-modern">{{ modalDetalles.solicitud.usuario?.nombre_completo || modalDetalles.solicitud.tecnico?.nombre || 'Usuario sin nombre' }}</div>
+                      <div class="user-cargo-modern">{{ modalDetalles.solicitud.usuario?.cargo || 'Sin cargo' }}</div>
+                    </div>
+                    <div class="user-contact-modern">
+                      <div v-if="modalDetalles.solicitud.usuario?.correo || modalDetalles.solicitud.tecnico?.correo" class="contact-modern-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <span>{{ modalDetalles.solicitud.usuario?.correo || modalDetalles.solicitud.tecnico?.correo }}</span>
+                      </div>
+                      <div v-if="modalDetalles.solicitud.usuario?.curp || modalDetalles.solicitud.tecnico?.curp" class="contact-modern-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14,2 14,8 20,8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        <span>CURP: {{ modalDetalles.solicitud.usuario?.curp || modalDetalles.solicitud.tecnico?.curp }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Fecha y ubicación -->
+              <div class="detail-section">
+                <div class="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  Fecha y Ubicación
+                </div>
+                
+                <!-- Fecha y Hora con diseño moderno -->
+                <div class="datetime-modern-container">
+                  <div class="datetime-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12,6 12,12 16,14"/>
+                    </svg>
+                  </div>
+                  <div class="datetime-content">
+                    <div class="datetime-label">Fecha y Hora</div>
+                    <div class="datetime-value-modern">{{ formatearFecha(modalDetalles.solicitud.fecha_hora) }}</div>
+                  </div>
+                </div>
+
+                <!-- Ubicación con diseño moderno -->
+                <div v-if="modalDetalles.solicitud.ubicacion?.latitud && modalDetalles.solicitud.ubicacion?.longitud" class="location-modern-container">
+                  <div class="location-icon-wrapper">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                  </div>
+                  <div class="location-content">
+                    <div class="location-label">Coordenadas GPS</div>
+                    <div class="location-value-modern">
+                      <span class="coordinate">{{ modalDetalles.solicitud.ubicacion.latitud.toFixed(6) }}</span>
+                      <span class="coordinate-separator">, </span>
+                      <span class="coordinate">{{ modalDetalles.solicitud.ubicacion.longitud.toFixed(6) }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            <div v-if="modalDetalles.solicitud.ubicacion.latitud && modalDetalles.solicitud.ubicacion.longitud" class="detail-row">
-              <div class="detail-label">Ubicación:</div>
-              <div class="detail-value location-value">
-                📍 {{ modalDetalles.solicitud.ubicacion.latitud.toFixed(6) }}, {{ modalDetalles.solicitud.ubicacion.longitud.toFixed(6) }}
+
+            <!-- Columna Derecha - Detalles Adicionales -->
+            <div class="modal-right-column">
+              <!-- Foto del equipo -->
+              <div v-if="modalDetalles.solicitud.foto_equipo" class="detail-section">
+                <div class="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  Foto del Equipo
+                </div>
+                <div class="photo-detail-container">
+                  <img 
+                    :src="getPhotoUrl(modalDetalles.solicitud.foto_equipo)" 
+                    :alt="`Foto del equipo - Solicitud ${modalDetalles.solicitud.id}`"
+                    class="equipment-photo-detail"
+                    @error="handleImageError"
+                  />
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Checklist -->
-          <div v-if="modalDetalles.solicitud.checklist && Object.keys(modalDetalles.solicitud.checklist).length > 0" class="detail-section">
-            <h4 class="section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9,11 12,14 22,4"/>
-                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-              </svg>
-              Checklist
-            </h4>
-            <div class="checklist-detail-grid">
-              <div 
-                v-for="(valor, clave) in modalDetalles.solicitud.checklist" 
-                :key="clave"
-                class="checklist-detail-item"
-                :class="{ 'check-ok': valor === true || valor === 'ok', 'check-error': valor === false || valor === 'error' }"
-              >
-                <span class="check-key-detail">{{ clave.replace('_', ' ') }}</span>
-                <span class="check-value-detail">{{ formatearValorChecklist(valor) }}</span>
+              <!-- Checklist -->
+              <div v-if="modalDetalles.solicitud.checklist && Object.keys(modalDetalles.solicitud.checklist).length > 0" class="detail-section">
+                <div class="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9,11 12,14 22,4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                  </svg>
+                  Checklist
+                </div>
+                <div class="checklist-detail-grid">
+                  <div 
+                    v-for="(valor, clave) in modalDetalles.solicitud.checklist" 
+                    :key="clave"
+                    class="checklist-detail-item"
+                    :class="{ 'check-ok': valor === true || valor === 'ok', 'check-error': valor === false || valor === 'error' }"
+                  >
+                    <span class="check-key-detail">{{ clave.replace('_', ' ') }}</span>
+                    <span class="check-value-detail">{{ formatearValorChecklist(valor) }}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          <!-- Observaciones -->
-          <div v-if="modalDetalles.solicitud.observaciones" class="detail-section">
-            <h4 class="section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14,2 14,8 20,8"/>
-                <line x1="16" y1="13" x2="8" y2="13"/>
-                <line x1="16" y1="17" x2="8" y2="17"/>
-              </svg>
-              Observaciones
-            </h4>
-            <div class="observations-detail">{{ modalDetalles.solicitud.observaciones }}</div>
-          </div>
-
-          <!-- Foto del equipo -->
-          <div v-if="modalDetalles.solicitud.foto_equipo" class="detail-section">
-            <h4 class="section-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="9" cy="9" r="2"/>
-                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-              </svg>
-              Foto del Equipo
-            </h4>
-            <div class="photo-detail-container">
-              <img 
-                :src="modalDetalles.solicitud.foto_equipo" 
-                :alt="`Foto equipo solicitud ${modalDetalles.solicitud.id}`"
-                class="equipment-photo-detail"
-                @error="$event.target.style.display='none'"
-              />
+              <!-- Observaciones -->
+              <div v-if="modalDetalles.solicitud.observaciones" class="detail-section">
+                <div class="section-title">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  Observaciones
+                </div>
+                <div class="observations-detail">{{ modalDetalles.solicitud.observaciones }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -582,11 +630,29 @@ const formatearFecha = (fechaISO) => {
 }
 
 const formatearValorChecklist = (valor) => {
-  if (valor === true || valor === 'ok') return '✅ OK'
-  if (valor === false || valor === 'error') return '❌ Error'
+  if (valor === true || valor === 'ok') return 'OK'
+  if (valor === false || valor === 'error') return 'ERROR'
   if (typeof valor === 'string') return valor
   if (typeof valor === 'number') return `${valor}%`
   return String(valor)
+}
+
+const getPhotoUrl = (fotoPath) => {
+  if (!fotoPath) return null
+  
+  // Si ya es una URL completa, devolverla tal como está
+  if (fotoPath.startsWith('http')) return fotoPath
+  
+  // Construir URL para el endpoint de fotos del backend local
+  const baseUrl = 'http://localhost:8000'
+  return `${baseUrl}/fotos/${fotoPath.replace(/^\/+/, '')}`
+}
+
+const handleImageError = (event) => {
+  console.warn('Error cargando imagen:', event.target.src)
+  // Mostrar placeholder en lugar de ocultar la imagen
+  event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDIwMCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMTUwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik04NS4zMzMzIDc1TDEwNSA5NC42NjY3TDEyNS42NjcgNzQuMzMzM0wxNDYgOTVWMTI1SDU0VjEwNUw3NCA4NS4zMzMzWiIgZmlsbD0iIzlDQTNBRiIvPgo8Y2lyY2xlIGN4PSI3NSIgY3k9IjU1IiByPSI4IiBmaWxsPSIjOUNBM0FGIi8+CjwvZz4KPC9zdmc+'
+  event.target.alt = 'Imagen no disponible'
 }
 
 // Lifecycle
@@ -1443,6 +1509,13 @@ const logout = () => {
   border: 1px solid #fcd34d;
 }
 
+.tipo-badge svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
 .tipo-icon {
   font-size: 14px;
 }
@@ -1744,27 +1817,59 @@ const logout = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.65);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(8px);
-  padding: 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 12px;
+  animation: modalFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalFadeIn {
+  from { 
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to { 
+    opacity: 1;
+    backdrop-filter: blur(12px);
+  }
 }
 
 .modal-container {
-  background: white;
-  border-radius: 20px;
-  max-width: 700px;
+  background: linear-gradient(135deg, #ffffff 0%, #fafbfc 100%);
+  border-radius: 16px;
+  max-width: 650px;
   width: 100%;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-detalles {
-  max-width: 800px;
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .modal-title-icon {
@@ -1773,9 +1878,9 @@ const logout = () => {
 }
 
 .detail-section {
-  margin-bottom: 24px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .detail-section:last-child {
@@ -1787,46 +1892,54 @@ const logout = () => {
 .section-title {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0c4a6e;
   font-family: 'Inter', sans-serif;
-  margin: 0 0 16px 0;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(12, 74, 110, 0.05) 0%, rgba(12, 74, 110, 0.02) 100%);
-  border-radius: 12px;
-  border-left: 4px solid #0c4a6e;
+  margin: 0 0 12px 0;
+  padding: 8px 12px;
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.08) 0%, rgba(12, 74, 110, 0.03) 100%);
+  border-radius: 8px;
+  border-left: 3px solid #0c4a6e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .section-title svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   color: #0c4a6e;
+  filter: drop-shadow(0 1px 2px rgba(12, 74, 110, 0.2));
 }
 
 .detail-row {
   display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 12px;
-  padding: 8px 0;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 6px 0;
 }
 
 .detail-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #4b5563;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6b7280;
   font-family: 'Inter', sans-serif;
-  min-width: 120px;
+  min-width: 90px;
   flex-shrink: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.3;
 }
 
 .detail-value {
-  font-size: 14px;
+  font-size: 12px;
   color: #1f2937;
   font-family: 'Inter', sans-serif;
   flex: 1;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .datetime-value,
@@ -1841,49 +1954,324 @@ const logout = () => {
   font-family: monospace;
 }
 
-.user-detail-card {
+/* Estilos modernos para fecha y hora */
+.datetime-modern-container {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(12, 74, 110, 0.05);
-  border-radius: 16px;
-  border: 1px solid rgba(12, 74, 110, 0.1);
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #0ea5e9;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.datetime-modern-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
+}
+
+.datetime-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(14, 165, 233, 0.2);
+}
+
+.datetime-icon-wrapper svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+  stroke-width: 2.5;
+}
+
+.datetime-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.datetime-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #0369a1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
+}
+
+.datetime-value-modern {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e40af;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Estilos modernos para ubicación */
+.location-modern-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #22c55e;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.location-modern-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.location-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(34, 197, 94, 0.2);
+}
+
+.location-icon-wrapper svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+  stroke-width: 2.5;
+}
+
+.location-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.location-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #16a34a;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Inter', sans-serif;
+}
+
+.location-value-modern {
+  font-size: 12px;
+  font-weight: 600;
+  color: #15803d;
+  font-family: 'Fira Code', monospace;
+  display: flex;
+  align-items: center;
+}
+
+.coordinate {
+  background: rgba(34, 197, 94, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.coordinate-separator {
+  margin: 0 4px;
+  color: #16a34a;
+  font-weight: 400;
+}
+
+/* Estilos modernos para información del usuario */
+.user-modern-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #fef7ff 0%, #fae8ff 100%);
+  border: 1px solid #a855f7;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.user-modern-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15);
+}
+
+.user-icon-wrapper {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(168, 85, 247, 0.2);
+}
+
+.user-icon-wrapper svg {
+  width: 16px;
+  height: 16px;
+  color: white;
+  stroke-width: 2.5;
+}
+
+.user-content-modern {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.user-main-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name-modern {
+  font-size: 13px;
+  font-weight: 700;
+  color: #7c2d92;
+  font-family: 'Inter', sans-serif;
+}
+
+.user-cargo-modern {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a855f7;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.user-contact-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-modern-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: rgba(168, 85, 247, 0.08);
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #6b21a8;
+  font-family: 'Inter', sans-serif;
+}
+
+.contact-modern-item svg {
+  width: 12px;
+  height: 12px;
+  color: #a855f7;
+  flex-shrink: 0;
+}
+
+.contact-modern-item span {
+  word-break: break-all;
+}
+
+.user-detail-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.06) 0%, rgba(12, 74, 110, 0.02) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(12, 74, 110, 0.15);
+  transition: all 0.2s ease;
+}
+
+.user-detail-card:hover {
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.08) 0%, rgba(12, 74, 110, 0.03) 100%);
+  border-color: rgba(12, 74, 110, 0.2);
+  transform: translateY(-1px);
 }
 
 .user-avatar-detail {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 3px 8px rgba(12, 74, 110, 0.25);
 }
 
 .user-avatar-detail svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   color: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .user-info-detail {
   flex: 1;
+  min-width: 0;
 }
 
 .user-name-detail {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: #1f2937;
   font-family: 'Inter', sans-serif;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  line-height: 1.3;
 }
 
 .user-cargo-detail {
-  font-size: 14px;
+  font-size: 10px;
   color: #6b7280;
   font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 4px;
+}
+
+.user-contact-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+}
+
+.contact-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #4b5563;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+.contact-detail-item svg {
+  width: 10px;
+  height: 10px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.contact-detail-item span {
+  word-break: break-all;
+  line-height: 1.2;
 }
 
 .user-contact-detail {
@@ -1919,17 +2307,17 @@ const logout = () => {
 
 .checklist-detail-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
 }
 
 .checklist-detail-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 8px 10px;
   background: #f8fafc;
-  border-radius: 12px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
 }
@@ -1937,83 +2325,103 @@ const logout = () => {
 .checklist-detail-item:hover {
   background: #f1f5f9;
   transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .checklist-detail-item.check-ok {
-  background: rgba(16, 185, 129, 0.1);
-  border-color: rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%);
+  border-color: rgba(16, 185, 129, 0.25);
 }
 
 .checklist-detail-item.check-error {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.03) 100%);
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
 .check-key-detail {
   font-weight: 600;
   color: #374151;
   text-transform: capitalize;
-  font-size: 13px;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .check-value-detail {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 11px;
 }
 
 .observations-detail {
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
-  font-size: 14px;
+  font-size: 11px;
   color: #4b5563;
-  line-height: 1.6;
+  line-height: 1.5;
   font-family: 'Inter', sans-serif;
+  font-weight: 500;
 }
 
 .photo-detail-container {
-  border-radius: 16px;
+  border-radius: 12px;
   overflow: hidden;
-  border: 2px solid #e2e8f0;
+  border: 1px solid #e2e8f0;
   background: #f8fafc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .equipment-photo-detail {
   width: 100%;
   height: auto;
-  max-height: 400px;
+  max-height: 300px;
   object-fit: cover;
   display: block;
   transition: transform 0.3s ease;
 }
 
 .equipment-photo-detail:hover {
-  transform: scale(1.02);
+  transform: scale(1.01);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.03) 0%, rgba(255, 255, 255, 0.8) 100%);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0c4a6e;
   font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-title-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .modal-close {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: rgba(239, 68, 68, 0.1);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2022,17 +2430,41 @@ const logout = () => {
 }
 
 .modal-close:hover {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
 }
 
 .modal-close svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: #dc2626;
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+  max-height: calc(90vh - 120px);
+}
+
+.modal-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  height: 100%;
+}
+
+.modal-left-column,
+.modal-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-right-column {
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+  padding-left: 20px;
 }
 
 .modal-body p {
@@ -2074,21 +2506,33 @@ const logout = () => {
 
 .modal-actions {
   display: flex;
-  gap: 12px;
-  padding: 20px;
-  border-top: 1px solid #e5e7eb;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 
 .modal-btn {
   flex: 1;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .close-btn {
@@ -2097,18 +2541,23 @@ const logout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  min-height: 36px;
 }
 
 .close-btn:hover {
   background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
 }
 
 .close-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
 }
 
 /* === RESPONSIVE STYLES === */
@@ -2321,13 +2770,230 @@ const logout = () => {
     height: 10px;
   }
 
+  .modal-overlay {
+    padding: 8px;
+  }
+
+  .modal-container {
+    max-width: 95vw;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
   .modal-detalles {
-    max-width: 90vw;
+    max-width: 95vw;
+  }
+
+  .modal-header {
+    padding: 12px 14px;
+  }
+
+  .modal-header h3 {
+    font-size: 12px;
+  }
+
+  .modal-title-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .modal-close {
+    width: 24px;
+    height: 24px;
+  }
+
+  .modal-close svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .modal-body {
+    padding: 12px;
+    max-height: calc(95vh - 100px);
+  }
+
+  .modal-content-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .modal-right-column {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: 12px;
+  }
+
+  .modal-actions {
+    padding: 10px 12px;
   }
 
   .detail-section {
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+  }
+
+  .section-title svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .detail-row {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .detail-label {
+    font-size: 9px;
+    min-width: 70px;
+  }
+
+  .detail-value {
+    font-size: 10px;
+  }
+
+  .user-detail-card {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .user-avatar-detail {
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-avatar-detail svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .user-name-detail {
+    font-size: 11px;
+  }
+
+  .user-cargo-detail {
+    font-size: 9px;
+  }
+
+  .contact-detail-item {
+    font-size: 9px;
+    gap: 3px;
+  }
+
+  .contact-detail-item svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .checklist-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .checklist-detail-item {
+    padding: 6px 8px;
+  }
+
+  .check-key-detail {
+    font-size: 9px;
+  }
+
+  .check-value-detail {
+    font-size: 10px;
+  }
+
+  .observations-detail {
+    padding: 8px;
+    font-size: 10px;
+  }
+
+  .equipment-photo-detail {
+    max-height: 200px;
+  }
+
+  /* Responsive para componentes modernos de fecha y ubicación */
+  .datetime-modern-container,
+  .location-modern-container {
+    padding: 8px;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .datetime-icon-wrapper,
+  .location-icon-wrapper {
+    width: 28px;
+    height: 28px;
+  }
+
+  .datetime-icon-wrapper svg,
+  .location-icon-wrapper svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .datetime-label,
+  .location-label {
+    font-size: 9px;
+  }
+
+  .datetime-value-modern {
+    font-size: 11px;
+  }
+
+  .location-value-modern {
+    font-size: 10px;
+  }
+
+  .coordinate {
+    font-size: 9px;
+    padding: 1px 4px;
+  }
+
+  /* Responsive para usuario moderno */
+  .user-modern-container {
+    padding: 8px;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .user-icon-wrapper {
+    width: 28px;
+    height: 28px;
+  }
+
+  .user-icon-wrapper svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .user-name-modern {
+    font-size: 11px;
+  }
+
+  .user-cargo-modern {
+    font-size: 9px;
+  }
+
+  .contact-modern-item {
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+
+  .contact-modern-item svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .modal-btn {
+    padding: 6px 12px;
+    font-size: 10px;
+    min-height: 32px;
   }
 
   .section-title {
@@ -2685,6 +3351,11 @@ const logout = () => {
     font-size: 16px;
   }
 
+  .modal-title-icon {
+    width: 12px;
+    height: 12px;
+  }
+
   .modal-body p {
     font-size: 13px;
   }
@@ -2927,6 +3598,113 @@ const logout = () => {
   
   .empty-message p {
     font-size: 13px;
+  }
+
+  /* Modal responsive para móviles */
+  .modal-overlay {
+    padding: 4px;
+  }
+
+  .modal-container {
+    max-width: 98vw;
+    max-height: 98vh;
+    border-radius: 8px;
+  }
+
+  .modal-header {
+    padding: 10px 12px;
+  }
+
+  .modal-header h3 {
+    font-size: 10px;
+  }
+
+  .modal-body {
+    padding: 8px;
+    max-height: calc(98vh - 80px);
+  }
+
+  .modal-content-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .modal-right-column {
+    border-left: none;
+    padding-left: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    padding-top: 8px;
+  }
+
+  .detail-section {
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .section-title {
+    font-size: 9px;
+    padding: 4px 8px;
+    margin-bottom: 6px;
+  }
+
+  .user-detail-card {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .user-avatar-detail {
+    width: 28px;
+    height: 28px;
+  }
+
+  .user-name-detail {
+    font-size: 10px;
+  }
+
+  .user-cargo-detail {
+    font-size: 8px;
+  }
+
+  .contact-detail-item {
+    font-size: 8px;
+    gap: 2px;
+  }
+
+  .detail-label {
+    font-size: 8px;
+    min-width: 60px;
+  }
+
+  .detail-value {
+    font-size: 9px;
+  }
+
+  .checklist-detail-item {
+    padding: 4px 6px;
+  }
+
+  .check-key-detail {
+    font-size: 8px;
+  }
+
+  .check-value-detail {
+    font-size: 9px;
+  }
+
+  .observations-detail {
+    padding: 6px;
+    font-size: 9px;
+  }
+
+  .modal-actions {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .modal-btn {
+    padding: 6px 10px;
+    font-size: 9px;
+    min-height: 28px;
   }
 }
 
