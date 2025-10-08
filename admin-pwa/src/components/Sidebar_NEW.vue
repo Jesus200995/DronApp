@@ -185,6 +185,22 @@
           <div class="nav-indicator"></div>
         </li>
 
+        <!-- Usuarios (solo para admin) -->
+        <li class="nav-item" :class="{ active: $route.name === 'Usuarios' }" v-if="isAdmin">
+          <router-link to="/usuarios" class="nav-link">
+            <div class="nav-icon-container">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+                <circle cx="16" cy="4" r="2"/>
+                <path d="M20 8v2a2 2 0 0 1-2 2h-1"/>
+              </svg>
+            </div>
+            <span class="nav-text">Usuarios</span>
+          </router-link>
+          <div class="nav-indicator"></div>
+        </li>
+
         <!-- Configuración (solo para admin) -->
         <li class="nav-item" :class="{ active: $route.name === 'Configuracion' }" v-if="isAdmin">
           <router-link to="/configuracion" class="nav-link">
