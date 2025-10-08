@@ -797,8 +797,23 @@ async def obtener_usuarios():
     try:
         print("🔍 Obteniendo usuarios...")
         
-        # Siempre obtener todos los usuarios de la nueva estructura
-        query = "SELECT id, correo, nombre, puesto, supervisor, curp, contrasena, telefono FROM usuarios ORDER BY id DESC"
+        # Query con JOIN para obtener el nombre del supervisor
+        query = """
+        SELECT 
+            u.id, 
+            u.correo, 
+            u.nombre, 
+            u.puesto, 
+            u.supervisor, 
+            u.curp, 
+            u.contrasena, 
+            u.telefono,
+            u.supervisor_id,
+            s.nombre as supervisor_nombre
+        FROM usuarios u
+        LEFT JOIN usuarios s ON u.supervisor_id = s.id
+        ORDER BY u.id DESC
+        """
         
         resultados = ejecutar_consulta_segura(query, fetch_type='all')
         
@@ -810,20 +825,25 @@ async def obtener_usuarios():
         # Convertir tuplas a diccionarios manualmente
         usuarios = []
         for row in resultados:
+            # Determinar el rol basado en el puesto o supervisor_id
+            rol = 'supervisor' if row[3] and ('supervisor' in row[3].lower() or 'jefe' in row[3].lower()) else 'tecnico'
+            
             usuario = {
                 "id": row[0],
                 "correo": row[1],
                 "nombre_completo": row[2],  # Mapear nombre a nombre_completo para compatibilidad
                 "cargo": row[3],  # Mapear puesto a cargo para compatibilidad
-                "supervisor": row[4],
+                "supervisor": row[4],  # Campo legacy
                 "curp": row[5],
                 "contrasena": row[6],
                 "telefono": row[7] if len(row) > 7 else None,
-                "rol": 'user'  # Valor por defecto ya que no tenemos columna rol en nueva estructura
+                "supervisor_id": row[8] if len(row) > 8 else None,
+                "supervisor_nombre": row[9] if len(row) > 9 and row[9] else None,
+                "rol": rol
             }
             usuarios.append(usuario)
         
-        print(f"✅ Usuarios procesados correctamente con información de roles")
+        print(f"✅ Usuarios procesados correctamente con supervisor_id")
         return {"usuarios": usuarios}
         
     except HTTPException:
@@ -831,6 +851,47 @@ async def obtener_usuarios():
     except Exception as e:
         print(f"❌ Error general: {e}")
         raise HTTPException(status_code=500, detail=f"Error al obtener usuarios: {str(e)}")
+
+@app.get("/supervisores")
+async def obtener_supervisores():
+    """Endpoint para obtener solo los usuarios supervisores"""
+    try:
+        print("🔍 Obteniendo supervisores...")
+        
+        # Query para obtener usuarios que son supervisores
+        query = """
+        SELECT id, nombre, correo, puesto 
+        FROM usuarios 
+        WHERE puesto ILIKE '%supervisor%' OR puesto ILIKE '%jefe%'
+        ORDER BY nombre ASC
+        """
+        
+        resultados = ejecutar_consulta_segura(query, fetch_type='all')
+        
+        if not resultados:
+            resultados = []
+        
+        print(f"📊 Encontrados {len(resultados)} supervisores")
+        
+        # Convertir tuplas a diccionarios
+        supervisores = []
+        for row in resultados:
+            supervisor = {
+                "id": row[0],
+                "nombre": row[1],
+                "correo": row[2],
+                "puesto": row[3]
+            }
+            supervisores.append(supervisor)
+        
+        print(f"✅ Supervisores procesados correctamente")
+        return {"supervisores": supervisores}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al obtener supervisores: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener supervisores: {str(e)}")
 
 # ==================== ENDPOINTS DE ADMINISTRACIÓN ====================
 

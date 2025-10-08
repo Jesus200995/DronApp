@@ -36,16 +36,283 @@
       </header>
 
       <div class="page-content">
-        <!-- Contenido vacío por ahora - aquí se agregará la funcionalidad de usuarios -->
-        <div class="empty-content">
+        <!-- Barra de búsqueda y filtros -->
+        <div class="search-section">
+          <div class="search-container">
+            <div class="search-input-wrapper">
+              <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                v-model="busqueda"
+                type="text"
+                placeholder="Buscar por nombre, correo, CURP o teléfono..."
+                class="search-input"
+                @input="filtrarUsuarios"
+              />
+              <button v-if="busqueda" @click="limpiarBusqueda" class="clear-search-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            <div class="search-filters">
+              <select v-model="filtroRol" @change="filtrarUsuarios" class="filter-select">
+                <option value="">Todos los roles</option>
+                <option value="tecnico">Técnicos</option>
+                <option value="supervisor">Supervisores</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats-grid" v-if="estadisticasUsuarios">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ estadisticasUsuarios.total }}</div>
+              <div class="stat-label">Total Usuarios</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔧</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ estadisticasUsuarios.tecnicos }}</div>
+              <div class="stat-label">Técnicos</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👨‍💼</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ estadisticasUsuarios.supervisores }}</div>
+              <div class="stat-label">Supervisores</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔍</div>
+            <div class="stat-content">
+              <div class="stat-number">{{ usuariosFiltrados.length }}</div>
+              <div class="stat-label">Mostrados</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div v-if="cargando" class="loading-state">
+          <div class="loading-spinner"></div>
+          <p>Cargando usuarios...</p>
+        </div>
+
+        <!-- Error -->
+        <div v-else-if="error" class="error-state">
+          <div class="error-icon">⚠️</div>
+          <h3>Error al cargar usuarios</h3>
+          <p>{{ error }}</p>
+          <button @click="cargarUsuarios" class="retry-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M8 16H3v5"/>
+            </svg>
+            Reintentar
+          </button>
+        </div>
+
+        <!-- Sin usuarios -->
+        <div v-else-if="usuariosFiltrados.length === 0 && !cargando" class="empty-state">
           <div class="empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
               <circle cx="12" cy="7" r="4"/>
             </svg>
           </div>
-          <h3>Gestión de Usuarios</h3>
-          <p>Esta sección está en desarrollo. Aquí podrás administrar usuarios y sus permisos.</p>
+          <h3>{{ busqueda ? 'No se encontraron usuarios' : 'No hay usuarios registrados' }}</h3>
+          <p>{{ busqueda ? 'Intenta modificar los criterios de búsqueda.' : 'Los usuarios aparecerán aquí cuando se registren en el sistema.' }}</p>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div v-else class="users-table-section">
+          <div class="table-container">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th class="table-header">ID</th>
+                  <th class="table-header">Nombre Completo</th>
+                  <th class="table-header">Correo Electrónico</th>
+                  <th class="table-header">CURP</th>
+                  <th class="table-header">Teléfono</th>
+                  <th class="table-header">Puesto/Cargo</th>
+                  <th class="table-header">Supervisor</th>
+                  <th class="table-header">Rol</th>
+                  <th class="table-header">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="usuario in usuariosFiltrados"
+                  :key="usuario.id"
+                  class="table-row"
+                  @click="verDetallesUsuario(usuario)"
+                >
+                  <td class="table-cell id-cell">{{ usuario.id }}</td>
+                  <td class="table-cell name-cell">
+                    <div class="user-name-container">
+                      <div class="user-avatar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                          <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                      </div>
+                      <div class="user-name">{{ usuario.nombre_completo || usuario.nombre || 'Sin nombre' }}</div>
+                    </div>
+                  </td>
+                  <td class="table-cell email-cell">
+                    <div class="email-container">
+                      <svg class="email-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                      <span>{{ usuario.correo || 'Sin correo' }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell curp-cell">
+                    <code class="curp-code">{{ usuario.curp || 'Sin CURP' }}</code>
+                  </td>
+                  <td class="table-cell phone-cell">
+                    <div class="phone-container">
+                      <svg class="phone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      <span>{{ usuario.telefono || 'Sin teléfono' }}</span>
+                    </div>
+                  </td>
+                  <td class="table-cell position-cell">{{ usuario.cargo || usuario.puesto || 'Sin puesto' }}</td>
+                  <td class="table-cell supervisor-cell">
+                    <span v-if="usuario.supervisor_nombre" class="supervisor-assigned">
+                      👨‍💼 {{ usuario.supervisor_nombre }}
+                    </span>
+                    <span v-else-if="usuario.supervisor" class="supervisor-legacy">
+                      📋 {{ usuario.supervisor }}
+                    </span>
+                    <span v-else class="no-supervisor">
+                      ➖ Sin supervisor asignado
+                    </span>
+                  </td>
+                  <td class="table-cell role-cell">
+                    <span class="role-badge" :class="`role-${usuario.rol || 'tecnico'}`">
+                      {{ (usuario.rol || 'tecnico') === 'supervisor' ? 'Supervisor' : 'Técnico' }}
+                    </span>
+                  </td>
+                  <td class="table-cell actions-cell">
+                    <div class="action-buttons">
+                      <button @click.stop="verDetallesUsuario(usuario)" class="action-btn view-btn" title="Ver detalles">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                          <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                      </button>
+                      <button @click.stop="editarUsuario(usuario)" class="action-btn edit-btn" title="Editar usuario">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Modal de detalles de usuario -->
+        <div v-if="modalDetalles.mostrar" class="modal-overlay" @click="cerrarModalDetalles">
+          <div class="modal-container" @click.stop>
+            <div class="modal-header">
+              <h3>
+                <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Detalles del Usuario
+              </h3>
+              <button @click="cerrarModalDetalles" class="modal-close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="modal-body" v-if="modalDetalles.usuario">
+              <div class="user-details-grid">
+                <div class="detail-item">
+                  <label>ID de Usuario:</label>
+                  <span>{{ modalDetalles.usuario.id }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Nombre Completo:</label>
+                  <span>{{ modalDetalles.usuario.nombre_completo || modalDetalles.usuario.nombre || 'Sin nombre' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Correo Electrónico:</label>
+                  <span>{{ modalDetalles.usuario.correo || 'Sin correo' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>CURP:</label>
+                  <span><code>{{ modalDetalles.usuario.curp || 'Sin CURP' }}</code></span>
+                </div>
+                <div class="detail-item">
+                  <label>Teléfono:</label>
+                  <span>{{ modalDetalles.usuario.telefono || 'Sin teléfono' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Puesto/Cargo:</label>
+                  <span>{{ modalDetalles.usuario.cargo || modalDetalles.usuario.puesto || 'Sin puesto' }}</span>
+                </div>
+                <div class="detail-item">
+                  <label>Supervisor Asignado:</label>
+                  <span v-if="modalDetalles.usuario.supervisor_nombre" class="supervisor-assigned">
+                    👨‍💼 {{ modalDetalles.usuario.supervisor_nombre }}
+                    <small class="supervisor-id">(ID: {{ modalDetalles.usuario.supervisor_id }})</small>
+                  </span>
+                  <span v-else-if="modalDetalles.usuario.supervisor" class="supervisor-legacy">
+                    📋 {{ modalDetalles.usuario.supervisor }} <em>(Campo legacy)</em>
+                  </span>
+                  <span v-else class="no-supervisor">
+                    ➖ Sin supervisor asignado
+                  </span>
+                </div>
+                <div class="detail-item">
+                  <label>Rol:</label>
+                  <span class="role-badge" :class="`role-${modalDetalles.usuario.rol || 'tecnico'}`">
+                    {{ (modalDetalles.usuario.rol || 'tecnico') === 'supervisor' ? 'Supervisor' : 'Técnico' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="modal-actions">
+              <button @click="cerrarModalDetalles" class="modal-btn close-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Cerrar
+              </button>
+              <button @click="editarUsuario(modalDetalles.usuario)" class="modal-btn edit-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Editar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </main>
@@ -53,7 +320,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar_NEW.vue'
 
@@ -61,21 +328,137 @@ const router = useRouter()
 
 // Estados reactivos
 const cargando = ref(false)
+const error = ref(null)
+const usuarios = ref([])
+const busqueda = ref('')
+const filtroRol = ref('')
+
+// Modal de detalles
+const modalDetalles = ref({
+  mostrar: false,
+  usuario: null
+})
+
+// Computed para estadísticas
+const estadisticasUsuarios = computed(() => {
+  if (!usuarios.value.length) return null
+  
+  const total = usuarios.value.length
+  const tecnicos = usuarios.value.filter(u => (u.rol || 'tecnico') === 'tecnico').length
+  const supervisores = usuarios.value.filter(u => (u.rol || 'tecnico') === 'supervisor').length
+  
+  return {
+    total,
+    tecnicos,
+    supervisores
+  }
+})
+
+// Computed para usuarios filtrados
+const usuariosFiltrados = computed(() => {
+  let resultado = usuarios.value
+  
+  // Filtro por texto de búsqueda
+  if (busqueda.value.trim()) {
+    const termino = busqueda.value.toLowerCase().trim()
+    resultado = resultado.filter(usuario => {
+      const nombre = (usuario.nombre_completo || usuario.nombre || '').toLowerCase()
+      const correo = (usuario.correo || '').toLowerCase()
+      const curp = (usuario.curp || '').toLowerCase()
+      const telefono = (usuario.telefono || '').toLowerCase()
+      const cargo = (usuario.cargo || usuario.puesto || '').toLowerCase()
+      
+      return nombre.includes(termino) ||
+             correo.includes(termino) ||
+             curp.includes(termino) ||
+             telefono.includes(termino) ||
+             cargo.includes(termino)
+    })
+  }
+  
+  // Filtro por rol
+  if (filtroRol.value) {
+    resultado = resultado.filter(usuario => (usuario.rol || 'tecnico') === filtroRol.value)
+  }
+  
+  return resultado
+})
 
 // Métodos
 const cargarUsuarios = async () => {
   cargando.value = true
+  error.value = null
   
   try {
-    console.log('🔄 Cargando usuarios...')
-    // Aquí se implementará la lógica para cargar usuarios
-    await new Promise(resolve => setTimeout(resolve, 1000)) // Simulación
-    console.log('✅ Usuarios cargados')
+    console.log('🔄 Cargando usuarios desde API...')
+    
+    const response = await fetch('http://localhost:8000/usuarios', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Error HTTP: ${response.status}`)
+    }
+    
+    const data = await response.json()
+    console.log('📊 Respuesta del servidor:', data)
+    
+    if (data.usuarios && Array.isArray(data.usuarios)) {
+      usuarios.value = data.usuarios.map(usuario => ({
+        ...usuario,
+        // Normalizar campos para compatibilidad
+        nombre_completo: usuario.nombre_completo || usuario.nombre,
+        cargo: usuario.cargo || usuario.puesto,
+        rol: usuario.rol || 'tecnico'
+      }))
+      console.log('✅ Usuarios procesados:', usuarios.value.length)
+    } else {
+      console.warn('⚠️ Formato de respuesta inesperado:', data)
+      usuarios.value = []
+    }
+    
   } catch (err) {
     console.error('❌ Error al cargar usuarios:', err)
+    error.value = `Error al cargar usuarios: ${err.message}`
+    usuarios.value = []
   } finally {
     cargando.value = false
   }
+}
+
+const filtrarUsuarios = () => {
+  // La lógica de filtrado está en el computed usuariosFiltrados
+  console.log('🔍 Filtrando usuarios...', {
+    busqueda: busqueda.value,
+    filtroRol: filtroRol.value,
+    resultados: usuariosFiltrados.value.length
+  })
+}
+
+const limpiarBusqueda = () => {
+  busqueda.value = ''
+  filtroRol.value = ''
+}
+
+const verDetallesUsuario = (usuario) => {
+  console.log('👁️ Abriendo detalles de usuario:', usuario.id)
+  modalDetalles.value.usuario = { ...usuario }
+  modalDetalles.value.mostrar = true
+}
+
+const cerrarModalDetalles = () => {
+  modalDetalles.value.mostrar = false
+  modalDetalles.value.usuario = null
+}
+
+const editarUsuario = (usuario) => {
+  console.log('✏️ Editando usuario:', usuario.id)
+  // Aquí se implementará la funcionalidad de edición
+  cerrarModalDetalles()
+  alert(`Funcionalidad de edición para ${usuario.nombre_completo || usuario.nombre} en desarrollo`)
 }
 
 // Lifecycle
@@ -387,6 +770,40 @@ const logout = () => {
   .empty-icon svg {
     width: 30px;
     height: 30px;
+  }
+}
+
+/* Estilos para información de supervisor */
+.supervisor-assigned {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.supervisor-legacy {
+  color: #f59e0b;
+  font-style: italic;
+}
+
+.no-supervisor {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.supervisor-id {
+  display: block;
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.supervisor-cell {
+  min-width: 180px;
+}
+
+/* Responsivo para columna supervisor */
+@media (max-width: 768px) {
+  .supervisor-cell {
+    min-width: 120px;
   }
 }
 </style>
