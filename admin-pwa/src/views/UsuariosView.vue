@@ -273,6 +273,14 @@
                           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                       </button>
+                      <button @click.stop="confirmarEliminarUsuario(usuario)" class="action-btn delete-btn" title="Eliminar usuario">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3,6 5,6 21,6"/>
+                          <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                          <line x1="10" y1="11" x2="10" y2="17"/>
+                          <line x1="14" y1="11" x2="14" y2="17"/>
+                        </svg>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -685,6 +693,84 @@
             </div>
           </div>
         </div>
+
+        <!-- Modal de confirmación de eliminación -->
+        <div v-if="modalEliminar.mostrar" class="modal-overlay" @click="cerrarModalEliminar">
+          <div class="modal-container delete-modal" @click.stop>
+            <div class="modal-header delete-header">
+              <h3>
+                <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18"/>
+                  <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
+                  <path d="m10 11 0 6"/>
+                  <path d="m14 11 0 6"/>
+                </svg>
+                Eliminar Usuario
+              </h3>
+              <button @click="cerrarModalEliminar" class="modal-close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <div class="delete-warning">
+                <div class="warning-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <div class="warning-content">
+                  <h4>¿Estás seguro de eliminar este usuario?</h4>
+                  <p v-if="modalEliminar.usuario">
+                    Se eliminará permanentemente el usuario <strong>{{ modalEliminar.usuario.nombre_completo || modalEliminar.usuario.nombre }}</strong> 
+                    con correo <strong>{{ modalEliminar.usuario.correo }}</strong>.
+                  </p>
+                  <p class="warning-text">
+                    ⚠️ Esta acción no se puede deshacer. Se eliminarán todos los datos asociados al usuario.
+                  </p>
+                </div>
+              </div>
+
+              <div v-if="modalEliminar.error" class="error-message">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="15" y1="9" x2="9" y2="15"/>
+                  <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                {{ modalEliminar.error }}
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button @click="cerrarModalEliminar" class="modal-btn cancel-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Cancelar
+              </button>
+              <button 
+                @click="eliminarUsuario" 
+                :disabled="modalEliminar.eliminando"
+                class="modal-btn delete-confirm-btn"
+              >
+                <svg v-if="modalEliminar.eliminando" :class="{ 'spinning': modalEliminar.eliminando }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 6h18"/>
+                  <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/>
+                </svg>
+                {{ modalEliminar.eliminando ? 'Eliminando...' : 'Eliminar Usuario' }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -731,6 +817,14 @@ const modalAgregar = ref({
     rol: '',  // Sin valor por defecto - debe seleccionar explícitamente
     supervisor_id: ''
   }
+})
+
+// Modal de eliminar usuario
+const modalEliminar = ref({
+  mostrar: false,
+  eliminando: false,
+  error: null,
+  usuario: null
 })
 
 // Computed para estadísticas
@@ -1043,6 +1137,63 @@ const crearUsuario = async () => {
     modalAgregar.value.error = err.message
   } finally {
     modalAgregar.value.guardando = false
+  }
+}
+
+// Métodos para eliminar usuario
+const confirmarEliminarUsuario = (usuario) => {
+  console.log('🗑️ Confirmando eliminación de usuario:', usuario.id)
+  modalEliminar.value.usuario = { ...usuario }
+  modalEliminar.value.mostrar = true
+  modalEliminar.value.error = null
+}
+
+const cerrarModalEliminar = () => {
+  modalEliminar.value.mostrar = false
+  modalEliminar.value.usuario = null
+  modalEliminar.value.error = null
+  modalEliminar.value.eliminando = false
+}
+
+const eliminarUsuario = async () => {
+  modalEliminar.value.eliminando = true
+  modalEliminar.value.error = null
+
+  try {
+    const usuario = modalEliminar.value.usuario
+    console.log('🗑️ Eliminando usuario:', usuario.id)
+
+    const apiUrl = `${API_CONFIG.baseURL}${API_CONFIG.endpoints.usuarios}/${usuario.id}`
+    const response = await fetch(apiUrl, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+
+    console.log('🌐 Estado de respuesta:', response.status, response.statusText)
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }))
+      throw new Error(errorData.detail || errorData.message || `Error HTTP ${response.status}`)
+    }
+
+    const result = await response.json()
+    console.log('✅ Usuario eliminado exitosamente:', result)
+
+    // Mostrar mensaje de éxito
+    alert('✅ Usuario eliminado correctamente')
+    
+    // Cerrar modal y recargar usuarios
+    cerrarModalEliminar()
+    await cargarUsuarios()
+    
+  } catch (err) {
+    console.error('❌ Error al eliminar usuario:', err)
+    modalEliminar.value.error = err.message
+  } finally {
+    modalEliminar.value.eliminando = false
   }
 }
 
@@ -1578,15 +1729,15 @@ const logout = () => {
 
 .table-header {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 16px 12px;
+  padding: 12px 8px;
   text-align: left;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 11px;
   color: #475569;
   border-bottom: 2px solid #e2e8f0;
   white-space: nowrap;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .table-row {
@@ -1601,8 +1752,8 @@ const logout = () => {
 }
 
 .table-cell {
-  padding: 16px 12px;
-  font-size: 14px;
+  padding: 12px 8px;
+  font-size: 12px;
   vertical-align: middle;
   border-bottom: 1px solid #f1f5f9;
 }
@@ -1626,8 +1777,8 @@ const logout = () => {
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 50%;
   display: flex;
@@ -1638,8 +1789,8 @@ const logout = () => {
 }
 
 .user-avatar svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   color: white;
 }
 
@@ -1705,10 +1856,10 @@ const logout = () => {
 }
 
 .action-btn {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1725,14 +1876,18 @@ const logout = () => {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
 }
 
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
 .action-btn:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .action-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: white;
 }
 
@@ -2266,6 +2421,96 @@ const logout = () => {
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
+/* === MODAL DE ELIMINACIÓN === */
+.delete-modal {
+  max-width: 500px;
+}
+
+.delete-header {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.delete-warning {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 20px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.warning-icon {
+  width: 48px;
+  height: 48px;
+  background: #ef4444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.warning-icon svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-content h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.warning-content p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.warning-text {
+  font-size: 13px !important;
+  color: #ef4444 !important;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cancel-btn {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.cancel-btn:hover {
+  background: #d1d5db;
+}
+
+.delete-confirm-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.delete-confirm-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.delete-confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 @media (max-width: 480px) {
   .page-content {
     padding: 12px;
@@ -2292,6 +2537,19 @@ const logout = () => {
 
   .country-select {
     flex: none;
+  }
+
+  .delete-modal {
+    max-width: 95vw;
+  }
+
+  .delete-warning {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .warning-icon {
+    align-self: center;
   }
 }
 </style>

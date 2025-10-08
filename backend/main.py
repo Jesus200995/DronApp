@@ -915,6 +915,61 @@ async def obtener_supervisores():
         print(f"❌ Error al obtener supervisores: {e}")
         raise HTTPException(status_code=500, detail=f"Error al obtener supervisores: {str(e)}")
 
+@app.delete("/usuarios/{usuario_id}")
+async def eliminar_usuario(usuario_id: int):
+    """Eliminar un usuario por ID"""
+    try:
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+            
+        print(f"🗑️ Eliminando usuario ID: {usuario_id}")
+        
+        # Verificar que el usuario existe
+        cursor.execute("SELECT id, nombre, correo FROM usuarios WHERE id = %s", (usuario_id,))
+        usuario = cursor.fetchone()
+        
+        if not usuario:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        print(f"👤 Usuario a eliminar: {usuario[1]} ({usuario[2]})")
+        
+        # Verificar si hay usuarios que dependen de este supervisor
+        cursor.execute("SELECT COUNT(*) FROM usuarios WHERE supervisor_id = %s", (usuario_id,))
+        dependientes = cursor.fetchone()[0]
+        
+        if dependientes > 0:
+            print(f"⚠️ El usuario tiene {dependientes} técnicos asignados")
+            raise HTTPException(
+                status_code=400, 
+                detail=f"No se puede eliminar el usuario porque tiene {dependientes} técnicos asignados. Primero reasigne o elimine los técnicos dependientes."
+            )
+        
+        # Eliminar el usuario
+        cursor.execute("DELETE FROM usuarios WHERE id = %s", (usuario_id,))
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        conn.commit()
+        
+        print(f"✅ Usuario eliminado exitosamente: {usuario[1]}")
+        
+        return {
+            "mensaje": f"Usuario '{usuario[1]}' eliminado exitosamente",
+            "usuario_eliminado": {
+                "id": usuario[0],
+                "nombre": usuario[1],
+                "correo": usuario[2]
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error al eliminar usuario: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar usuario: {str(e)}")
+
 # ==================== ENDPOINTS DE ADMINISTRACIÓN ====================
 
 @app.post("/admin/login")
