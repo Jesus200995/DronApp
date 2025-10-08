@@ -773,6 +773,30 @@
         </div>
       </div>
     </main>
+
+    <!-- Toast de Éxito -->
+    <Transition name="toast-slide">
+      <div v-if="toastExito.mostrar" class="toast-success">
+        <div class="toast-content">
+          <div class="toast-icon-container">
+            <div class="toast-icon">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 12l2 2 4-4m6-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+            </div>
+          </div>
+          <div class="toast-text">
+            <span class="toast-message">{{ toastExito.mensaje }}</span>
+          </div>
+          <button @click="toastExito.mostrar = false" class="toast-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -825,6 +849,12 @@ const modalEliminar = ref({
   eliminando: false,
   error: null,
   usuario: null
+})
+
+// Toast de éxito
+const toastExito = ref({
+  mostrar: false,
+  mensaje: ''
 })
 
 // Computed para estadísticas
@@ -1155,6 +1185,16 @@ const cerrarModalEliminar = () => {
   modalEliminar.value.eliminando = false
 }
 
+const mostrarToastExito = (mensaje) => {
+  toastExito.value.mensaje = mensaje
+  toastExito.value.mostrar = true
+  
+  // Auto ocultar después de 4 segundos
+  setTimeout(() => {
+    toastExito.value.mostrar = false
+  }, 4000)
+}
+
 const eliminarUsuario = async () => {
   modalEliminar.value.eliminando = true
   modalEliminar.value.error = null
@@ -1182,11 +1222,13 @@ const eliminarUsuario = async () => {
     const result = await response.json()
     console.log('✅ Usuario eliminado exitosamente:', result)
 
-    // Mostrar mensaje de éxito
-    alert('✅ Usuario eliminado correctamente')
-    
-    // Cerrar modal y recargar usuarios
+    // Cerrar modal primero
     cerrarModalEliminar()
+    
+    // Mostrar toast de éxito
+    mostrarToastExito('Usuario eliminado correctamente')
+    
+    // Recargar usuarios
     await cargarUsuarios()
     
   } catch (err) {
@@ -2550,6 +2592,207 @@ const logout = () => {
 
   .warning-icon {
     align-self: center;
+  }
+}
+
+/* === TOAST SUCCESS === */
+.toast-success {
+  position: fixed;
+  top: 90px; /* Después del header */
+  right: 24px;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+.toast-content {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-left: 4px solid #10b981;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 320px;
+  max-width: 400px;
+  box-shadow: 
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(16, 185, 129, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toast-content:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(16, 185, 129, 0.1);
+}
+
+.toast-icon-container {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.toast-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 8px 16px rgba(16, 185, 129, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.toast-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+.toast-icon svg {
+  width: 20px;
+  height: 20px;
+  color: white;
+  z-index: 1;
+  position: relative;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.toast-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-message {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  line-height: 1.4;
+  margin: 0;
+  word-wrap: break-word;
+}
+
+.toast-close {
+  width: 32px;
+  height: 32px;
+  background: rgba(107, 114, 128, 0.1);
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toast-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  transform: scale(1.1);
+}
+
+.toast-close svg {
+  width: 14px;
+  height: 14px;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.toast-close:hover svg {
+  color: #ef4444;
+}
+
+/* Animaciones Vue Transition */
+.toast-slide-enter-active {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.toast-slide-enter-from {
+  transform: translateX(100%) scale(0.8);
+  opacity: 0;
+}
+
+.toast-slide-leave-to {
+  transform: translateX(100%) scale(0.8);
+  opacity: 0;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Responsive para toast */
+@media (max-width: 768px) {
+  .toast-success {
+    top: 80px;
+    right: 16px;
+    left: 16px;
+  }
+  
+  .toast-content {
+    min-width: auto;
+    padding: 14px 16px;
+    border-radius: 12px;
+  }
+  
+  .toast-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  
+  .toast-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .toast-message {
+    font-size: 14px;
+  }
+  
+  .toast-close {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-success {
+    top: 75px;
+    right: 12px;
+    left: 12px;
+  }
+  
+  .toast-content {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+  
+  .toast-message {
+    font-size: 13px;
   }
 }
 </style>
