@@ -152,131 +152,200 @@
           <p class="mt-1 text-xs text-gray-500">Todas las solicitudes han sido procesadas.</p>
         </div>
 
-        <!-- Solicitudes List - Mobile First Design con Scroll -->
-        <div v-else class="divide-y divide-gray-100 overflow-y-auto solicitudes-scroll-container flex-1" ref="solicitudesContainer">
-          <div v-for="solicitud in solicitudes" :key="solicitud.id" class="p-2 sm:p-4">
-            <!-- Tarjeta de solicitud responsiva -->
-            <div class="bg-gray-50 rounded-lg p-3 sm:p-4 mb-2 sm:mb-3 border border-gray-200">
-              <!-- Header compacto -->
-              <div class="flex items-start justify-between mb-3">
-                <div class="flex items-center flex-1 min-w-0">
-                  <div class="w-6 h-6 rounded-full flex items-center justify-center mr-2 flex-shrink-0" 
+        <!-- Solicitudes List - Vista de Mensajes Compactos -->
+        <div v-else class="space-y-3 overflow-y-auto solicitudes-scroll-container flex-1 p-3" ref="solicitudesContainer">
+          <div v-for="solicitud in solicitudes" :key="solicitud.id" 
+               class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group"
+               @click="abrirModalSolicitud(solicitud)">
+            
+            <!-- Mensaje compacto tipo chat -->
+            <div class="p-4">
+              <div class="flex items-start justify-between">
+                <!-- Contenido principal del mensaje -->
+                <div class="flex items-start space-x-3 flex-1">
+                  <!-- Avatar/Icono -->
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" 
                        :class="solicitud.tipo === 'entrada' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="solicitud.tipo === 'entrada' ? 'M12 6v6m0 0v6m0-6h6m-6 0H6' : 'M18 12H6'" />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            :d="solicitud.tipo === 'entrada' ? 'M7 16l-4-4m0 0l4-4m-4 4h18' : 'M17 8l4 4m0 0l-4 4m4-4H3'" />
                     </svg>
                   </div>
-                  <div class="min-w-0">
-                    <h3 class="text-sm font-semibold text-gray-900 truncate">
-                      {{ solicitud.tipo.toUpperCase() }} DE DRON
-                    </h3>
-                    <p class="text-xs text-gray-600 truncate">{{ solicitud.tecnico?.nombre || 'Técnico' }}</p>
-                  </div>
-                </div>
-                <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800 ml-2 flex-shrink-0">
-                  Pendiente
-                </span>
-              </div>
-
-              <!-- Fecha y hora -->
-              <div class="flex items-center text-xs text-gray-500 mb-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {{ formatearFecha(solicitud.fecha_hora) }}
-              </div>
-
-              <!-- Contenido Mobile First -->
-              <div class="space-y-4">
-                <!-- Foto (siempre visible en móvil) -->
-                <div>
-                  <h4 class="text-xs font-medium text-gray-700 mb-1 sm:mb-2">Foto del Equipo</h4>
-                  <div class="relative">
-                    <img 
-                      v-if="solicitud.foto_url"
-                      :src="`${apiBaseUrl}${solicitud.foto_url}`" 
-                      :alt="'Foto del dron - ' + solicitud.tipo"
-                      class="w-full h-24 sm:h-32 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
-                      @click="abrirImagenModal(solicitud)"
-                      @error="manejarErrorImagen"
-                    />
-                    <div v-else class="w-full h-24 sm:h-32 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Checklist colapsable en móvil -->
-                <div>
-                  <details class="group">
-                    <summary class="flex items-center justify-between cursor-pointer text-xs font-medium text-gray-700 mb-2 list-none">
-                      <span>Checklist ({{ solicitud.checklist ? Object.keys(solicitud.checklist).length : 0 }} items)</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div class="bg-white rounded-lg p-2 max-h-32 overflow-y-auto border border-gray-200">
-                      <div v-if="solicitud.checklist && Object.keys(solicitud.checklist).length > 0" class="space-y-1">
-                        <div v-for="(valor, campo) in solicitud.checklist" :key="campo" class="flex items-center">
-                          <div class="w-3 h-3 rounded-sm mr-2 flex items-center justify-center flex-shrink-0" 
-                               :class="valor ? 'bg-green-500' : 'bg-gray-300'">
-                            <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-2 w-2 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7" />
-                            </svg>
-                          </div>
-                          <span class="text-xs" :class="valor ? 'text-gray-700' : 'text-gray-500'">
-                            {{ formatearCampoChecklist(campo) }}
-                          </span>
-                        </div>
-                      </div>
-                      <p v-else class="text-xs text-gray-500">Sin checklist disponible</p>
-                    </div>
-                  </details>
-                </div>
-
-                <!-- Observaciones colapsables -->
-                <div v-if="solicitud.observaciones">
-                  <details class="group">
-                    <summary class="flex items-center justify-between cursor-pointer text-xs font-medium text-gray-700 mb-2 list-none">
-                      <span>Observaciones</span>
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div class="bg-white rounded-lg p-2 border border-gray-200">
-                      <p class="text-xs text-gray-700">{{ solicitud.observaciones }}</p>
-                    </div>
-                  </details>
-                </div>
-
-                <!-- Botones de acción móvil -->
-                <div class="grid grid-cols-2 gap-2 pt-2">
-                  <button 
-                    @click="aprobarSolicitud(solicitud.id)"
-                    :disabled="procesando === solicitud.id"
-                    class="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 text-xs font-medium"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {{ procesando === solicitud.id ? 'Procesando...' : 'Aprobar' }}
-                  </button>
                   
-                  <button 
-                    @click="abrirModalRechazo(solicitud)"
-                    :disabled="procesando === solicitud.id"
-                    class="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-50 text-xs font-medium"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  <!-- Información del mensaje -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center space-x-2 mb-1">
+                      <h4 class="text-sm font-semibold text-gray-900 truncate">
+                        {{ solicitud.tecnico?.nombre || 'Técnico' }}
+                      </h4>
+                      <span class="text-xs text-gray-500">•</span>
+                      <span class="text-xs text-gray-500">
+                        {{ formatearTiempoRelativo(solicitud.fecha_hora) }}
+                      </span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-700 mb-2">
+                      Solicitud de <span class="font-medium">{{ solicitud.tipo }}</span> de dron
+                      <span v-if="solicitud.observaciones" class="text-gray-500">- {{ solicitud.observaciones.substring(0, 50) }}{{ solicitud.observaciones.length > 50 ? '...' : '' }}</span>
+                    </p>
+                    
+                    <!-- Indicadores rápidos -->
+                    <div class="flex items-center space-x-4 text-xs text-gray-500">
+                      <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {{ contarChecklistCompletos(solicitud.checklist) }}/{{ Object.keys(solicitud.checklist || {}).length }} verificaciones
+                      </span>
+                      <span v-if="solicitud.foto_url" class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        Con foto
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Botón de abrir y estado -->
+                <div class="flex flex-col items-end space-y-2 ml-3">
+                  <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                    Pendiente
+                  </span>
+                  
+                  <button class="flex items-center space-x-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors text-xs font-medium group-hover:bg-blue-100">
+                    <span>Abrir</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                     </svg>
-                    Rechazar
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Detalles de Solicitud -->
+    <div v-if="mostrarModalDetalles" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="cerrarModalDetalles">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
+        <!-- Header del modal -->
+        <div class="sticky top-0 bg-white rounded-t-2xl border-b border-gray-200 px-6 py-4 z-10">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center" 
+                   :class="solicitudSeleccionada?.tipo === 'entrada' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        :d="solicitudSeleccionada?.tipo === 'entrada' ? 'M7 16l-4-4m0 0l4-4m-4 4h18' : 'M17 8l4 4m0 0l-4 4m4-4H3'" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-gray-900">
+                  {{ solicitudSeleccionada?.tipo?.toUpperCase() }} DE DRON
+                </h3>
+                <p class="text-sm text-gray-500">{{ solicitudSeleccionada?.tecnico?.nombre || 'Técnico' }}</p>
+              </div>
+            </div>
+            <button @click="cerrarModalDetalles" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Contenido del modal -->
+        <div class="p-6 space-y-6">
+          <!-- Información básica -->
+          <div class="bg-gray-50 rounded-xl p-4">
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Información General</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <span class="text-xs text-gray-500 block">Fecha y Hora</span>
+                <span class="text-sm font-medium text-gray-900">{{ formatearFecha(solicitudSeleccionada?.fecha_hora) }}</span>
+              </div>
+              <div>
+                <span class="text-xs text-gray-500 block">Estado</span>
+                <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                  Pendiente
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Foto del equipo -->
+          <div v-if="solicitudSeleccionada?.foto_url">
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Foto del Equipo</h4>
+            <div class="relative">
+              <img 
+                :src="`${apiBaseUrl}${solicitudSeleccionada.foto_url}`" 
+                :alt="'Foto del dron - ' + solicitudSeleccionada.tipo"
+                class="w-full h-64 object-cover rounded-xl cursor-pointer hover:opacity-75 transition-opacity"
+                @click="abrirImagenModal(solicitudSeleccionada)"
+                @error="manejarErrorImagen"
+              />
+            </div>
+          </div>
+
+          <!-- Checklist -->
+          <div v-if="solicitudSeleccionada?.checklist">
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Lista de Verificación</h4>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <div class="grid gap-3">
+                <div v-for="(valor, campo) in solicitudSeleccionada.checklist" :key="campo" 
+                     class="flex items-center justify-between p-3 bg-white rounded-lg">
+                  <span class="text-sm text-gray-700">{{ formatearCampoChecklist(campo) }}</span>
+                  <div class="flex items-center space-x-2">
+                    <div class="w-5 h-5 rounded-full flex items-center justify-center" 
+                         :class="valor ? 'bg-green-500' : 'bg-gray-300'">
+                      <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span class="text-xs font-medium" :class="valor ? 'text-green-600' : 'text-gray-500'">
+                      {{ valor ? 'Verificado' : 'Pendiente' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observaciones -->
+          <div v-if="solicitudSeleccionada?.observaciones">
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Observaciones</h4>
+            <div class="bg-gray-50 rounded-xl p-4">
+              <p class="text-sm text-gray-700">{{ solicitudSeleccionada.observaciones }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="sticky bottom-0 bg-white rounded-b-2xl border-t border-gray-200 px-6 py-4">
+          <div class="flex space-x-3">
+            <button 
+              @click="aprobarSolicitudDesdeModal"
+              :disabled="procesando === solicitudSeleccionada?.id"
+              class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              {{ procesando === solicitudSeleccionada?.id ? 'Procesando...' : 'Aprobar Solicitud' }}
+            </button>
+            
+            <button 
+              @click="abrirModalRechazoDesdeDetalles"
+              :disabled="procesando === solicitudSeleccionada?.id"
+              class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Rechazar Solicitud
+            </button>
           </div>
         </div>
       </div>
@@ -402,9 +471,12 @@ const estadisticas = ref({
   rechazadas: 0
 })
 
+// Modal de detalles
+const mostrarModalDetalles = ref(false)
+const solicitudSeleccionada = ref(null)
+
 // Modal de rechazo
 const mostrarModalRechazo = ref(false)
-const solicitudSeleccionada = ref(null)
 const motivoRechazo = ref('')
 
 // Modal de imagen
@@ -551,6 +623,32 @@ async function aprobarSolicitud(solicitudId) {
   }
 }
 
+// Función para abrir modal de detalles
+function abrirModalSolicitud(solicitud) {
+  solicitudSeleccionada.value = solicitud
+  mostrarModalDetalles.value = true
+}
+
+// Función para cerrar modal de detalles
+function cerrarModalDetalles() {
+  mostrarModalDetalles.value = false
+  solicitudSeleccionada.value = null
+}
+
+// Función para aprobar desde el modal de detalles
+async function aprobarSolicitudDesdeModal() {
+  if (solicitudSeleccionada.value) {
+    await aprobarSolicitud(solicitudSeleccionada.value.id)
+    cerrarModalDetalles()
+  }
+}
+
+// Función para abrir modal de rechazo desde detalles
+function abrirModalRechazoDesdeDetalles() {
+  motivoRechazo.value = ''
+  mostrarModalRechazo.value = true
+}
+
 // Función para abrir modal de rechazo
 function abrirModalRechazo(solicitud) {
   solicitudSeleccionada.value = solicitud
@@ -673,6 +771,39 @@ function formatearCampoChecklist(campo) {
   }
   
   return traducciones[campo] || campo.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+}
+
+// Función para formatear tiempo relativo
+function formatearTiempoRelativo(fechaString) {
+  if (!fechaString) return 'Fecha no disponible'
+  
+  try {
+    const fecha = new Date(fechaString)
+    const ahora = new Date()
+    const diferencia = ahora - fecha
+    
+    const minutos = Math.floor(diferencia / (1000 * 60))
+    const horas = Math.floor(diferencia / (1000 * 60 * 60))
+    const dias = Math.floor(diferencia / (1000 * 60 * 60 * 24))
+    
+    if (minutos < 60) {
+      return `hace ${minutos} min`
+    } else if (horas < 24) {
+      return `hace ${horas} h`
+    } else if (dias < 7) {
+      return `hace ${dias} d`
+    } else {
+      return fecha.toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })
+    }
+  } catch (error) {
+    return 'Fecha inválida'
+  }
+}
+
+// Función para contar checklist completos
+function contarChecklistCompletos(checklist) {
+  if (!checklist || typeof checklist !== 'object') return 0
+  return Object.values(checklist).filter(valor => valor === true).length
 }
 
 // Función para logout
@@ -959,5 +1090,52 @@ function logout() {
 
 .animate-pulse-slow {
   animation: pulse-slow 4s ease-in-out infinite;
+}
+
+/* Estilos para el modal de detalles */
+.modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Animaciones suaves para modales */
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-content {
+  animation: modal-slide-in 0.3s ease-out;
+}
+
+/* Hover effects para las tarjetas de mensaje */
+.mensaje-solicitud:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para el scroll del modal */
+.modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 </style>
