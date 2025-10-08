@@ -77,46 +77,46 @@
           <div class="mb-3 flex-shrink-0">
             <div class="grid grid-cols-3 gap-1.5 sm:gap-3">
         <!-- Tarjeta Pendientes -->
-        <div class="bg-white rounded-full shadow-sm p-2 sm:p-3 aspect-square flex items-center justify-center">
-          <div class="flex flex-col items-center justify-center">
-            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-100 rounded-full flex items-center justify-center mb-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="bg-white rounded-full shadow-sm p-2.5 sm:p-3.5 w-24 h-24 sm:w-30 sm:h-30 flex items-center justify-center mx-auto">
+          <div class="flex flex-col items-center justify-center space-y-1">
+            <div class="w-5 h-5 sm:w-6 sm:h-6 bg-yellow-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="text-center">
-              <p class="text-sm sm:text-lg font-bold text-gray-900">{{ solicitudes.length }}</p>
-              <p class="text-xs text-gray-600">Pendientes</p>
+              <p class="text-xs sm:text-sm font-bold text-gray-900">{{ solicitudes.length }}</p>
+              <p class="text-xs sm:text-xs text-gray-600">Pendientes</p>
             </div>
           </div>
         </div>
         
         <!-- Tarjeta Aprobadas -->
-        <div class="bg-white rounded-full shadow-sm p-2 sm:p-3 aspect-square flex items-center justify-center">
-          <div class="flex flex-col items-center justify-center">
-            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 rounded-full flex items-center justify-center mb-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="bg-white rounded-full shadow-sm p-2.5 sm:p-3.5 w-24 h-24 sm:w-30 sm:h-30 flex items-center justify-center mx-auto">
+          <div class="flex flex-col items-center justify-center space-y-1">
+            <div class="w-5 h-5 sm:w-6 sm:h-6 bg-green-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="text-center">
-              <p class="text-sm sm:text-lg font-bold text-gray-900">{{ solicitudesAprobadas }}</p>
-              <p class="text-xs text-gray-600">Aprobadas</p>
+              <p class="text-xs sm:text-sm font-bold text-gray-900">{{ solicitudesAprobadas }}</p>
+              <p class="text-xs sm:text-xs text-gray-600">Aprobadas</p>
             </div>
           </div>
         </div>
         
         <!-- Tarjeta Rechazadas -->
-        <div class="bg-white rounded-full shadow-sm p-2 sm:p-3 aspect-square flex items-center justify-center">
-          <div class="flex flex-col items-center justify-center">
-            <div class="w-6 h-6 sm:w-8 sm:h-8 bg-red-100 rounded-full flex items-center justify-center mb-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 sm:h-4 sm:w-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div class="bg-white rounded-full shadow-sm p-2.5 sm:p-3.5 w-24 h-24 sm:w-30 sm:h-30 flex items-center justify-center mx-auto">
+          <div class="flex flex-col items-center justify-center space-y-1">
+            <div class="w-5 h-5 sm:w-6 sm:h-6 bg-red-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 sm:h-3 sm:w-3 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div class="text-center">
-              <p class="text-sm sm:text-lg font-bold text-gray-900">{{ solicitudesRechazadas }}</p>
-              <p class="text-xs text-gray-600">Rechazadas</p>
+              <p class="text-xs sm:text-sm font-bold text-gray-900">{{ solicitudesRechazadas }}</p>
+              <p class="text-xs sm:text-xs text-gray-600">Rechazadas</p>
             </div>
           </div>
         </div>
