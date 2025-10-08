@@ -613,9 +613,11 @@
                       id="rol"
                       v-model="modalAgregar.usuario.rol"
                       class="form-select"
+                      :class="{ 'error': !modalAgregar.usuario.rol }"
                       @change="onRolChange"
                       required
                     >
+                      <option value="" disabled>Selecciona un rol *</option>
                       <option value="tecnico">Técnico</option>
                       <option value="supervisor">Supervisor</option>
                     </select>
@@ -973,6 +975,10 @@ const crearUsuario = async () => {
         !usuario.telefono || !usuario.puesto || !usuario.contrasena || 
         !usuario.confirmarContrasena || !usuario.rol) {
       throw new Error('Todos los campos marcados con * son obligatorios')
+    }
+
+    if (usuario.rol !== 'tecnico' && usuario.rol !== 'supervisor') {
+      throw new Error('Debe seleccionar un rol válido (Técnico o Supervisor)')
     }
 
     if (usuario.contrasena !== usuario.confirmarContrasena) {
