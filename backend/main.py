@@ -898,7 +898,7 @@ async def obtener_solicitudes_pendientes():
                     SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
                            ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
                            s.ubicacion::text, s.observaciones, s.estado,
-                           u.nombre, u.correo
+                           u.nombre, u.correo, s.foto_equipo, s.checklist
                     FROM solicitudes_dron s
                     LEFT JOIN usuarios u ON s.usuario_id = u.id
                     WHERE s.estado = 'pendiente'
@@ -916,24 +916,32 @@ async def obtener_solicitudes_pendientes():
         resultado = []
         for i, sol in enumerate(solicitudes_raw):
             try:
+                # Procesar checklist (índice 12)
+                checklist_data = sol[12] if len(sol) > 12 and sol[12] else {}
+                if isinstance(checklist_data, str):
+                    try:
+                        checklist_data = json.loads(checklist_data)
+                    except:
+                        checklist_data = {}
+                
                 solicitud_procesada = {
                     "id": sol[0],
                     "usuario_id": sol[1],
-                    "tipo": sol[2],  # tipo_actividad en SQLite, tipo en PostgreSQL
+                    "tipo": sol[2],
                     "fecha_hora": sol[3].isoformat() if sol[3] else None,
-                    "latitud": float(sol[5]) if sol[5] else 19.4326,  # Valor por defecto
-                    "longitud": float(sol[4]) if sol[4] else -99.1332,  # Valor por defecto
-                    "foto_url": None,  # No hay fotos en esta estructura
-                    "checklist": {
+                    "latitud": float(sol[5]) if sol[5] else 19.4326,
+                    "longitud": float(sol[4]) if sol[4] else -99.1332,
+                    "foto_equipo": sol[11] if len(sol) > 11 and sol[11] else None,  # s.foto_equipo (índice 11)
+                    "checklist": checklist_data if checklist_data else {
                         "inspeccion_visual_drone": True,
                         "inspeccion_baterias": True,
                         "control_remoto": True
-                    },  # Checklist simulado
+                    },
                     "observaciones": sol[7] if sol[7] else "Sin observaciones",
                     "estado": sol[8],
                     "tecnico": {
-                        "nombre": sol[9] if sol[9] else "Usuario Desconocido",
-                        "correo": sol[10] if sol[10] else "sin-correo@example.com"
+                        "nombre": sol[9] if sol[9] else "Usuario Desconocido",  # u.nombre (índice 9)
+                        "correo": sol[10] if len(sol) > 10 and sol[10] else "sin-correo@example.com"  # u.correo (índice 10)
                     }
                 }
                 resultado.append(solicitud_procesada)

@@ -197,7 +197,7 @@
                         </svg>
                         {{ contarChecklistCompletos(solicitud.checklist) }}/{{ Object.keys(solicitud.checklist || {}).length }} verificaciones
                       </span>
-                      <span v-if="solicitud.foto_url" class="flex items-center">
+                      <span v-if="solicitud.foto_url || solicitud.foto_equipo" class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
@@ -278,7 +278,7 @@
             <h4 class="text-sm font-semibold text-gray-900 mb-3">Foto del Equipo</h4>
             <div class="relative">
               <img 
-                :src="`${apiBaseUrl}${solicitudSeleccionada.foto_url}`" 
+                :src="obtenerUrlCompleta(solicitudSeleccionada.foto_url)" 
                 :alt="'Foto del dron - ' + solicitudSeleccionada.tipo"
                 class="w-full h-64 object-cover rounded-xl cursor-pointer hover:opacity-75 transition-opacity"
                 @click="abrirImagenModal(solicitudSeleccionada)"
@@ -405,7 +405,7 @@
     <div v-if="mostrarModalImagen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-2 sm:p-4" @click="cerrarModalImagen" style="z-index: 999999 !important;">
       <div class="relative w-full h-full flex items-center justify-center">
         <img 
-          :src="`${apiBaseUrl}${imagenSeleccionada}`" 
+          :src="obtenerUrlCompleta(imagenSeleccionada)" 
           alt="Foto del dron ampliada"
           class="max-w-full max-h-full object-contain rounded-lg"
           @click.stop
@@ -497,7 +497,7 @@
           <h4 class="text-xs font-semibold text-gray-900 mb-2">Foto del Equipo</h4>
           <div class="relative">
             <img 
-              :src="`${apiBaseUrl}${solicitudSeleccionada.foto_url}`" 
+              :src="obtenerUrlCompleta(solicitudSeleccionada.foto_url)" 
               :alt="'Foto del dron - ' + solicitudSeleccionada.tipo"
               class="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-75 transition-opacity"
               @click="abrirImagenModal(solicitudSeleccionada)"
@@ -624,7 +624,7 @@
   <div v-if="mostrarModalImagen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-2 sm:p-4" @click="cerrarModalImagen" style="z-index: 999999 !important;">
     <div class="relative w-full h-full flex items-center justify-center">
       <img 
-        :src="`${apiBaseUrl}${imagenSeleccionada}`" 
+        :src="obtenerUrlCompleta(imagenSeleccionada)" 
         alt="Foto del dron ampliada"
         class="max-w-full max-h-full object-contain rounded-lg"
         @click.stop
@@ -762,7 +762,7 @@ async function cargarSolicitudes() {
       solicitudes.value = resultado.solicitudes.map(solicitud => ({
         ...solicitud,
         checklist: SolicitudesService.formatearChecklist(solicitud.checklist),
-        foto_url: SolicitudesService.obtenerUrlFoto(solicitud.foto_equipo)
+        foto_url: solicitud.foto_equipo || solicitud.foto_url // Usar foto_equipo o foto_url para compatibilidad
       }))
       
       console.log(`✅ ${solicitudes.value.length} solicitudes pendientes cargadas`)
@@ -924,7 +924,7 @@ async function refrescarDatos() {
 
 // Función para abrir modal de imagen
 function abrirImagenModal(solicitud) {
-  imagenSeleccionada.value = solicitud.foto_url
+  imagenSeleccionada.value = solicitud.foto_url || solicitud.foto_equipo
   mostrarModalImagen.value = true
 }
 
@@ -1018,6 +1018,24 @@ function formatearTiempoRelativo(fechaString) {
 function contarChecklistCompletos(checklist) {
   if (!checklist || typeof checklist !== 'object') return 0
   return Object.values(checklist).filter(valor => valor === true).length
+}
+
+// Función para construir URL completa de imagen
+function obtenerUrlCompleta(fotoEquipo) {
+  if (!fotoEquipo) return ''
+  
+  // Si ya es una URL completa (http/https), devolverla tal como está
+  if (fotoEquipo.startsWith('http://') || fotoEquipo.startsWith('https://')) {
+    return fotoEquipo
+  }
+  
+  // Si es una URL relativa, agregar el prefijo del API
+  if (fotoEquipo.startsWith('/')) {
+    return `${apiBaseUrl.value}${fotoEquipo}`
+  }
+  
+  // Si no tiene barra inicial, agregarla
+  return `${apiBaseUrl.value}/${fotoEquipo}`
 }
 
 // Función para logout
