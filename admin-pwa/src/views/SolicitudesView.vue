@@ -150,138 +150,155 @@
             <p>No se encontraron solicitudes con los filtros aplicados.</p>
           </div>
 
-          <!-- Lista de solicitudes -->
+          <!-- Lista de solicitudes (Vista previa cuadrada) -->
           <div v-else class="solicitudes-grid">
             <div 
               v-for="solicitud in solicitudes" 
               :key="solicitud.id"
-              class="solicitud-card"
+              class="solicitud-card-preview"
               :class="[`estado-${solicitud.estado}`, `tipo-${solicitud.tipo}`]"
             >
-              <!-- Header de la tarjeta -->
-              <div class="card-header">
-                <div class="card-header-left">
-                  <div class="tipo-badge" :class="`tipo-${solicitud.tipo}`">
-                    <span class="tipo-icon">{{ solicitud.tipo === 'entrada' ? '📥' : '📤' }}</span>
-                    <span class="tipo-text">{{ solicitud.tipo.toUpperCase() }}</span>
+              <!-- Contenido superior que puede comprimirse -->
+              <div class="preview-content-top">
+                <!-- Header moderno -->
+                <div class="preview-header">
+                  <div class="preview-id">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                    #{{ solicitud.id }}
                   </div>
-                  <div class="solicitud-id">#{{ solicitud.id }}</div>
-                </div>
-                <div class="card-header-right">
-                  <div class="estado-badge" :class="`estado-${solicitud.estado}`">
-                    {{ solicitud.estado.toUpperCase() }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Información del usuario -->
-              <div class="user-info">
-                <div class="user-avatar">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                  </svg>
-                </div>
-                <div class="user-details">
-                  <div class="user-name">{{ solicitud.usuario.nombre_completo || 'Usuario sin nombre' }}</div>
-                  <div class="user-cargo">{{ solicitud.usuario.cargo || 'Sin cargo' }}</div>
-                </div>
-              </div>
-
-              <!-- Fecha y hora -->
-              <div class="datetime-info">
-                <div class="datetime-icon">🕒</div>
-                <div class="datetime-text">
-                  {{ formatearFecha(solicitud.fecha_hora) }}
-                </div>
-              </div>
-
-              <!-- Ubicación -->
-              <div v-if="solicitud.ubicacion.latitud && solicitud.ubicacion.longitud" class="location-info">
-                <div class="location-icon">📍</div>
-                <div class="location-text">
-                  {{ solicitud.ubicacion.latitud.toFixed(6) }}, {{ solicitud.ubicacion.longitud.toFixed(6) }}
-                </div>
-              </div>
-
-              <!-- Checklist -->
-              <div v-if="solicitud.checklist && Object.keys(solicitud.checklist).length > 0" class="checklist-info">
-                <div class="checklist-header">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9,11 12,14 22,4"/>
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                  </svg>
-                  <span>Checklist</span>
-                </div>
-                <div class="checklist-items">
-                  <div 
-                    v-for="(valor, clave) in solicitud.checklist" 
-                    :key="clave"
-                    class="checklist-item"
-                    :class="{ 'check-ok': valor === true || valor === 'ok', 'check-error': valor === false || valor === 'error' }"
-                  >
-                    <span class="check-key">{{ clave.replace('_', ' ') }}</span>
-                    <span class="check-value">{{ formatearValorChecklist(valor) }}</span>
+                  <div class="estado-badge-modern" :class="`estado-${solicitud.estado}`">
+                    <div class="estado-icon">
+                      <svg v-if="solicitud.estado === 'pendiente'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12,6 12,12 16,14"/>
+                      </svg>
+                      <svg v-else-if="solicitud.estado === 'aprobado'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22,4 12,14.01 9,11.01"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                      </svg>
+                    </div>
+                    <span class="estado-text">
+                      {{ solicitud.estado === 'pendiente' ? 'PENDIENTE' : 
+                          solicitud.estado === 'aprobado' ? 'APROBADA' : 'RECHAZADA' }}
+                    </span>
                   </div>
                 </div>
+
+                <!-- Tipo de solicitud moderno -->
+                <div class="preview-type-modern">
+                  <div class="tipo-icon-container" :class="`tipo-${solicitud.tipo}`">
+                    <svg v-if="solicitud.tipo === 'entrada'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="9,11 12,14 22,4"/>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                    </svg>
+                    <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 17H7A2 2 0 0 1 5 15V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2"/>
+                      <path d="M15 9l5 5-5 5"/>
+                      <polyline points="11,14 20,14"/>
+                    </svg>
+                  </div>
+                  <div class="tipo-label">{{ solicitud.tipo === 'entrada' ? 'Entrada' : 'Salida' }}</div>
+                </div>
+
+                <!-- Información completa del usuario -->
+                <div class="preview-user-complete">
+                  <div class="user-avatar-modern">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                  </div>
+                  <div class="user-details-complete">
+                    <div class="user-name-complete">
+                      {{ solicitud.usuario?.nombre_completo || solicitud.tecnico?.nombre || 'Usuario sin nombre' }}
+                    </div>
+                    <div class="user-contact-info">
+                      <div v-if="solicitud.usuario?.correo || solicitud.tecnico?.correo" class="contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                          <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <span>{{ solicitud.usuario?.correo || solicitud.tecnico?.correo }}</span>
+                      </div>
+                      <div v-if="solicitud.usuario?.curp || solicitud.tecnico?.curp" class="contact-item">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14,2 14,8 20,8"/>
+                          <line x1="16" y1="13" x2="8" y2="13"/>
+                          <line x1="16" y1="17" x2="8" y2="17"/>
+                          <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        <span>{{ solicitud.usuario?.curp || solicitud.tecnico?.curp }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Información de fecha y metadatos -->
+                <div class="preview-metadata">
+                  <div class="metadata-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12,6 12,12 16,14"/>
+                    </svg>
+                    <span>{{ new Date(solicitud.fecha_hora).toLocaleDateString('es-ES', { 
+                      day: '2-digit', 
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }) }}</span>
+                  </div>
+                  <div v-if="solicitud.ubicacion.latitud" class="metadata-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <span>Ubicación disponible</span>
+                  </div>
+                </div>
+
+                <!-- Indicadores modernos de contenido -->
+                <div class="preview-indicators-modern">
+                  <div v-if="solicitud.foto_equipo" class="indicator-modern photo" title="Tiene fotografía">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <circle cx="9" cy="9" r="2"/>
+                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                    </svg>
+                  </div>
+                  <div v-if="solicitud.observaciones" class="indicator-modern observations" title="Tiene observaciones">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </div>
+                  <div v-if="solicitud.checklist && Object.keys(solicitud.checklist).length > 0" class="indicator-modern checklist" title="Tiene checklist">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 11l3 3 8-8"/>
+                      <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.12 0 4.07.74 5.6 1.99"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
 
-              <!-- Observaciones -->
-              <div v-if="solicitud.observaciones" class="observations">
-                <div class="observations-header">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14,2 14,8 20,8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
-                  <span>Observaciones</span>
-                </div>
-                <div class="observations-text">{{ solicitud.observaciones }}</div>
-              </div>
-
-              <!-- Foto del equipo -->
-              <div v-if="solicitud.foto_equipo" class="photo-section">
-                <div class="photo-header">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="9" cy="9" r="2"/>
-                    <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                  </svg>
-                  <span>Foto del Equipo</span>
-                </div>
-                <div class="photo-container">
-                  <img 
-                    :src="solicitud.foto_equipo" 
-                    :alt="`Foto equipo solicitud ${solicitud.id}`"
-                    class="equipment-photo"
-                    @error="$event.target.style.display='none'"
-                  />
-                </div>
-              </div>
-
-              <!-- Acciones (solo para pendientes) -->
-              <div v-if="solicitud.estado === 'pendiente'" class="card-actions">
+              <!-- Botón de acción siempre visible -->
+              <div class="preview-action-modern">
                 <button 
-                  @click="aprobarSolicitud(solicitud)"
-                  class="action-btn approve-btn"
-                  :disabled="procesando"
+                  @click="verDetalles(solicitud)"
+                  class="details-btn-modern"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20,6 9,17 4,12"/>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
                   </svg>
-                  Aprobar
-                </button>
-                <button 
-                  @click="rechazarSolicitud(solicitud)"
-                  class="action-btn reject-btn"
-                  :disabled="procesando"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                  </svg>
-                  Rechazar
+                  <span>Ver Detalles</span>
                 </button>
               </div>
             </div>
@@ -290,37 +307,175 @@
       </div>
     </main>
 
-    <!-- Modal de confirmación -->
-    <div v-if="modalConfirmacion.mostrar" class="modal-overlay" @click="cerrarModal">
-      <div class="modal-container" @click.stop>
+    <!-- Modal de detalles -->
+    <div v-if="modalDetalles.mostrar" class="modal-overlay" @click="cerrarModalDetalles">
+      <div class="modal-container modal-detalles" @click.stop>
         <div class="modal-header">
-          <h3>{{ modalConfirmacion.titulo }}</h3>
-          <button @click="cerrarModal" class="modal-close">
+          <h3>
+            <span class="modal-title-icon">📋</span>
+            Solicitud #{{ modalDetalles.solicitud?.id }}
+          </h3>
+          <button @click="cerrarModalDetalles" class="modal-close">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
           </button>
         </div>
-        <div class="modal-body">
-          <p>{{ modalConfirmacion.mensaje }}</p>
-          <div v-if="modalConfirmacion.requiereObservaciones" class="observations-input">
-            <label>Observaciones (opcional):</label>
-            <textarea 
-              v-model="modalConfirmacion.observaciones"
-              placeholder="Ingresa observaciones adicionales..."
-              rows="3"
-            ></textarea>
+        
+        <div class="modal-body" v-if="modalDetalles.solicitud">
+          <!-- Estado y tipo -->
+          <div class="detail-section">
+            <div class="detail-row">
+              <div class="detail-label">Estado:</div>
+              <div class="detail-value">
+                <div class="estado-badge" :class="`estado-${modalDetalles.solicitud.estado}`">
+                  {{ modalDetalles.solicitud.estado.toUpperCase() }}
+                </div>
+              </div>
+            </div>
+            <div class="detail-row">
+              <div class="detail-label">Tipo:</div>
+              <div class="detail-value">
+                <div class="tipo-badge" :class="`tipo-${modalDetalles.solicitud.tipo}`">
+                  <span class="tipo-icon">{{ modalDetalles.solicitud.tipo === 'entrada' ? '📥' : '📤' }}</span>
+                  <span class="tipo-text">{{ modalDetalles.solicitud.tipo.toUpperCase() }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Información del usuario -->
+          <div class="detail-section">
+            <h4 class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Información del Usuario
+            </h4>
+            <div class="user-detail-card">
+              <div class="user-avatar-detail">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              </div>
+              <div class="user-info-detail">
+                <div class="user-name-detail">{{ modalDetalles.solicitud.usuario?.nombre_completo || modalDetalles.solicitud.tecnico?.nombre || 'Usuario sin nombre' }}</div>
+                <div class="user-cargo-detail">{{ modalDetalles.solicitud.usuario?.cargo || 'Sin cargo' }}</div>
+                <div class="user-contact-detail">
+                  <div v-if="modalDetalles.solicitud.usuario?.correo || modalDetalles.solicitud.tecnico?.correo" class="contact-detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                      <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span>{{ modalDetalles.solicitud.usuario?.correo || modalDetalles.solicitud.tecnico?.correo }}</span>
+                  </div>
+                  <div v-if="modalDetalles.solicitud.usuario?.curp || modalDetalles.solicitud.tecnico?.curp" class="contact-detail-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                    <span>CURP: {{ modalDetalles.solicitud.usuario?.curp || modalDetalles.solicitud.tecnico?.curp }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fecha y ubicación -->
+          <div class="detail-section">
+            <h4 class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M12 1v6m0 6v6"/>
+                <path d="m15.14 8.86 4.24-4.24M4.86 19.14l4.24-4.24"/>
+                <path d="m8.86 8.86-4.24-4.24M19.14 19.14l-4.24-4.24"/>
+              </svg>
+              Fecha y Ubicación
+            </h4>
+            <div class="detail-row">
+              <div class="detail-label">Fecha y Hora:</div>
+              <div class="detail-value datetime-value">
+                🕒 {{ formatearFecha(modalDetalles.solicitud.fecha_hora) }}
+              </div>
+            </div>
+            <div v-if="modalDetalles.solicitud.ubicacion.latitud && modalDetalles.solicitud.ubicacion.longitud" class="detail-row">
+              <div class="detail-label">Ubicación:</div>
+              <div class="detail-value location-value">
+                📍 {{ modalDetalles.solicitud.ubicacion.latitud.toFixed(6) }}, {{ modalDetalles.solicitud.ubicacion.longitud.toFixed(6) }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Checklist -->
+          <div v-if="modalDetalles.solicitud.checklist && Object.keys(modalDetalles.solicitud.checklist).length > 0" class="detail-section">
+            <h4 class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9,11 12,14 22,4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              Checklist
+            </h4>
+            <div class="checklist-detail-grid">
+              <div 
+                v-for="(valor, clave) in modalDetalles.solicitud.checklist" 
+                :key="clave"
+                class="checklist-detail-item"
+                :class="{ 'check-ok': valor === true || valor === 'ok', 'check-error': valor === false || valor === 'error' }"
+              >
+                <span class="check-key-detail">{{ clave.replace('_', ' ') }}</span>
+                <span class="check-value-detail">{{ formatearValorChecklist(valor) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Observaciones -->
+          <div v-if="modalDetalles.solicitud.observaciones" class="detail-section">
+            <h4 class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              Observaciones
+            </h4>
+            <div class="observations-detail">{{ modalDetalles.solicitud.observaciones }}</div>
+          </div>
+
+          <!-- Foto del equipo -->
+          <div v-if="modalDetalles.solicitud.foto_equipo" class="detail-section">
+            <h4 class="section-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+              </svg>
+              Foto del Equipo
+            </h4>
+            <div class="photo-detail-container">
+              <img 
+                :src="modalDetalles.solicitud.foto_equipo" 
+                :alt="`Foto equipo solicitud ${modalDetalles.solicitud.id}`"
+                class="equipment-photo-detail"
+                @error="$event.target.style.display='none'"
+              />
+            </div>
           </div>
         </div>
+        
         <div class="modal-actions">
-          <button @click="cerrarModal" class="modal-btn cancel-btn">Cancelar</button>
-          <button 
-            @click="confirmarAccion" 
-            class="modal-btn confirm-btn"
-            :disabled="procesando"
-          >
-            {{ procesando ? 'Procesando...' : modalConfirmacion.textoConfirmar }}
+          <button @click="cerrarModalDetalles" class="modal-btn close-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cerrar
           </button>
         </div>
       </div>
@@ -350,15 +505,9 @@ const filtros = reactive({
   limit: '50'
 })
 
-// Modal de confirmación
-const modalConfirmacion = reactive({
+// Modal de detalles
+const modalDetalles = reactive({
   mostrar: false,
-  titulo: '',
-  mensaje: '',
-  textoConfirmar: '',
-  requiereObservaciones: false,
-  observaciones: '',
-  accion: null,
   solicitud: null
 })
 
@@ -417,81 +566,15 @@ const limpiarFiltros = async () => {
   await cargarSolicitudes()
 }
 
-const aprobarSolicitud = (solicitud) => {
-  modalConfirmacion.mostrar = true
-  modalConfirmacion.titulo = 'Aprobar Solicitud'
-  modalConfirmacion.mensaje = `¿Estás seguro de que quieres aprobar la solicitud #${solicitud.id} de ${solicitud.usuario.nombre_completo}?`
-  modalConfirmacion.textoConfirmar = 'Aprobar'
-  modalConfirmacion.requiereObservaciones = true
-  modalConfirmacion.observaciones = ''
-  modalConfirmacion.accion = 'aprobar'
-  modalConfirmacion.solicitud = solicitud
+const verDetalles = (solicitud) => {
+  console.log('👁️ Abriendo detalles de solicitud #', solicitud.id)
+  modalDetalles.solicitud = { ...solicitud }
+  modalDetalles.mostrar = true
 }
 
-const rechazarSolicitud = (solicitud) => {
-  modalConfirmacion.mostrar = true
-  modalConfirmacion.titulo = 'Rechazar Solicitud'
-  modalConfirmacion.mensaje = `¿Estás seguro de que quieres rechazar la solicitud #${solicitud.id} de ${solicitud.usuario.nombre_completo}?`
-  modalConfirmacion.textoConfirmar = 'Rechazar'
-  modalConfirmacion.requiereObservaciones = true
-  modalConfirmacion.observaciones = ''
-  modalConfirmacion.accion = 'rechazar'
-  modalConfirmacion.solicitud = solicitud
-}
-
-const confirmarAccion = async () => {
-  if (!modalConfirmacion.solicitud || !modalConfirmacion.accion) return
-  
-  procesando.value = true
-  
-  try {
-    const nuevoEstado = modalConfirmacion.accion === 'aprobar' ? 'aprobado' : 'rechazado'
-    const observaciones = modalConfirmacion.observaciones.trim()
-    
-    console.log(`🔄 ${modalConfirmacion.accion} solicitud #${modalConfirmacion.solicitud.id}`)
-    
-    const result = await solicitudesService.actualizarEstado(
-      modalConfirmacion.solicitud.id,
-      nuevoEstado,
-      observaciones
-    )
-    
-    if (result.success) {
-      console.log(`✅ Solicitud ${modalConfirmacion.accion}ada exitosamente`)
-      
-      // Actualizar la solicitud en la lista local
-      const index = solicitudes.value.findIndex(s => s.id === modalConfirmacion.solicitud.id)
-      if (index !== -1) {
-        solicitudes.value[index].estado = nuevoEstado
-        if (observaciones) {
-          solicitudes.value[index].observaciones = observaciones
-        }
-      }
-      
-      // Recargar estadísticas
-      await cargarEstadisticas()
-      
-      cerrarModal()
-    } else {
-      error.value = `Error al ${modalConfirmacion.accion} solicitud: ${result.error}`
-    }
-  } catch (err) {
-    error.value = `Error inesperado al ${modalConfirmacion.accion} solicitud`
-    console.error('❌ Error:', err)
-  } finally {
-    procesando.value = false
-  }
-}
-
-const cerrarModal = () => {
-  modalConfirmacion.mostrar = false
-  modalConfirmacion.titulo = ''
-  modalConfirmacion.mensaje = ''
-  modalConfirmacion.textoConfirmar = ''
-  modalConfirmacion.requiereObservaciones = false
-  modalConfirmacion.observaciones = ''
-  modalConfirmacion.accion = null
-  modalConfirmacion.solicitud = null
+const cerrarModalDetalles = () => {
+  modalDetalles.mostrar = false
+  modalDetalles.solicitud = null
 }
 
 const formatearFecha = (fechaISO) => {
@@ -941,34 +1024,384 @@ const logout = () => {
   height: 16px;
 }
 
-/* Solicitudes grid */
+/* Solicitudes grid - Vista previa cuadrada */
 .solicitudes-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
 }
 
-.solicitud-card {
+.solicitud-card-preview {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 20px;
+  padding: 14px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  border-left: 4px solid;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  min-height: 320px;
+  max-height: 320px;
 }
 
-.solicitud-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+.solicitud-card-preview:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.15);
 }
 
-.solicitud-card.estado-pendiente { border-left-color: #f59e0b; }
-.solicitud-card.estado-aprobado { border-left-color: #10b981; }
-.solicitud-card.estado-rechazado { border-left-color: #ef4444; }
+.solicitud-card-preview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 20px 20px 0 0;
+}
+
+.solicitud-card-preview.estado-pendiente::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.solicitud-card-preview.estado-aprobado::before { background: linear-gradient(90deg, #10b981, #059669); }
+.solicitud-card-preview.estado-rechazado::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+
+.preview-content-top {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Elementos modernos de la vista previa */
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.preview-id {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #4b5563;
+  font-family: 'Inter', sans-serif;
+  background: rgba(75, 85, 99, 0.08);
+  padding: 4px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.preview-id svg {
+  width: 12px;
+  height: 12px;
+  color: #6b7280;
+}
+
+.estado-badge-modern {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border: 1.5px solid;
+  min-width: fit-content;
+  flex-shrink: 0;
+}
+
+.estado-badge-modern.estado-pendiente {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.estado-badge-modern.estado-aprobado {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #065f46;
+  border-color: #10b981;
+}
+
+.estado-badge-modern.estado-rechazado {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #991b1b;
+  border-color: #ef4444;
+}
+
+.estado-icon {
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.estado-icon svg {
+  width: 10px;
+  height: 10px;
+}
+
+.estado-text {
+  font-size: 7px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.preview-type-modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.tipo-icon-container {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tipo-icon-container.tipo-entrada {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border: 2px solid #93c5fd;
+}
+
+.tipo-icon-container.tipo-salida {
+  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
+  border: 2px solid #fcd34d;
+}
+
+.tipo-icon-container svg {
+  width: 20px;
+  height: 20px;
+  color: #1e40af;
+}
+
+.tipo-icon-container.tipo-salida svg {
+  color: #92400e;
+}
+
+.tipo-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.preview-user-complete {
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.05) 0%, rgba(12, 74, 110, 0.02) 100%);
+  border: 1px solid rgba(12, 74, 110, 0.1);
+  border-radius: 12px;
+  padding: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.user-avatar-modern {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(12, 74, 110, 0.2);
+}
+
+.user-avatar-modern svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+.user-details-complete {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.user-name-complete {
+  font-size: 9px;
+  font-weight: 700;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 3px;
+  line-height: 1;
+  text-align: left;
+}
+
+.user-contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 7px;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+}
+
+.contact-item svg {
+  width: 8px;
+  height: 8px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.contact-item span {
+  font-weight: 500;
+  word-break: break-all;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-metadata {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.metadata-item {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 5px;
+  background: rgba(249, 250, 251, 0.8);
+  border: 1px solid #e5e7eb;
+  border-radius: 5px;
+  font-size: 7px;
+  color: #4b5563;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.metadata-item svg {
+  width: 9px;
+  height: 9px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.preview-indicators-modern {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.indicator-modern {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: help;
+  transition: all 0.3s ease;
+  border: 1.5px solid;
+}
+
+.indicator-modern.photo {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border-color: #0ea5e9;
+  color: #0284c7;
+}
+
+.indicator-modern.observations {
+  background: linear-gradient(135deg, #fefce8 0%, #fef3c7 100%);
+  border-color: #eab308;
+  color: #ca8a04;
+}
+
+.indicator-modern.checklist {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #22c55e;
+  color: #16a34a;
+}
+
+.indicator-modern:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.indicator-modern svg {
+  width: 10px;
+  height: 10px;
+}
+
+.preview-action-modern {
+  margin-top: 8px;
+  flex-shrink: 0;
+  min-height: 36px;
+}
+
+.details-btn-modern {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 4px rgba(12, 74, 110, 0.2);
+  min-height: 28px;
+}
+
+.details-btn-modern:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(12, 74, 110, 0.3);
+}
+
+.details-btn-modern svg {
+  width: 10px;
+  height: 10px;
+}
 
 /* Header de la tarjeta */
 .card-header {
@@ -1304,30 +1737,259 @@ const logout = () => {
   transform: none !important;
 }
 
-/* Modal */
+/* Modal de detalles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   padding: 20px;
 }
 
 .modal-container {
   background: white;
-  border-radius: 16px;
-  max-width: 500px;
+  border-radius: 20px;
+  max-width: 700px;
   width: 100%;
-  max-height: 80vh;
+  max-height: 85vh;
   overflow-y: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-detalles {
+  max-width: 800px;
+}
+
+.modal-title-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.detail-section {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+  margin: 0 0 16px 0;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(12, 74, 110, 0.05) 0%, rgba(12, 74, 110, 0.02) 100%);
+  border-radius: 12px;
+  border-left: 4px solid #0c4a6e;
+}
+
+.section-title svg {
+  width: 20px;
+  height: 20px;
+  color: #0c4a6e;
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  padding: 8px 0;
+}
+
+.detail-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4b5563;
+  font-family: 'Inter', sans-serif;
+  min-width: 120px;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  font-size: 14px;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+  flex: 1;
+}
+
+.datetime-value,
+.location-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-family: monospace;
+}
+
+.user-detail-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(12, 74, 110, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(12, 74, 110, 0.1);
+}
+
+.user-avatar-detail {
+  width: 50px;
+  height: 50px;
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-avatar-detail svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.user-info-detail {
+  flex: 1;
+}
+
+.user-name-detail {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 4px;
+}
+
+.user-cargo-detail {
+  font-size: 14px;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
+}
+
+.user-contact-detail {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-detail-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #4b5563;
+  font-family: 'Inter', sans-serif;
+  padding: 4px 8px;
+  background: rgba(12, 74, 110, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(12, 74, 110, 0.1);
+}
+
+.contact-detail-item svg {
+  width: 14px;
+  height: 14px;
+  color: #0c4a6e;
+  flex-shrink: 0;
+}
+
+.contact-detail-item span {
+  font-weight: 500;
+}
+
+.checklist-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.checklist-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.checklist-detail-item:hover {
+  background: #f1f5f9;
+  transform: translateY(-1px);
+}
+
+.checklist-detail-item.check-ok {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.checklist-detail-item.check-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.check-key-detail {
+  font-weight: 600;
+  color: #374151;
+  text-transform: capitalize;
+  font-size: 13px;
+}
+
+.check-value-detail {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.observations-detail {
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.6;
+  font-family: 'Inter', sans-serif;
+}
+
+.photo-detail-container {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.equipment-photo-detail {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.equipment-photo-detail:hover {
+  transform: scale(1.02);
 }
 
 .modal-header {
@@ -1429,36 +2091,43 @@ const logout = () => {
   font-family: 'Inter', sans-serif;
 }
 
-.cancel-btn {
-  background: #f3f4f6;
-  color: #374151;
-  border: 1px solid #d1d5db;
-}
-
-.cancel-btn:hover {
-  background: #e5e7eb;
-}
-
-.confirm-btn {
-  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+.close-btn {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
   color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.confirm-btn:hover:not(:disabled) {
+.close-btn:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(12, 74, 110, 0.3);
+  box-shadow: 0 4px 8px rgba(107, 114, 128, 0.3);
 }
 
-.confirm-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.close-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* === RESPONSIVE STYLES === */
 @media (max-width: 1024px) {
   .solicitudes-grid {
-    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 16px;
+  }
+
+  .solicitud-card-preview {
+    min-height: 280px;
+    max-height: 280px;
+    padding: 12px;
+  }
+
+  .details-btn-modern {
+    font-size: 8px;
+    padding: 6px 10px;
+    min-height: 28px;
   }
 
   .stats-grid {
@@ -1477,6 +2146,10 @@ const logout = () => {
   .filters-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 12px;
+  }
+
+  .modal-detalles {
+    max-width: 600px;
   }
 }
 
@@ -1544,12 +2217,127 @@ const logout = () => {
   }
 
   .solicitudes-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 12px;
   }
 
-  .solicitud-card {
-    padding: 16px;
+  .solicitud-card-preview {
+    padding: 10px;
+    min-height: 240px;
+    max-height: 240px;
+  }
+
+  .preview-header {
+    margin-bottom: 8px;
+  }
+
+  .preview-id {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  .estado-badge-modern {
+    padding: 3px 6px;
+    font-size: 7px;
+  }
+
+  .estado-text {
+    font-size: 6px;
+  }
+
+  .tipo-icon-container {
+    width: 36px;
+    height: 36px;
+  }
+
+  .tipo-icon-container svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .tipo-label {
+    font-size: 9px;
+  }
+
+  .preview-user-complete {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .user-avatar-modern {
+    width: 28px;
+    height: 28px;
+    margin-bottom: 6px;
+  }
+
+  .user-avatar-modern svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .user-name-complete {
+    font-size: 10px;
+    margin-bottom: 4px;
+  }
+
+  .contact-item {
+    font-size: 7px;
+    gap: 3px;
+  }
+
+  .contact-item svg {
+    width: 8px;
+    height: 8px;
+  }
+
+  .metadata-item {
+    padding: 4px 6px;
+    font-size: 8px;
+  }
+
+  .metadata-item svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .indicator-modern {
+    width: 22px;
+    height: 22px;
+  }
+
+  .indicator-modern svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .details-btn-modern {
+    padding: 6px 10px;
+    font-size: 8px;
+    min-height: 26px;
+  }
+
+  .details-btn-modern svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .modal-detalles {
+    max-width: 90vw;
+  }
+
+  .detail-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .checklist-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .card-header {
@@ -1636,6 +2424,146 @@ const logout = () => {
   .page-content {
     padding: 8px;
     gap: 10px;
+  }
+
+  .solicitudes-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .solicitud-card-preview {
+    padding: 8px;
+    border-radius: 16px;
+    min-height: 220px;
+    max-height: 220px;
+  }
+
+  .preview-header {
+    margin-bottom: 6px;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .preview-id {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+
+  .preview-id svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .estado-badge-modern {
+    padding: 2px 5px;
+    font-size: 6px;
+  }
+
+  .estado-icon {
+    width: 10px;
+    height: 10px;
+  }
+
+  .estado-icon svg {
+    width: 8px;
+    height: 8px;
+  }
+
+  .estado-text {
+    font-size: 5px;
+  }
+
+  .preview-type-modern {
+    margin-bottom: 6px;
+    gap: 4px;
+  }
+
+  .tipo-icon-container {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tipo-icon-container svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .tipo-label {
+    font-size: 8px;
+  }
+
+  .preview-user-complete {
+    padding: 6px;
+    margin-bottom: 6px;
+  }
+
+  .user-avatar-modern {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 4px;
+  }
+
+  .user-avatar-modern svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .user-name-complete {
+    font-size: 9px;
+    margin-bottom: 3px;
+  }
+
+  .contact-item {
+    font-size: 6px;
+    gap: 2px;
+  }
+
+  .contact-item svg {
+    width: 7px;
+    height: 7px;
+  }
+
+  .preview-metadata {
+    gap: 3px;
+    margin-bottom: 6px;
+  }
+
+  .metadata-item {
+    padding: 3px 5px;
+    font-size: 7px;
+  }
+
+  .metadata-item svg {
+    width: 8px;
+    height: 8px;
+  }
+
+  .preview-indicators-modern {
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+
+  .indicator-modern {
+    width: 18px;
+    height: 18px;
+  }
+
+  .indicator-modern svg {
+    width: 9px;
+    height: 9px;
+  }
+
+  .details-btn-modern {
+    padding: 5px 8px;
+    font-size: 7px;
+    gap: 3px;
+    min-height: 24px;
+  }
+
+  .details-btn-modern svg {
+    width: 9px;
+    height: 9px;
   }
 
   .stats-grid {
@@ -1779,15 +2707,19 @@ const logout = () => {
 /* Estados de hover específicos para dispositivos táctiles */
 @media (hover: none) and (pointer: coarse) {
   .stat-card:hover,
-  .solicitud-card:hover,
-  .action-btn:hover,
+  .solicitud-card-preview:hover,
+  .details-btn-modern:hover,
+  .close-btn:hover,
   .modal-btn:hover,
-  .refresh-btn:hover {
+  .refresh-btn:hover,
+  .indicator-modern:hover,
+  .checklist-detail-item:hover {
     transform: none;
     box-shadow: none;
   }
 
-  .equipment-photo:hover {
+  .equipment-photo:hover,
+  .equipment-photo-detail:hover {
     transform: none;
   }
 }
@@ -1804,7 +2736,7 @@ const logout = () => {
 @media (prefers-color-scheme: dark) {
   .stat-card,
   .filters-card,
-  .solicitud-card,
+  .solicitud-card-preview,
   .loading-state,
   .error-state,
   .empty-state {
@@ -1858,10 +2790,48 @@ const logout = () => {
     border-color: rgba(75, 85, 99, 0.5);
   }
 
-  .observations-input textarea {
-    background: rgba(55, 65, 81, 0.8);
-    border-color: rgba(75, 85, 99, 0.5);
+  .preview-user-complete,
+  .user-detail-card,
+  .datetime-value,
+  .location-value,
+  .checklist-detail-item,
+  .observations-detail,
+  .metadata-item {
+    background: rgba(55, 65, 81, 0.5);
+    border-color: rgba(75, 85, 99, 0.3);
+    color: #e5e7eb;
+  }
+
+  .preview-id,
+  .user-name-complete,
+  .user-name-detail {
     color: #f9fafb;
+  }
+
+  .tipo-label,
+  .contact-item,
+  .user-cargo-detail {
+    color: #d1d5db;
+  }
+
+  .details-btn-modern,
+  .close-btn {
+    background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
+  }
+
+  .estado-badge-modern.estado-pendiente {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: #f59e0b;
+  }
+
+  .estado-badge-modern.estado-aprobado {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+  }
+
+  .estado-badge-modern.estado-rechazado {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: #ef4444;
   }
 }
 
@@ -1964,6 +2934,37 @@ const logout = () => {
   .main-content {
     margin-left: 180px;
     width: calc(100vw - 180px);
+  }
+
+  .solicitudes-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .solicitud-card-preview {
+    min-height: 200px;
+    max-height: 200px;
+    padding: 6px;
+  }
+
+  .preview-header {
+    margin-bottom: 4px;
+  }
+
+  .preview-type-modern {
+    margin-bottom: 4px;
+  }
+
+  .preview-user-complete {
+    margin-bottom: 4px;
+  }
+
+  .preview-metadata {
+    margin-bottom: 4px;
+  }
+
+  .preview-indicators-modern {
+    margin-bottom: 4px;
   }
 }
 </style>
