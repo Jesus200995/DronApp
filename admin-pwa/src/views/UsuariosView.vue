@@ -20,8 +20,17 @@
             </div>
           </div>
           
-          <!-- Botón de actualizar -->
+          <!-- Botones de acción -->
           <div class="header-actions">
+            <button @click="abrirModalAgregar" class="add-user-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              Agregar Usuario
+            </button>
             <button @click="cargarUsuarios" :disabled="cargando" class="refresh-btn">
               <svg :class="{ 'spinning': cargando }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
@@ -372,6 +381,235 @@
             </div>
           </div>
         </div>
+
+        <!-- Modal de agregar usuario -->
+        <div v-if="modalAgregar.mostrar" class="modal-overlay" @click="cerrarModalAgregar">
+          <div class="modal-container add-user-modal" @click.stop>
+            <div class="modal-header">
+              <h3>
+                <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                  <circle cx="8.5" cy="7" r="4"/>
+                  <line x1="20" y1="8" x2="20" y2="14"/>
+                  <line x1="23" y1="11" x2="17" y2="11"/>
+                </svg>
+                Agregar Nuevo Usuario
+              </h3>
+              <button @click="cerrarModalAgregar" class="modal-close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="modal-body">
+              <form @submit.prevent="crearUsuario" class="user-form">
+                <div class="form-grid">
+                  <!-- Nombre -->
+                  <div class="form-group">
+                    <label for="nombre" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                      Nombre Completo *
+                    </label>
+                    <input
+                      id="nombre"
+                      v-model="modalAgregar.usuario.nombre"
+                      type="text"
+                      class="form-input"
+                      placeholder="Ingresa el nombre completo"
+                      required
+                    />
+                  </div>
+
+                  <!-- Correo -->
+                  <div class="form-group">
+                    <label for="correo" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                      Correo Electrónico *
+                    </label>
+                    <input
+                      id="correo"
+                      v-model="modalAgregar.usuario.correo"
+                      type="email"
+                      class="form-input"
+                      placeholder="usuario@ejemplo.com"
+                      required
+                    />
+                  </div>
+
+                  <!-- CURP -->
+                  <div class="form-group">
+                    <label for="curp" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      CURP *
+                    </label>
+                    <input
+                      id="curp"
+                      v-model="modalAgregar.usuario.curp"
+                      type="text"
+                      class="form-input"
+                      placeholder="AAAA000000HDFBBB00"
+                      maxlength="18"
+                      required
+                    />
+                  </div>
+
+                  <!-- Teléfono -->
+                  <div class="form-group">
+                    <label for="telefono" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      Teléfono *
+                    </label>
+                    <input
+                      id="telefono"
+                      v-model="modalAgregar.usuario.telefono"
+                      type="tel"
+                      class="form-input"
+                      placeholder="5512345678"
+                      required
+                    />
+                  </div>
+
+                  <!-- Puesto -->
+                  <div class="form-group">
+                    <label for="puesto" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                      </svg>
+                      Puesto/Cargo *
+                    </label>
+                    <input
+                      id="puesto"
+                      v-model="modalAgregar.usuario.puesto"
+                      type="text"
+                      class="form-input"
+                      placeholder="Ej: Técnico en Drones, Supervisor de Campo"
+                      required
+                    />
+                  </div>
+
+                  <!-- Contraseña -->
+                  <div class="form-group">
+                    <label for="contrasena" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <circle cx="12" cy="16" r="1"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                      </svg>
+                      Contraseña *
+                    </label>
+                    <input
+                      id="contrasena"
+                      v-model="modalAgregar.usuario.contrasena"
+                      type="password"
+                      class="form-input"
+                      placeholder="Contraseña segura"
+                      required
+                    />
+                  </div>
+
+                  <!-- Rol -->
+                  <div class="form-group">
+                    <label for="rol" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      </svg>
+                      Rol *
+                    </label>
+                    <select
+                      id="rol"
+                      v-model="modalAgregar.usuario.rol"
+                      class="form-select"
+                      @change="onRolChange"
+                      required
+                    >
+                      <option value="">Selecciona un rol</option>
+                      <option value="tecnico">Técnico</option>
+                      <option value="supervisor">Supervisor</option>
+                    </select>
+                  </div>
+
+                  <!-- Supervisor (solo si es técnico) -->
+                  <div v-if="modalAgregar.usuario.rol === 'tecnico'" class="form-group">
+                    <label for="supervisor_id" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                        <path d="M2 8l2 2 4-4"/>
+                      </svg>
+                      Supervisor Asignado *
+                    </label>
+                    <select
+                      id="supervisor_id"
+                      v-model="modalAgregar.usuario.supervisor_id"
+                      class="form-select"
+                      required
+                    >
+                      <option value="">Selecciona un supervisor</option>
+                      <option
+                        v-for="supervisor in supervisores"
+                        :key="supervisor.id"
+                        :value="supervisor.id"
+                      >
+                        {{ supervisor.nombre }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Mensaje de error -->
+                <div v-if="modalAgregar.error" class="error-message">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  {{ modalAgregar.error }}
+                </div>
+              </form>
+            </div>
+            
+            <div class="modal-actions">
+              <button @click="cerrarModalAgregar" class="modal-btn close-btn" type="button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Cancelar
+              </button>
+              <button @click="crearUsuario" :disabled="modalAgregar.guardando" class="modal-btn save-btn">
+                <svg v-if="modalAgregar.guardando" class="spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                  <polyline points="17,21 17,13 7,13 7,21"/>
+                  <polyline points="7,3 7,8 15,8"/>
+                </svg>
+                {{ modalAgregar.guardando ? 'Guardando...' : 'Guardar Usuario' }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -389,6 +627,7 @@ const router = useRouter()
 const cargando = ref(false)
 const error = ref(null)
 const usuarios = ref([])
+const supervisores = ref([])
 const busqueda = ref('')
 const filtroRol = ref('')
 
@@ -396,6 +635,23 @@ const filtroRol = ref('')
 const modalDetalles = ref({
   mostrar: false,
   usuario: null
+})
+
+// Modal de agregar usuario
+const modalAgregar = ref({
+  mostrar: false,
+  guardando: false,
+  error: null,
+  usuario: {
+    nombre: '',
+    correo: '',
+    curp: '',
+    telefono: '',
+    puesto: '',
+    contrasena: '',
+    rol: '',
+    supervisor_id: ''
+  }
 })
 
 // Computed para estadísticas
@@ -554,6 +810,149 @@ const editarUsuario = (usuario) => {
   alert(`Funcionalidad de edición para ${usuario.nombre_completo || usuario.nombre} en desarrollo`)
 }
 
+// Métodos para modal de agregar usuario
+const abrirModalAgregar = () => {
+  console.log('🆕 Abriendo modal para agregar usuario')
+  modalAgregar.value.mostrar = true
+  modalAgregar.value.error = null
+  cargarSupervisores()
+}
+
+const cerrarModalAgregar = () => {
+  modalAgregar.value.mostrar = false
+  modalAgregar.value.error = null
+  // Resetear formulario
+  modalAgregar.value.usuario = {
+    nombre: '',
+    correo: '',
+    curp: '',
+    telefono: '',
+    puesto: '',
+    contrasena: '',
+    rol: '',
+    supervisor_id: ''
+  }
+}
+
+const cargarSupervisores = async () => {
+  try {
+    console.log('🔄 Cargando supervisores...')
+    
+    const apiUrl = `${API_CONFIG.baseURL}/supervisores`
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`Error HTTP ${response.status}: ${response.statusText}`)
+    }
+
+    const data = await response.json()
+    console.log('📊 Supervisores cargados:', data)
+
+    if (data && data.supervisores && Array.isArray(data.supervisores)) {
+      supervisores.value = data.supervisores
+    } else if (Array.isArray(data)) {
+      supervisores.value = data
+    } else {
+      supervisores.value = []
+    }
+    
+    console.log('✅ Supervisores procesados:', supervisores.value.length)
+  } catch (err) {
+    console.error('❌ Error al cargar supervisores:', err)
+    supervisores.value = []
+  }
+}
+
+const onRolChange = () => {
+  // Si cambia a supervisor, limpiar supervisor_id
+  if (modalAgregar.value.usuario.rol === 'supervisor') {
+    modalAgregar.value.usuario.supervisor_id = ''
+  }
+  // Si cambia a técnico, cargar supervisores
+  if (modalAgregar.value.usuario.rol === 'tecnico' && supervisores.value.length === 0) {
+    cargarSupervisores()
+  }
+}
+
+const crearUsuario = async () => {
+  modalAgregar.value.guardando = true
+  modalAgregar.value.error = null
+
+  try {
+    console.log('🔄 Creando usuario...')
+    
+    // Validaciones
+    const usuario = modalAgregar.value.usuario
+    
+    if (!usuario.nombre || !usuario.correo || !usuario.curp || 
+        !usuario.telefono || !usuario.puesto || !usuario.contrasena || 
+        !usuario.rol) {
+      throw new Error('Todos los campos marcados con * son obligatorios')
+    }
+
+    if (usuario.rol === 'tecnico' && !usuario.supervisor_id) {
+      throw new Error('Debe seleccionar un supervisor para los técnicos')
+    }
+
+    // Preparar datos para envío
+    const userData = {
+      nombre: usuario.nombre.trim(),
+      correo: usuario.correo.trim().toLowerCase(),
+      curp: usuario.curp.trim().toUpperCase(),
+      telefono: usuario.telefono.trim(),
+      puesto: usuario.puesto.trim(),
+      contrasena: usuario.contrasena,
+      rol: usuario.rol
+    }
+
+    // Solo incluir supervisor_id si es técnico
+    if (usuario.rol === 'tecnico') {
+      userData.supervisor_id = parseInt(usuario.supervisor_id)
+    }
+
+    console.log('📤 Enviando datos:', { ...userData, contrasena: '***' })
+
+    const apiUrl = `${API_CONFIG.baseURL}${API_CONFIG.endpoints.usuarios}`
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(userData)
+    })
+
+    console.log('🌐 Estado de respuesta:', response.status, response.statusText)
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }))
+      throw new Error(errorData.detail || errorData.message || `Error HTTP ${response.status}`)
+    }
+
+    const result = await response.json()
+    console.log('✅ Usuario creado exitosamente:', result)
+
+    // Mostrar mensaje de éxito
+    alert('✅ Usuario creado correctamente')
+    
+    // Cerrar modal y recargar usuarios
+    cerrarModalAgregar()
+    await cargarUsuarios()
+    
+  } catch (err) {
+    console.error('❌ Error al crear usuario:', err)
+    modalAgregar.value.error = err.message
+  } finally {
+    modalAgregar.value.guardando = false
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   console.log('👥 Usuarios View cargada')
@@ -700,6 +1099,35 @@ const logout = () => {
   gap: 12px;
   align-items: center;
   margin-right: clamp(0.3rem, 1vw, 0.6rem);
+}
+
+.add-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.add-user-btn:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+.add-user-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .refresh-btn {
@@ -1434,6 +1862,111 @@ const logout = () => {
   height: 16px;
 }
 
+/* === MODAL AGREGAR USUARIO === */
+.add-user-modal {
+  max-width: 700px;
+}
+
+.user-form {
+  width: 100%;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-icon {
+  width: 16px;
+  height: 16px;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.form-input, .form-select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  background: white;
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.form-input:focus, .form-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input::placeholder {
+  color: #9ca3af;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.error-message svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.save-btn svg.spinning {
+  animation: spin 1s linear infinite;
+}
+
 /* === SUPERVISOR STYLES === */
 .supervisor-assigned {
   color: #10b981;
@@ -1546,6 +2079,15 @@ const logout = () => {
 
   .modal-actions {
     flex-direction: column-reverse;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .add-user-modal {
+    max-width: 95vw;
   }
 }
 

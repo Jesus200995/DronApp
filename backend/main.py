@@ -572,10 +572,12 @@ class UserCreate(BaseModel):
     correo: str
     nombre: str
     puesto: str
-    supervisor: str = None
+    supervisor: str = None  # Campo legacy
     contrasena: str
     curp: str
     telefono: str
+    rol: str = "tecnico"  # Nuevo campo
+    supervisor_id: int = None  # Nuevo campo para referencia
 
 class UserLogin(BaseModel):
     correo: str
@@ -672,10 +674,21 @@ async def crear_usuario(usuario: UserCreate):
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="La CURP ya está registrada")
         
-        # Insertar usuario (contraseña sin encriptar como especificaste)
+        # Validar supervisor_id si es técnico
+        if usuario.rol == "tecnico" and usuario.supervisor_id:
+            cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario.supervisor_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=400, detail="El supervisor especificado no existe")
+        
+        # Encriptar contraseña usando bcrypt
+        import bcrypt
+        hashed_password = bcrypt.hashpw(usuario.contrasena.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        # Insertar usuario con nuevos campos
         cursor.execute(
-            "INSERT INTO usuarios (correo, nombre, puesto, supervisor, contrasena, curp, telefono) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-            (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, usuario.contrasena, curp_upper, usuario.telefono)
+            """INSERT INTO usuarios (correo, nombre, puesto, supervisor, contrasena, curp, telefono, rol, supervisor_id, fecha_registro) 
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW()) RETURNING id""",
+            (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, hashed_password, curp_upper, usuario.telefono, usuario.rol, usuario.supervisor_id)
         )
         
         user_id = cursor.fetchone()[0]
