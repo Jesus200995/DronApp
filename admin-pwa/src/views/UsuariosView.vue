@@ -71,28 +71,50 @@
         <!-- Estadísticas -->
         <div class="stats-grid" v-if="estadisticasUsuarios">
           <div class="stat-card">
-            <div class="stat-icon">👥</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
             <div class="stat-content">
               <div class="stat-number">{{ estadisticasUsuarios.total }}</div>
               <div class="stat-label">Total Usuarios</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">🔧</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+              </svg>
+            </div>
             <div class="stat-content">
               <div class="stat-number">{{ estadisticasUsuarios.tecnicos }}</div>
               <div class="stat-label">Técnicos</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">👨‍💼</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+                <path d="M2 8l2 2 4-4"/>
+              </svg>
+            </div>
             <div class="stat-content">
               <div class="stat-number">{{ estadisticasUsuarios.supervisores }}</div>
               <div class="stat-label">Supervisores</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">🔍</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
             <div class="stat-content">
               <div class="stat-number">{{ usuariosFiltrados.length }}</div>
               <div class="stat-label">Mostrados</div>
@@ -108,7 +130,13 @@
 
         <!-- Error -->
         <div v-else-if="error" class="error-state">
-          <div class="error-icon">⚠️</div>
+          <div class="error-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
           <h3>Error al cargar usuarios</h3>
           <p>{{ error }}</p>
           <button @click="cargarUsuarios" class="retry-btn">
@@ -193,13 +221,28 @@
                   <td class="table-cell position-cell">{{ usuario.cargo || usuario.puesto || 'Sin puesto' }}</td>
                   <td class="table-cell supervisor-cell">
                     <span v-if="usuario.supervisor_nombre" class="supervisor-assigned">
-                      👨‍💼 {{ usuario.supervisor_nombre }}
+                      <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                        <path d="M2 8l2 2 4-4"/>
+                      </svg>
+                      {{ usuario.supervisor_nombre }}
                     </span>
                     <span v-else-if="usuario.supervisor" class="supervisor-legacy">
-                      📋 {{ usuario.supervisor }}
+                      <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="9" y1="9" x2="15" y2="9"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                      </svg>
+                      {{ usuario.supervisor }}
                     </span>
                     <span v-else class="no-supervisor">
-                      ➖ Sin supervisor asignado
+                      <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="15" y1="9" x2="9" y2="15"/>
+                        <line x1="9" y1="9" x2="15" y2="15"/>
+                      </svg>
+                      Sin supervisor asignado
                     </span>
                   </td>
                   <td class="table-cell role-cell">
@@ -277,14 +320,29 @@
                 <div class="detail-item">
                   <label>Supervisor Asignado:</label>
                   <span v-if="modalDetalles.usuario.supervisor_nombre" class="supervisor-assigned">
-                    👨‍💼 {{ modalDetalles.usuario.supervisor_nombre }}
+                    <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                      <circle cx="12" cy="7" r="4"/>
+                      <path d="M2 8l2 2 4-4"/>
+                    </svg>
+                    {{ modalDetalles.usuario.supervisor_nombre }}
                     <small class="supervisor-id">(ID: {{ modalDetalles.usuario.supervisor_id }})</small>
                   </span>
                   <span v-else-if="modalDetalles.usuario.supervisor" class="supervisor-legacy">
-                    📋 {{ modalDetalles.usuario.supervisor }} <em>(Campo legacy)</em>
+                    <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                      <line x1="9" y1="9" x2="15" y2="9"/>
+                      <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    {{ modalDetalles.usuario.supervisor }} <em>(Campo legacy)</em>
                   </span>
                   <span v-else class="no-supervisor">
-                    ➖ Sin supervisor asignado
+                    <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="15" y1="9" x2="9" y2="15"/>
+                      <line x1="9" y1="9" x2="15" y2="15"/>
+                    </svg>
+                    Sin supervisor asignado
                   </span>
                 </div>
                 <div class="detail-item">
@@ -846,8 +904,22 @@ const logout = () => {
 }
 
 .stat-icon {
-  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  flex-shrink: 0;
+}
+
+.stat-icon svg {
+  width: 28px;
+  height: 28px;
+  color: white;
+  stroke-width: 2.5;
 }
 
 .stat-content {
@@ -901,10 +973,15 @@ const logout = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
   color: white;
   margin-bottom: 16px;
   box-shadow: 0 8px 16px rgba(239, 68, 68, 0.2);
+}
+
+.error-icon svg, .empty-icon svg {
+  width: 32px;
+  height: 32px;
+  color: white;
 }
 
 .empty-icon {
@@ -1363,7 +1440,7 @@ const logout = () => {
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .supervisor-legacy {
@@ -1371,7 +1448,7 @@ const logout = () => {
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .no-supervisor {
@@ -1379,7 +1456,13 @@ const logout = () => {
   font-style: italic;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.supervisor-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .supervisor-id {
