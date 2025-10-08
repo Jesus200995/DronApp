@@ -37,7 +37,7 @@
                 
                 <!-- Botón de recargar con efecto vidrio líquido a la derecha -->
                 <button 
-                  @click="cargarSolicitudes" 
+                  @click="refrescarDatos" 
                   :disabled="loading"
                   class="liquid-glass-button group relative overflow-hidden px-2.5 py-1.5 rounded-full transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-70 disabled:scale-100 disabled:cursor-not-allowed flex items-center w-9 h-9 justify-center"
                   :title="loading ? 'Cargando...' : 'Actualizar'"
@@ -380,20 +380,24 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import SolicitudesService from '../services/solicitudesService.js'
 import { API_URL } from '../utils/network.js'
-import MockSolicitudesService from '../services/MockSolicitudesService.js'
 
 const router = useRouter()
-
-// Configuración
-const useMockData = false // Ahora usamos datos reales de la base de datos
 
 // Datos reactivos
 const solicitudes = ref([])
 const loading = ref(false)
 const procesando = ref(null)
 const apiBaseUrl = ref(API_URL)
+
+// Estadísticas
+const estadisticas = ref({
+  total: 0,
+  pendientes: 0,
+  aprobadas: 0,
+  rechazadas: 0
+})
 
 // Modal de rechazo
 const mostrarModalRechazo = ref(false)
@@ -411,25 +415,15 @@ const tipoToast = ref('success')
 
 // Estadísticas computadas
 const solicitudesAprobadas = computed(() => {
-  if (useMockData) {
-    return 5 // Datos simulados para estadísticas
-  } else {
-    // Para datos reales, mostramos contadores iniciales
-    return 8 // Puedes implementar una llamada al backend para obtener estadísticas reales
-  }
+  return estadisticas.value.aprobadas
 })
 
 const solicitudesRechazadas = computed(() => {
-  if (useMockData) {
-    return 2 // Datos simulados para estadísticas
-  } else {
-    // Para datos reales, mostramos contadores iniciales
-    return 3 // Puedes implementar una llamada al backend para obtener estadísticas reales
-  }
+  return estadisticas.value.rechazadas
 })
 
 // Verificar autenticación y rol al montar
-onMounted(() => {
+onMounted(async () => {
   const userData = localStorage.getItem('user')
   if (!userData) {
     router.push('/login')
@@ -445,7 +439,20 @@ onMounted(() => {
     }
     
     console.log('✅ Usuario supervisor autenticado:', user.nombre)
-    cargarSolicitudes()
+    
+    // Verificar conectividad antes de cargar datos
+    const conectividad = await SolicitudesService.verificarConectividad()
+    if (!conectividad.success) {
+      console.warn('⚠️ Problemas de conectividad:', conectividad.error)
+      mostrarNotificacion('Problemas de conexión con el servidor', 'error')
+    }
+    
+    // Cargar datos iniciales
+    await Promise.all([
+      cargarSolicitudes(),
+      cargarEstadisticas()
+    ])
+    
   } catch (error) {
     console.error('Error parsing user data:', error)
     localStorage.clear()
@@ -457,22 +464,55 @@ onMounted(() => {
 async function cargarSolicitudes() {
   loading.value = true
   try {
-    if (useMockData) {
-      // Usar datos simulados mientras se soluciona el backend
-      console.log('⚠️ Usando datos simulados para solicitudes')
-      const response = await MockSolicitudesService.getSolicitudesPendientes()
-      solicitudes.value = response.data.solicitudes
+    console.log('📋 Cargando solicitudes pendientes...')
+    
+    const resultado = await SolicitudesService.obtenerSolicitudesPendientes()
+    
+    if (resultado.success) {
+      // Procesar las solicitudes obtenidas
+      solicitudes.value = resultado.solicitudes.map(solicitud => ({
+        ...solicitud,
+        checklist: SolicitudesService.formatearChecklist(solicitud.checklist),
+        foto_url: SolicitudesService.obtenerUrlFoto(solicitud.foto_equipo)
+      }))
+      
+      console.log(`✅ ${solicitudes.value.length} solicitudes pendientes cargadas`)
+      
+      if (solicitudes.value.length === 0) {
+        mostrarNotificacion('No hay solicitudes pendientes', 'success')
+      }
     } else {
-      // Usar datos reales del backend cuando esté corregido
-      const response = await axios.get(`${API_URL}/supervisor/solicitudes`)
-      solicitudes.value = response.data.solicitudes
+      console.error('❌ Error del servicio:', resultado.error)
+      mostrarNotificacion(resultado.error, 'error')
+      solicitudes.value = []
     }
-    console.log('📋 Solicitudes cargadas:', solicitudes.value.length)
+    
   } catch (error) {
-    console.error('Error cargando solicitudes:', error)
-    mostrarNotificacion('Error al cargar solicitudes', 'error')
+    console.error('❌ Error cargando solicitudes:', error)
+    mostrarNotificacion('Error inesperado al cargar solicitudes', 'error')
+    solicitudes.value = []
   } finally {
     loading.value = false
+  }
+}
+
+// Función para cargar estadísticas
+async function cargarEstadisticas() {
+  try {
+    console.log('📊 Cargando estadísticas...')
+    
+    const resultado = await SolicitudesService.obtenerEstadisticas()
+    
+    if (resultado.success) {
+      estadisticas.value = resultado.data
+      console.log('✅ Estadísticas cargadas:', estadisticas.value)
+    } else {
+      console.warn('⚠️ Error cargando estadísticas:', resultado.error)
+      // Mantener valores por defecto
+    }
+    
+  } catch (error) {
+    console.error('❌ Error cargando estadísticas:', error)
   }
 }
 
@@ -480,21 +520,29 @@ async function cargarSolicitudes() {
 async function aprobarSolicitud(solicitudId) {
   procesando.value = solicitudId
   try {
-    if (useMockData) {
-      // Usar servicio simulado
-      await MockSolicitudesService.aprobarSolicitud(solicitudId)
+    console.log(`✅ Aprobando solicitud ${solicitudId}...`)
+    
+    const resultado = await SolicitudesService.aprobarSolicitud(solicitudId)
+    
+    if (resultado.success) {
+      // Remover la solicitud de la lista local
+      solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
+      
+      // Actualizar estadísticas
+      estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
+      estadisticas.value.aprobadas = estadisticas.value.aprobadas + 1
+      
+      mostrarNotificacion('Solicitud aprobada exitosamente', 'success')
+      
+      console.log(`✅ Solicitud ${solicitudId} aprobada correctamente`)
     } else {
-      // Usar API real
-      await axios.put(`${API_URL}/supervisor/solicitudes/${solicitudId}/aprobar`)
+      console.error('❌ Error del servicio:', resultado.error)
+      mostrarNotificacion(resultado.error || 'Error al aprobar solicitud', 'error')
     }
     
-    // Remover la solicitud de la lista
-    solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
-    
-    mostrarNotificacion('Solicitud aprobada exitosamente', 'success')
   } catch (error) {
-    console.error('Error aprobando solicitud:', error)
-    mostrarNotificacion('Error al aprobar solicitud', 'error')
+    console.error('❌ Error aprobando solicitud:', error)
+    mostrarNotificacion('Error inesperado al aprobar solicitud', 'error')
   } finally {
     procesando.value = null
   }
@@ -518,33 +566,45 @@ function cerrarModalRechazo() {
 async function confirmarRechazo() {
   if (!solicitudSeleccionada.value) return
   
-  procesando.value = solicitudSeleccionada.value.id
+  const solicitudId = solicitudSeleccionada.value.id
+  procesando.value = solicitudId
+  
   try {
-    if (useMockData) {
-      // Usar servicio simulado
-      await MockSolicitudesService.rechazarSolicitud(
-        solicitudSeleccionada.value.id, 
-        motivoRechazo.value
-      )
-    } else {
-      // Usar API real
-      const formData = new FormData()
-      formData.append('motivo', motivoRechazo.value)
+    console.log(`❌ Rechazando solicitud ${solicitudId}...`)
+    
+    const resultado = await SolicitudesService.rechazarSolicitud(solicitudId, motivoRechazo.value)
+    
+    if (resultado.success) {
+      // Remover la solicitud de la lista local
+      solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
       
-      await axios.put(`${API_URL}/supervisor/solicitudes/${solicitudSeleccionada.value.id}/rechazar`, formData)
+      // Actualizar estadísticas
+      estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
+      estadisticas.value.rechazadas = estadisticas.value.rechazadas + 1
+      
+      mostrarNotificacion('Solicitud rechazada exitosamente', 'success')
+      cerrarModalRechazo()
+      
+      console.log(`✅ Solicitud ${solicitudId} rechazada correctamente`)
+    } else {
+      console.error('❌ Error del servicio:', resultado.error)
+      mostrarNotificacion(resultado.error || 'Error al rechazar solicitud', 'error')
     }
     
-    // Remover la solicitud de la lista
-    solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudSeleccionada.value.id)
-    
-    mostrarNotificacion('Solicitud rechazada exitosamente', 'success')
-    cerrarModalRechazo()
   } catch (error) {
-    console.error('Error rechazando solicitud:', error)
-    mostrarNotificacion('Error al rechazar solicitud', 'error')
+    console.error('❌ Error rechazando solicitud:', error)
+    mostrarNotificacion('Error inesperado al rechazar solicitud', 'error')
   } finally {
     procesando.value = null
   }
+}
+
+// Función para refrescar datos completos
+async function refrescarDatos() {
+  await Promise.all([
+    cargarSolicitudes(),
+    cargarEstadisticas()
+  ])
 }
 
 // Función para abrir modal de imagen
