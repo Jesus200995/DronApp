@@ -576,7 +576,7 @@ class UserCreate(BaseModel):
     contrasena: str
     curp: str
     telefono: str
-    rol: str = "tecnico"  # Nuevo campo
+    rol: str  # Campo obligatorio SIN valor por defecto
     supervisor_id: int = None  # Nuevo campo para referencia
 
 class UserLogin(BaseModel):
@@ -651,6 +651,15 @@ async def crear_usuario(usuario: UserCreate):
         # Validación básica de formato CURP
         if not re.match(r'^[A-Z0-9]{18}$', curp_upper):
             raise HTTPException(status_code=400, detail="La CURP debe contener solo letras mayúsculas y números")
+        
+        # Validación de rol obligatorio
+        if not usuario.rol or not usuario.rol.strip():
+            raise HTTPException(status_code=400, detail="El rol es obligatorio")
+        
+        # Validar que el rol sea válido
+        roles_validos = ["tecnico", "supervisor"]
+        if usuario.rol not in roles_validos:
+            raise HTTPException(status_code=400, detail=f"El rol debe ser uno de: {', '.join(roles_validos)}")
         
         # Validación de teléfono obligatorio
         if not usuario.telefono or not usuario.telefono.strip():

@@ -616,7 +616,6 @@
                       @change="onRolChange"
                       required
                     >
-                      <option value="">Selecciona un rol</option>
                       <option value="tecnico">Técnico</option>
                       <option value="supervisor">Supervisor</option>
                     </select>
@@ -727,7 +726,7 @@ const modalAgregar = ref({
     puesto: '',
     contrasena: '',
     confirmarContrasena: '',
-    rol: '',
+    rol: 'tecnico',  // Valor por defecto técnico
     supervisor_id: ''
   }
 })
@@ -907,7 +906,7 @@ const cerrarModalAgregar = () => {
     telefono: '',
     puesto: '',
     contrasena: '',
-    rol: '',
+    rol: 'tecnico',  // Valor por defecto técnico
     supervisor_id: ''
   }
 }
