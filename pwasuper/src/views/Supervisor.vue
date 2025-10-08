@@ -228,7 +228,7 @@
     </div>
 
     <!-- Modal de Detalles de Solicitud -->
-    <div v-if="mostrarModalDetalles" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="cerrarModalDetalles">
+    <div v-if="mostrarModalDetalles" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4" @click="cerrarModalDetalles" style="z-index: 999999 !important;">
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
         <!-- Header del modal -->
         <div class="sticky top-0 bg-white rounded-t-2xl border-b border-gray-200 px-6 py-4 z-10">
@@ -352,7 +352,7 @@
     </div>
 
     <!-- Modal de rechazo - Mobile Optimized -->
-    <div v-if="mostrarModalRechazo" class="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+    <div v-if="mostrarModalRechazo" class="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style="z-index: 999999 !important;">
       <div class="bg-white rounded-t-2xl sm:rounded-lg w-full sm:w-auto sm:max-w-md mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
         <div class="p-4 sm:p-6">
           <!-- Header del modal con botón cerrar móvil -->
@@ -404,7 +404,7 @@
     </div>
 
     <!-- Modal de imagen - Mobile Optimized -->
-    <div v-if="mostrarModalImagen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2 sm:p-4" @click="cerrarModalImagen">
+    <div v-if="mostrarModalImagen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-2 sm:p-4" @click="cerrarModalImagen" style="z-index: 999999 !important;">
       <div class="relative w-full h-full flex items-center justify-center">
         <img 
           :src="`${apiBaseUrl}${imagenSeleccionada}`" 
@@ -429,7 +429,7 @@
     </div>
 
     <!-- Toast de notificaciones - Mobile Optimized -->
-    <div v-if="mostrarToast" class="fixed top-4 left-4 right-4 sm:top-4 sm:right-4 sm:left-auto z-50">
+    <div v-if="mostrarToast" class="fixed top-4 left-4 right-4 sm:top-4 sm:right-4 sm:left-auto" style="z-index: 999999 !important;">
       <div :class="[
         'px-4 py-3 rounded-lg shadow-lg flex items-center mx-auto sm:mx-0 max-w-sm',
         tipoToast === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
@@ -442,6 +442,222 @@
       </div>
     </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Modales fuera del contenedor principal para máxima prioridad de z-index -->
+  <!-- Modal de Detalles de Solicitud -->
+  <div v-if="mostrarModalDetalles" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4" @click="cerrarModalDetalles" style="z-index: 999999 !important;">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" @click.stop>
+      <!-- Header del modal -->
+      <div class="sticky top-0 bg-white rounded-t-2xl border-b border-gray-200 px-6 py-4 z-10">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center" 
+                 :class="solicitudSeleccionada?.tipo === 'entrada' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      :d="solicitudSeleccionada?.tipo === 'entrada' ? 'M7 16l-4-4m0 0l4-4m-4 4h18' : 'M17 8l4 4m0 0l-4 4m4-4H3'" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">
+                {{ solicitudSeleccionada?.tipo?.toUpperCase() }} DE DRON
+              </h3>
+              <p class="text-sm text-gray-500">{{ solicitudSeleccionada?.tecnico?.nombre || 'Técnico' }}</p>
+            </div>
+          </div>
+          <button @click="cerrarModalDetalles" class="p-2 hover:bg-gray-100 rounded-full transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido del modal -->
+      <div class="p-6 space-y-6">
+        <!-- Información básica -->
+        <div class="bg-gray-50 rounded-xl p-4">
+          <h4 class="text-sm font-semibold text-gray-900 mb-3">Información General</h4>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-xs text-gray-500 block">Fecha y Hora</span>
+              <span class="text-sm font-medium text-gray-900">{{ formatearFecha(solicitudSeleccionada?.fecha_hora) }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-gray-500 block">Estado</span>
+              <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                Pendiente
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Foto del equipo -->
+        <div v-if="solicitudSeleccionada?.foto_url">
+          <h4 class="text-sm font-semibold text-gray-900 mb-3">Foto del Equipo</h4>
+          <div class="relative">
+            <img 
+              :src="`${apiBaseUrl}${solicitudSeleccionada.foto_url}`" 
+              :alt="'Foto del dron - ' + solicitudSeleccionada.tipo"
+              class="w-full h-64 object-cover rounded-xl cursor-pointer hover:opacity-75 transition-opacity"
+              @click="abrirImagenModal(solicitudSeleccionada)"
+              @error="manejarErrorImagen"
+            />
+          </div>
+        </div>
+
+        <!-- Checklist -->
+        <div v-if="solicitudSeleccionada?.checklist">
+          <h4 class="text-sm font-semibold text-gray-900 mb-3">Lista de Verificación</h4>
+          <div class="bg-gray-50 rounded-xl p-4">
+            <div class="grid gap-3">
+              <div v-for="(valor, campo) in solicitudSeleccionada.checklist" :key="campo" 
+                   class="flex items-center justify-between p-3 bg-white rounded-lg">
+                <span class="text-sm text-gray-700">{{ formatearCampoChecklist(campo) }}</span>
+                <div class="flex items-center space-x-2">
+                  <div class="w-5 h-5 rounded-full flex items-center justify-center" 
+                       :class="valor ? 'bg-green-500' : 'bg-gray-300'">
+                    <svg v-if="valor" xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-xs font-medium" :class="valor ? 'text-green-600' : 'text-gray-500'">
+                    {{ valor ? 'Verificado' : 'Pendiente' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div v-if="solicitudSeleccionada?.observaciones">
+          <h4 class="text-sm font-semibold text-gray-900 mb-3">Observaciones</h4>
+          <div class="bg-gray-50 rounded-xl p-4">
+            <p class="text-sm text-gray-700">{{ solicitudSeleccionada.observaciones }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="sticky bottom-0 bg-white rounded-b-2xl border-t border-gray-200 px-6 py-4">
+        <div class="flex space-x-3">
+          <button 
+            @click="aprobarSolicitudDesdeModal"
+            :disabled="procesando === solicitudSeleccionada?.id"
+            class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            {{ procesando === solicitudSeleccionada?.id ? 'Procesando...' : 'Aprobar Solicitud' }}
+          </button>
+          
+          <button 
+            @click="abrirModalRechazoDesdeDetalles"
+            :disabled="procesando === solicitudSeleccionada?.id"
+            class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            Rechazar Solicitud
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de rechazo - Mobile Optimized -->
+  <div v-if="mostrarModalRechazo" class="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style="z-index: 999999 !important;">
+    <div class="bg-white rounded-t-2xl sm:rounded-lg w-full sm:w-auto sm:max-w-md mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-4 sm:p-6">
+        <!-- Header del modal con botón cerrar móvil -->
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Rechazar Solicitud</h3>
+          <button 
+            @click="cerrarModalRechazo"
+            class="p-2 hover:bg-gray-100 rounded-full transition-colors sm:hidden"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <p class="text-sm text-gray-600 mb-4">
+          ¿Estás seguro de que deseas rechazar la solicitud de {{ solicitudSeleccionada?.tecnico?.nombre || 'este técnico' }}?
+        </p>
+        
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Motivo del rechazo</label>
+          <textarea 
+            v-model="motivoRechazo"
+            placeholder="Ingresa el motivo del rechazo..."
+            class="w-full px-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm resize-none"
+            rows="4"
+          ></textarea>
+        </div>
+        
+        <!-- Botones responsivos -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button 
+            @click="confirmarRechazo"
+            :disabled="procesando"
+            class="w-full px-4 py-3 sm:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-medium text-sm"
+          >
+            {{ procesando ? 'Procesando...' : 'Confirmar Rechazo' }}
+          </button>
+          <button 
+            @click="cerrarModalRechazo"
+            :disabled="procesando"
+            class="w-full px-4 py-3 sm:py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 font-medium text-sm"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de imagen - Mobile Optimized -->
+  <div v-if="mostrarModalImagen" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-2 sm:p-4" @click="cerrarModalImagen" style="z-index: 999999 !important;">
+    <div class="relative w-full h-full flex items-center justify-center">
+      <img 
+        :src="`${apiBaseUrl}${imagenSeleccionada}`" 
+        alt="Foto del dron ampliada"
+        class="max-w-full max-h-full object-contain rounded-lg"
+        @click.stop
+      />
+      <!-- Botón cerrar optimizado para móvil -->
+      <button 
+        @click="cerrarModalImagen"
+        class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full p-3 hover:bg-opacity-70 transition-all backdrop-blur-sm"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      <!-- Indicador táctil para cerrar en móvil -->
+      <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-xs sm:hidden">
+        Toca para cerrar
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast de notificaciones - Mobile Optimized -->
+  <div v-if="mostrarToast" class="fixed top-4 left-4 right-4 sm:top-4 sm:right-4 sm:left-auto" style="z-index: 999999 !important;">
+    <div :class="[
+      'px-4 py-3 rounded-lg shadow-lg flex items-center mx-auto sm:mx-0 max-w-sm',
+      tipoToast === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+    ]">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path v-if="tipoToast === 'success'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      <span class="text-xs sm:text-sm font-medium flex-1">{{ mensajeToast }}</span>
     </div>
   </div>
 </template>
