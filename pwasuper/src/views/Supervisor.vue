@@ -936,7 +936,20 @@ function cerrarModalImagen() {
 
 // Función para manejar errores de imagen
 function manejarErrorImagen(event) {
-  event.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQgMTZMOC41ODYgMTEuNDE0QTIgMiAwIDAgMSAxMS40MTQgMTEuNDE0TDE2IDE2TTItMkwxLjU4NiAxMC41ODZBMiAyIDAgMCAxIDE0LjQxNCAxMC41ODZMMJAJ0IDE0TTYgMjBIMTJBMiAyIDAgMCAwIDIwIDE4VjZBMiAyIDAgMCAwIDE4IDRINEE2QTIgMiAwIDAgMCA0IDZWMTHBMIAAIDJBMCAIDBBIDZIMJLAUTBIMG0tNkg0TTE2IDdINi4wMSIgc3Ryb2tlPSIjOTMzOTU5IiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L3N2Zz4K'
+  console.log('❌ Error cargando imagen:', event.target.src)
+  
+  // Imagen SVG de placeholder cuando no se puede cargar la imagen
+  const placeholderSvg = `
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="24" height="24" rx="2" fill="#f3f4f6" stroke="#d1d5db"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="#9ca3af"/>
+      <path d="M4 16l4-4 2 2 8-8" stroke="#9ca3af" stroke-width="1" stroke-linecap="round"/>
+      <text x="12" y="20" text-anchor="middle" font-size="8" fill="#6b7280">Sin imagen</text>
+    </svg>
+  `
+  
+  const svgBlob = new Blob([placeholderSvg], { type: 'image/svg+xml' })
+  event.target.src = URL.createObjectURL(svgBlob)
 }
 
 // Función para mostrar notificaciones toast
@@ -1022,20 +1035,29 @@ function contarChecklistCompletos(checklist) {
 
 // Función para construir URL completa de imagen
 function obtenerUrlCompleta(fotoEquipo) {
+  console.log('🖼️ Procesando foto_equipo:', fotoEquipo)
+  
   if (!fotoEquipo) return ''
   
   // Si ya es una URL completa (http/https), devolverla tal como está
   if (fotoEquipo.startsWith('http://') || fotoEquipo.startsWith('https://')) {
+    console.log('🔗 URL completa detectada:', fotoEquipo)
     return fotoEquipo
   }
   
-  // Si es una URL relativa, agregar el prefijo del API
-  if (fotoEquipo.startsWith('/')) {
-    return `${apiBaseUrl.value}${fotoEquipo}`
+  // Extraer solo el nombre del archivo si es una ruta del sistema de archivos
+  let nombreArchivo = fotoEquipo
+  if (fotoEquipo.includes('\\') || fotoEquipo.includes('/')) {
+    // Es una ruta de archivo del sistema, extraer solo el nombre
+    nombreArchivo = fotoEquipo.split(/[\/\\]/).pop()
+    console.log('📄 Nombre de archivo extraído:', nombreArchivo)
   }
   
-  // Si no tiene barra inicial, agregarla
-  return `${apiBaseUrl.value}/${fotoEquipo}`
+  // Construir URL usando el endpoint de imágenes del servidor
+  const urlCompleta = `${apiBaseUrl.value}/imagenes/${nombreArchivo}`
+  console.log('🔗 URL relativa convertida:', urlCompleta)
+  
+  return urlCompleta
 }
 
 // Función para logout

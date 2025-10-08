@@ -507,6 +507,65 @@ def obtener_fecha_hora_cdmx(timestamp_offline=None):
 # Montar carpeta de fotos para servir estáticamente
 app.mount("/fotos", StaticFiles(directory=FOTOS_DIR), name="fotos")
 
+# Endpoint específico para servir imágenes con mejor manejo de errores
+@app.get("/imagenes/{archivo}")
+async def servir_imagen(archivo: str):
+    """Servir imágenes con manejo de errores mejorado"""
+    try:
+        # Limpiar nombre del archivo para evitar path traversal
+        archivo_limpio = os.path.basename(archivo)
+        ruta_completa = os.path.join(FOTOS_DIR, archivo_limpio)
+        
+        print(f"📸 Solicitando imagen: {archivo}")
+        print(f"🔍 Ruta completa: {ruta_completa}")
+        print(f"📁 FOTOS_DIR: {FOTOS_DIR}")
+        
+        if not os.path.exists(ruta_completa):
+            print(f"❌ Imagen no encontrada: {ruta_completa}")
+            # Verificar qué archivos existen en el directorio
+            try:
+                archivos_existentes = os.listdir(FOTOS_DIR)
+                print(f"📋 Archivos disponibles: {archivos_existentes[:10]}")  # Mostrar solo los primeros 10
+            except:
+                print("❌ No se pudo listar el directorio de imágenes")
+            
+            raise HTTPException(status_code=404, detail="Imagen no encontrada")
+        
+        # Determinar tipo MIME basado en la extensión
+        ext = os.path.splitext(archivo_limpio)[1].lower()
+        mime_types = {
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg', 
+            '.png': 'image/png',
+            '.gif': 'image/gif',
+            '.webp': 'image/webp'
+        }
+        media_type = mime_types.get(ext, 'image/jpeg')
+        
+        print(f"✅ Sirviendo imagen: {archivo_limpio} como {media_type}")
+        
+        # Leer y devolver el archivo
+        with open(ruta_completa, "rb") as archivo_img:
+            contenido = archivo_img.read()
+        
+        return StreamingResponse(
+            io.BytesIO(contenido),
+            media_type=media_type,
+            headers={"Content-Disposition": f"inline; filename={archivo_limpio}"}
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error sirviendo imagen {archivo}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
+# Endpoint alternativo para archivos en la carpeta tmp/dron_fotos
+@app.get("/tmp/dron_fotos/{archivo}")
+async def servir_imagen_tmp(archivo: str):
+    """Servir imágenes desde la ruta tmp/dron_fotos (compatibilidad con URLs existentes)"""
+    return await servir_imagen(archivo)
+
 # ==================== MODELOS ====================
 
 class UserCreate(BaseModel):
@@ -1111,20 +1170,22 @@ async def crear_solicitud_dron(
             
         except Exception as fe:
             print(f"❌ Error al guardar foto: {fe}")
-            # Si falla, usar solo el nombre del archivo
-            ruta_archivo = nombre_archivo
-            print(f"⚠️  Usando solo nombre de archivo: {ruta_archivo}")
+            print(f"⚠️  Continuando con el proceso...")
 
         # Crear el punto geográfico para PostgreSQL
         punto_ubicacion = f"POINT({longitud} {latitud})"
 
+        # IMPORTANTE: Guardar solo el nombre del archivo en la BD, no la ruta completa
+        # Esto permite que el frontend construya la URL correcta usando el endpoint de imágenes
+        print(f"💾 Guardando en BD solo el nombre de archivo: {nombre_archivo}")
+        
         # Insertar solicitud en la base de datos
         cursor.execute("""
             INSERT INTO solicitudes_dron 
             (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
             VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
             RETURNING id
-        """, (tipo, usuario_id, fecha_hora, ruta_archivo, json.dumps(instantanea_checklist), 
+        """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
               observaciones, punto_ubicacion, 'pendiente'))
         
         solicitud_id = cursor.fetchone()[0]
@@ -1141,7 +1202,7 @@ async def crear_solicitud_dron(
             INSERT INTO historial_solicitudes 
             (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (solicitud_id, usuario_id, 'creacion', fecha_hora, json.dumps(cambios_creacion), 'pendiente', tipo, ruta_archivo, observaciones))
+        """, (solicitud_id, usuario_id, 'creacion', fecha_hora, json.dumps(cambios_creacion), 'pendiente', tipo, nombre_archivo, observaciones))
         
         conn.commit()
         
@@ -1154,7 +1215,7 @@ async def crear_solicitud_dron(
             "tipo": tipo,
             "fecha_hora": str(fecha_hora),
             "estado": "pendiente",
-            "foto_equipo": ruta_archivo
+            "foto_equipo": nombre_archivo
         }
         
     except HTTPException:
