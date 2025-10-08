@@ -124,16 +124,16 @@
     </div>
 
     <!-- Lista de Solicitudes -->
-    <div class="px-4 pb-4">
-      <div class="bg-white rounded-lg shadow-sm">
+    <div class="px-4 pb-4 flex-1 flex flex-col min-h-0">
+      <div class="bg-white rounded-lg shadow-sm flex flex-col flex-1 min-h-0">
         <!-- Header de sección compacto -->
-        <div class="p-4 border-b border-gray-200">
+        <div class="p-4 border-b border-gray-200 flex-shrink-0">
           <h2 class="text-base sm:text-lg font-semibold text-gray-900">Solicitudes Pendientes</h2>
           <p class="text-xs sm:text-sm text-gray-600 hidden sm:block">Revisa y gestiona las solicitudes de entrada y salida de drones</p>
         </div>
         
         <!-- Loading State -->
-        <div v-if="loading" class="p-6 text-center">
+        <div v-if="loading" class="p-6 text-center flex-1 flex items-center justify-center">
           <div class="inline-flex items-center px-3 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg">
             <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -144,7 +144,7 @@
         </div>
 
         <!-- Empty State -->
-        <div v-else-if="solicitudes.length === 0" class="p-6 text-center">
+        <div v-else-if="solicitudes.length === 0" class="p-6 text-center flex-1 flex flex-col items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
@@ -152,8 +152,8 @@
           <p class="mt-1 text-xs text-gray-500">Todas las solicitudes han sido procesadas.</p>
         </div>
 
-        <!-- Solicitudes List - Mobile First Design -->
-        <div v-else class="divide-y divide-gray-100">
+        <!-- Solicitudes List - Mobile First Design con Scroll -->
+        <div v-else class="divide-y divide-gray-100 overflow-y-auto solicitudes-scroll-container flex-1" ref="solicitudesContainer">
           <div v-for="solicitud in solicitudes" :key="solicitud.id" class="p-4">
             <!-- Tarjeta de solicitud responsiva -->
             <div class="bg-gray-50 rounded-lg p-4 mb-3 border border-gray-200">
@@ -390,6 +390,9 @@ const solicitudes = ref([])
 const loading = ref(false)
 const procesando = ref(null)
 const apiBaseUrl = ref(API_URL)
+
+// Referencias de template
+const solicitudesContainer = ref(null)
 
 // Estadísticas
 const estadisticas = ref({
@@ -692,21 +695,76 @@ function logout() {
 }
 
 /* Estilos para scrollbar personalizado */
-.max-h-48::-webkit-scrollbar {
-  width: 4px;
+.max-h-48::-webkit-scrollbar,
+.max-h-96::-webkit-scrollbar {
+  width: 6px;
 }
 
-.max-h-48::-webkit-scrollbar-track {
+.max-h-48::-webkit-scrollbar-track,
+.max-h-96::-webkit-scrollbar-track {
   background: #f1f5f9;
+  border-radius: 3px;
 }
 
-.max-h-48::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 2px;
+.max-h-48::-webkit-scrollbar-thumb,
+.max-h-96::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #1e40af);
+  border-radius: 3px;
 }
 
-.max-h-48::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.max-h-48::-webkit-scrollbar-thumb:hover,
+.max-h-96::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563eb, #1d4ed8);
+}
+
+/* Estilo para el contenedor con scroll de solicitudes */
+.solicitudes-scroll-container {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 #f1f5f9;
+  position: relative;
+}
+
+/* Sombra gradual para indicar scroll */
+.solicitudes-scroll-container::before {
+  content: '';
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.solicitudes-scroll-container::after {
+  content: '';
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 10px;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.9), transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Smooth scroll behavior */
+.solicitudes-scroll-container {
+  scroll-behavior: smooth;
+}
+
+/* Mejorar la visibilidad del scroll en móviles */
+@media (max-width: 768px) {
+  .solicitudes-scroll-container {
+    max-height: 70vh; /* Más espacio en móvil */
+  }
+}
+
+@media (min-width: 769px) {
+  .solicitudes-scroll-container {
+    max-height: 24rem; /* max-h-96 equivalente */
+  }
 }
 
 /* Barra verde tipo Notificaciones */
