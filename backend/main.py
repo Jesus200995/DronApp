@@ -1175,15 +1175,27 @@ async def obtener_solicitudes(
         print(f"   tipo: {tipo}")
         print(f"   limit: {limit}")
         
-        if not conn:
+        # Verificar y limpiar conexión antes de consultar
+        if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
         
-        # Construir consulta base
-        query = """
+        # Limpiar cualquier transacción corrupta
+        limpiar_transaccion()
+        
+        # Construir consulta base con manejo robusto
+        base_query = """
             SELECT s.id, s.tipo, s.usuario_id, s.fecha_hora, s.foto_equipo, 
                    s.checklist, s.observaciones, s.estado,
-                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
-                   u.nombre, u.puesto
+                   CASE 
+                       WHEN s.ubicacion IS NOT NULL THEN ST_X(s.ubicacion::geometry)
+                       ELSE NULL 
+                   END as longitud,
+                   CASE 
+                       WHEN s.ubicacion IS NOT NULL THEN ST_Y(s.ubicacion::geometry)
+                       ELSE NULL 
+                   END as latitud,
+                   COALESCE(u.nombre, 'Usuario no encontrado') as nombre,
+                   COALESCE(u.puesto, 'Sin cargo') as puesto
             FROM solicitudes_dron s
             LEFT JOIN usuarios u ON s.usuario_id = u.id
             WHERE 1=1
@@ -1191,53 +1203,85 @@ async def obtener_solicitudes(
         params = []
         
         # Agregar filtros dinámicamente
-        if estado:
+        if estado and estado != "todos":
             if estado not in ['pendiente', 'aprobado', 'rechazado']:
-                raise HTTPException(status_code=400, detail="Estado debe ser 'pendiente', 'aprobado' o 'rechazado'")
-            query += " AND s.estado = %s"
+                raise HTTPException(status_code=400, detail="Estado debe ser 'pendiente', 'aprobado', 'rechazado' o 'todos'")
+            base_query += " AND s.estado = %s"
             params.append(estado)
         
         if usuario_id:
-            query += " AND s.usuario_id = %s"
+            base_query += " AND s.usuario_id = %s"
             params.append(usuario_id)
             
-        if tipo:
+        if tipo and tipo != "todos":
             if tipo not in ['entrada', 'salida']:
-                raise HTTPException(status_code=400, detail="Tipo debe ser 'entrada' o 'salida'")
-            query += " AND s.tipo = %s"
+                raise HTTPException(status_code=400, detail="Tipo debe ser 'entrada', 'salida' o 'todos'")
+            base_query += " AND s.tipo = %s"
             params.append(tipo)
         
         # Ordenar por fecha más reciente y aplicar límite
-        query += " ORDER BY s.fecha_hora DESC"
-        if limit:
-            query += f" LIMIT {limit}"
+        base_query += " ORDER BY s.fecha_hora DESC"
+        if limit and limit > 0:
+            base_query += f" LIMIT {limit}"
         
-        cursor.execute(query, params)
-        registros = cursor.fetchall()
+        print(f"🔍 Ejecutando consulta con {len(params)} parámetros")
         
-        solicitudes = []
-        for registro in registros:
-            solicitud = {
-                "id": registro[0],
-                "tipo": registro[1],
-                "usuario_id": registro[2],
-                "fecha_hora": registro[3].isoformat() if registro[3] else None,
-                "foto_equipo": registro[4],
-                "checklist": json.loads(registro[5]) if registro[5] else {},
-                "observaciones": registro[6],
-                "estado": registro[7],
-                "ubicacion": {
-                    "longitud": float(registro[8]) if registro[8] else None,
-                    "latitud": float(registro[9]) if registro[9] else None
-                },
-                "usuario": {
-                    "nombre_completo": registro[10],
-                    "cargo": registro[11]
+        # Ejecutar consulta usando función segura
+        registros = ejecutar_consulta_segura(base_query, params, fetch_type='all')
+        
+        if not registros:
+            print("⚠️ No se encontraron solicitudes")
+            return {
+                "solicitudes": [],
+                "total": 0,
+                "filtros_aplicados": {
+                    "estado": estado,
+                    "usuario_id": usuario_id,
+                    "tipo": tipo,
+                    "limit": limit
                 }
             }
-            solicitudes.append(solicitud)
         
-        print(f"✅ Encontradas {len(solicitudes)} solicitudes")
+        solicitudes = []
+        for i, registro in enumerate(registros):
+            try:
+                # Procesar checklist de manera segura
+                checklist_data = {}
+                if registro[5]:
+                    try:
+                        if isinstance(registro[5], str):
+                            checklist_data = json.loads(registro[5])
+                        else:
+                            checklist_data = registro[5]
+                    except json.JSONDecodeError:
+                        print(f"⚠️ Error decodificando checklist para solicitud {registro[0]}")
+                        checklist_data = {}
+                
+                solicitud = {
+                    "id": registro[0],
+                    "tipo": registro[1] or "entrada",
+                    "usuario_id": registro[2],
+                    "fecha_hora": registro[3].isoformat() if registro[3] else None,
+                    "foto_equipo": registro[4],
+                    "checklist": checklist_data,
+                    "observaciones": registro[6] or "Sin observaciones",
+                    "estado": registro[7] or "pendiente",
+                    "ubicacion": {
+                        "longitud": float(registro[8]) if registro[8] is not None else None,
+                        "latitud": float(registro[9]) if registro[9] is not None else None
+                    },
+                    "usuario": {
+                        "nombre_completo": registro[10] or "Usuario desconocido",
+                        "cargo": registro[11] or "Sin cargo"
+                    }
+                }
+                solicitudes.append(solicitud)
+                
+            except Exception as e:
+                print(f"⚠️ Error procesando solicitud {i+1}: {e}")
+                continue
+        
+        print(f"✅ Procesadas {len(solicitudes)} solicitudes de {len(registros)} registros")
         
         return {
             "solicitudes": solicitudes,
@@ -1253,7 +1297,17 @@ async def obtener_solicitudes(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"❌ Error al consultar solicitudes: {e}")
+        print(f"🔍 Traceback completo:\n{error_trace}")
+        
+        # Intentar limpiar la conexión para el siguiente request
+        try:
+            limpiar_transaccion()
+        except:
+            pass
+        
         raise HTTPException(status_code=500, detail=f"Error al obtener solicitudes: {str(e)}")
 
 @app.put("/solicitudes/{solicitud_id}")
@@ -1408,6 +1462,77 @@ async def obtener_solicitud_detalle(solicitud_id: int):
         raise HTTPException(status_code=500, detail=f"Error al obtener solicitud: {str(e)}")
 
 # ==================== ENDPOINTS DE HISTORIAL DE SOLICITUDES ====================
+
+@app.get("/solicitudes/estadisticas")
+async def obtener_estadisticas_solicitudes():
+    """Obtener estadísticas de solicitudes por estado"""
+    try:
+        print("📊 Consultando estadísticas de solicitudes...")
+        
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Contar solicitudes por estado
+        resultados = ejecutar_consulta_segura("""
+            SELECT 
+                estado,
+                COUNT(*) as cantidad
+            FROM solicitudes_dron
+            GROUP BY estado
+        """, fetch_type='all')
+        
+        # Inicializar estadísticas con valores por defecto
+        estadisticas = {
+            "total": 0,
+            "pendientes": 0,
+            "aprobadas": 0,
+            "rechazadas": 0
+        }
+        
+        if resultados:
+            for row in resultados:
+                estado = row[0]
+                cantidad = row[1]
+                estadisticas["total"] += cantidad
+                
+                if estado == "pendiente":
+                    estadisticas["pendientes"] = cantidad
+                elif estado == "aprobado":
+                    estadisticas["aprobadas"] = cantidad
+                elif estado == "rechazado":
+                    estadisticas["rechazadas"] = cantidad
+        
+        print(f"✅ Estadísticas calculadas: {estadisticas}")
+        
+        return {
+            "status": "ok",
+            "estadisticas": estadisticas
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al obtener estadísticas: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener estadísticas: {str(e)}")
+
+@app.get("/auth/me")
+async def obtener_usuario_actual():
+    """Obtener información del usuario actual (endpoint de compatibilidad)"""
+    try:
+        # Este es un endpoint de compatibilidad que por ahora devuelve información básica
+        # En el futuro se puede implementar con JWT tokens reales
+        return {
+            "status": "ok",
+            "message": "Endpoint de autenticación disponible",
+            "user": {
+                "id": 1,
+                "username": "admin",
+                "role": "supervisor"
+            }
+        }
+    except Exception as e:
+        print(f"❌ Error en /auth/me: {e}")
+        raise HTTPException(status_code=500, detail=f"Error en autenticación: {str(e)}")
 
 @app.get("/debug/usuario/{usuario_id}")
 async def debug_usuario(usuario_id: int):
