@@ -779,9 +779,24 @@
       <div v-if="toastExito.mostrar" class="toast-success">
         <div class="toast-content">
           <div class="toast-icon-container">
-            <div class="toast-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M9 12l2 2 4-4m6-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            <div class="toast-icon" :class="`toast-icon-${toastExito.tipo}`">
+              <!-- Icono para usuario creado -->
+              <svg v-if="toastExito.tipo === 'created'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="8.5" cy="7" r="4"/>
+                <line x1="20" y1="8" x2="20" y2="14"/>
+                <line x1="23" y1="11" x2="17" y2="11"/>
+              </svg>
+              <!-- Icono para usuario eliminado -->
+              <svg v-else-if="toastExito.tipo === 'deleted'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M3 6h18"/>
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+              <!-- Icono genérico de éxito -->
+              <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="20,6 9,17 4,12"/>
               </svg>
             </div>
           </div>
@@ -854,7 +869,8 @@ const modalEliminar = ref({
 // Toast de éxito
 const toastExito = ref({
   mostrar: false,
-  mensaje: ''
+  mensaje: '',
+  tipo: 'success' // 'success', 'created', 'deleted'
 })
 
 // Computed para estadísticas
@@ -1155,11 +1171,13 @@ const crearUsuario = async () => {
     const result = await response.json()
     console.log('✅ Usuario creado exitosamente:', result)
 
-    // Mostrar mensaje de éxito
-    alert('✅ Usuario creado correctamente')
-    
-    // Cerrar modal y recargar usuarios
+    // Cerrar modal primero
     cerrarModalAgregar()
+    
+    // Mostrar toast de éxito
+    mostrarToastExito('Usuario creado correctamente', 'created')
+    
+    // Recargar usuarios
     await cargarUsuarios()
     
   } catch (err) {
@@ -1185,8 +1203,9 @@ const cerrarModalEliminar = () => {
   modalEliminar.value.eliminando = false
 }
 
-const mostrarToastExito = (mensaje) => {
+const mostrarToastExito = (mensaje, tipo = 'success') => {
   toastExito.value.mensaje = mensaje
+  toastExito.value.tipo = tipo
   toastExito.value.mostrar = true
   
   // Auto ocultar después de 4 segundos
@@ -1226,7 +1245,7 @@ const eliminarUsuario = async () => {
     cerrarModalEliminar()
     
     // Mostrar toast de éxito
-    mostrarToastExito('Usuario eliminado correctamente')
+    mostrarToastExito('Usuario eliminado correctamente', 'deleted')
     
     // Recargar usuarios
     await cargarUsuarios()
@@ -2598,30 +2617,34 @@ const logout = () => {
 /* === TOAST SUCCESS === */
 .toast-success {
   position: fixed;
-  top: 90px; /* Después del header */
-  right: 24px;
+  top: 10px; /* Dentro de la barra superior */
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 9999;
   pointer-events: auto;
 }
 
 .toast-content {
-  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  border-left: 4px solid #10b981;
-  border-radius: 16px;
-  padding: 16px 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 18px;
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-width: 320px;
-  max-width: 400px;
-  box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04),
-    0 0 0 1px rgba(16, 185, 129, 0.05);
+  gap: 12px;
+  min-width: 300px;
+  max-width: 350px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estilos específicos por tipo de toast */
+.toast-success .toast-content {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%);
+  box-shadow: 
+    0 8px 32px rgba(16, 185, 129, 0.4),
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .toast-content:hover {
@@ -2637,18 +2660,19 @@ const logout = () => {
 }
 
 .toast-icon {
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 
-    0 8px 16px rgba(16, 185, 129, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .toast-icon::before {
@@ -2663,12 +2687,27 @@ const logout = () => {
 }
 
 .toast-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   color: white;
   z-index: 1;
   position: relative;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Iconos específicos por tipo */
+.toast-icon-created {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+  box-shadow: 
+    0 4px 8px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+
+.toast-icon-deleted {
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  box-shadow: 
+    0 4px 8px rgba(239, 68, 68, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
 
 .toast-text {
@@ -2678,20 +2717,21 @@ const logout = () => {
 
 .toast-message {
   font-family: 'Inter', sans-serif;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  color: #1f2937;
+  color: white;
   line-height: 1.4;
   margin: 0;
   word-wrap: break-word;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .toast-close {
-  width: 32px;
-  height: 32px;
-  background: rgba(107, 114, 128, 0.1);
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2701,37 +2741,37 @@ const logout = () => {
 }
 
 .toast-close:hover {
-  background: rgba(239, 68, 68, 0.1);
+  background: rgba(255, 255, 255, 0.3);
   transform: scale(1.1);
 }
 
 .toast-close svg {
-  width: 14px;
-  height: 14px;
-  color: #6b7280;
-  transition: color 0.2s ease;
+  width: 12px;
+  height: 12px;
+  color: white;
+  transition: all 0.2s ease;
 }
 
 .toast-close:hover svg {
-  color: #ef4444;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-/* Animaciones Vue Transition */
+/* Animaciones Vue Transition - Desde arriba */
 .toast-slide-enter-active {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .toast-slide-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 1, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 1, 1);
 }
 
 .toast-slide-enter-from {
-  transform: translateX(100%) scale(0.8);
+  transform: translateX(-50%) translateY(-100%) scale(0.9);
   opacity: 0;
 }
 
 .toast-slide-leave-to {
-  transform: translateX(100%) scale(0.8);
+  transform: translateX(-50%) translateY(-100%) scale(0.9);
   opacity: 0;
 }
 
@@ -2747,52 +2787,68 @@ const logout = () => {
 /* Responsive para toast */
 @media (max-width: 768px) {
   .toast-success {
-    top: 80px;
-    right: 16px;
+    top: 8px;
     left: 16px;
+    right: 16px;
+    transform: none;
   }
   
   .toast-content {
     min-width: auto;
-    padding: 14px 16px;
-    border-radius: 12px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    gap: 10px;
   }
   
   .toast-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
   }
   
   .toast-icon svg {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
   }
   
   .toast-message {
-    font-size: 14px;
+    font-size: 13px;
   }
   
   .toast-close {
-    width: 28px;
-    height: 28px;
+    width: 22px;
+    height: 22px;
+  }
+  
+  .toast-close svg {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .toast-slide-enter-from {
+    transform: translateY(-100%) scale(0.9);
+  }
+  
+  .toast-slide-leave-to {
+    transform: translateY(-100%) scale(0.9);
   }
 }
 
 @media (max-width: 480px) {
   .toast-success {
-    top: 75px;
-    right: 12px;
+    top: 6px;
     left: 12px;
+    right: 12px;
   }
   
   .toast-content {
-    padding: 12px 14px;
-    gap: 12px;
+    padding: 8px 12px;
+    gap: 8px;
+    min-width: auto;
   }
   
   .toast-message {
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 </style>
