@@ -576,7 +576,7 @@ class UserCreate(BaseModel):
     contrasena: str
     curp: str
     telefono: str
-    rol: str  # Campo obligatorio SIN valor por defecto
+    rol: str  # Campo obligatorio - debe ser 'tecnico' o 'supervisor'
     supervisor_id: int = None  # Nuevo campo para referencia
 
 class UserLogin(BaseModel):

@@ -726,7 +726,7 @@ const modalAgregar = ref({
     puesto: '',
     contrasena: '',
     confirmarContrasena: '',
-    rol: 'tecnico',  // Valor por defecto técnico
+    rol: '',  // Sin valor por defecto - debe seleccionar explícitamente
     supervisor_id: ''
   }
 })
@@ -903,10 +903,12 @@ const cerrarModalAgregar = () => {
     nombre: '',
     correo: '',
     curp: '',
+    codigoPais: '+52',
     telefono: '',
     puesto: '',
     contrasena: '',
-    rol: 'tecnico',  // Valor por defecto técnico
+    confirmarContrasena: '',
+    rol: '',  // Sin valor por defecto - debe seleccionar explícitamente
     supervisor_id: ''
   }
 }
