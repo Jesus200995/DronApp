@@ -370,10 +370,24 @@ class SolicitudesService {
       // Enriquecer solicitudes con datos del técnico
       const solicitudesEnriquecidas = solicitudesFiltradas.map(s => {
         const tecnico = todosUsuarios.find(u => u.id === s.usuario_id)
+        
+        // Mapeo mejorado de nombres basado en correo si el nombre está vacío
+        let nombreTecnico = tecnico?.nombre || null
+        if (!nombreTecnico || nombreTecnico === 'null' || nombreTecnico === 'undefined') {
+          const correoToNombre = {
+            'mel27@gmail.com': 'BLANCA ESTEFANI MARIEL',
+            'jess@gmail.com': 'JESUS RIOS GOMEZ',
+            'jess3@gmail.com': 'JESUS RIOS GOMEZ SUPERVISOR',
+            'jess1@gmail.com': 'Supervisor Auxiliar',
+            'signus@gmail.com': 'Supervisor General'
+          }
+          nombreTecnico = correoToNombre[tecnico?.correo] || `Técnico (${tecnico?.correo?.split('@')[0] || 'ID: ' + s.usuario_id})`
+        }
+        
         return {
           ...s,
           tecnico: {
-            nombre: tecnico?.nombre || 'Técnico Desconocido',
+            nombre: nombreTecnico,
             correo: tecnico?.correo || 'sin-correo@example.com',
             curp: tecnico?.curp || 'No registrado'
           },
