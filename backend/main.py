@@ -2123,6 +2123,11 @@ async def obtener_historial_usuario(
     try:
         print(f"📋 Consultando historial para usuario {usuario_id}")
         
+        # Validar que usuario_id no sea None o 0
+        if usuario_id is None or usuario_id <= 0:
+            print(f"❌ Usuario ID inválido: {usuario_id}")
+            raise HTTPException(status_code=422, detail="ID de usuario inválido")
+        
         # Verificar conexión
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="No se pudo establecer conexión a la base de datos")
@@ -2567,6 +2572,11 @@ async def obtener_actividades_usuario(
     """Obtener todas las actividades registradas por un técnico específico"""
     try:
         print(f"📋 Consultando actividades para usuario {usuario_id}")
+        
+        # Validar que usuario_id no sea None o 0
+        if usuario_id is None or usuario_id <= 0:
+            print(f"❌ Usuario ID inválido: {usuario_id}")
+            raise HTTPException(status_code=422, detail="ID de usuario inválido")
         
         # Verificar y limpiar conexión
         if not verificar_conexion_db():

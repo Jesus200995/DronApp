@@ -16,8 +16,8 @@
       <div class="text-center mb-3">
         <h1 class="text-lg font-bold text-gray-800 mb-2 modern-title">Historial Completo</h1>
         <div class="w-24 h-0.5 bg-gradient-to-r from-blue-400 to-purple-600 mx-auto mb-2"></div>
-        <p v-if="userInfo" class="text-xs text-gray-500 mb-3">
-          Historial de: <span class="font-semibold text-blue-700">{{ userInfo.nombre_completo }}</span>
+        <p v-if="userInfo && userInfo.id" class="text-xs text-gray-500 mb-3">
+          Historial de: <span class="font-semibold text-blue-700">{{ userInfo.nombre_completo || userInfo.nombre || userInfo.email || 'Usuario' }}</span>
         </p>
         
         <!-- Botones de navegación entre secciones -->
@@ -243,7 +243,7 @@
                   </div>
                   
                   <!-- Botones de acción para solicitudes pendientes -->
-                  <div v-if="item.estado_final === 'pendiente' && userInfo && (userInfo.role === 'tecnico' || userInfo.role === 'admin')" 
+                  <div v-if="item.estado_final === 'pendiente' && userInfo && userInfo.id && (userInfo.role === 'tecnico' || userInfo.role === 'admin')" 
                        class="flex gap-2 mt-3">
                     <button @click="editarSolicitud(item.solicitud_id)" 
                             class="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
@@ -473,21 +473,60 @@ const abortController = ref(null);
 // Comprobar autenticación y cargar datos
 onMounted(async () => {
   const userStr = localStorage.getItem('user');
-  if (!userStr) {
+  const token = localStorage.getItem('token');
+  
+  if (!userStr || !token) {
+    console.error('No se encontró usuario o token en localStorage');
     router.push('/login');
     return;
   }
   
-  userInfo.value = JSON.parse(userStr);
-  
-  // Verificar conexión a internet
-  isOnline.value = await checkInternetConnection();
-  
-  // Cargar historial de solicitudes (siempre, incluso offline)
-  cargarHistorial();
-  
-  // Cargar historial de actividades (siempre, incluso offline)
-  cargarHistorialActividades();
+  try {
+    const userData = JSON.parse(userStr);
+    
+    // Validar que el usuario tenga los campos necesarios
+    if (!userData || !userData.id) {
+      console.error('Usuario sin ID válido:', userData);
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      router.push('/login');
+      return;
+    }
+    
+    // Verificar que el usuario tenga rol de técnico
+    if (userData.role && userData.role !== 'tecnico') {
+      console.error('Usuario sin permisos de técnico:', userData.role);
+      alert('Acceso denegado: Solo los técnicos pueden acceder al historial.');
+      router.push('/');
+      return;
+    }
+    
+    userInfo.value = userData;
+    console.log('Usuario cargado correctamente:', {
+      id: userData.id,
+      nombre: userData.nombre_completo || userData.nombre || userData.email,
+      role: userData.role
+    });
+    
+    // Verificar conexión a internet
+    isOnline.value = await checkInternetConnection();
+    
+    // Solo cargar si el usuario está válido y con ID
+    if (userInfo.value && userInfo.value.id) {
+      // Cargar historial de solicitudes (siempre, incluso offline)
+      await cargarHistorial();
+      
+      // Cargar historial de actividades (siempre, incluso offline)
+      await cargarHistorialActividades();
+    }
+    
+  } catch (error) {
+    console.error('Error al parsear datos del usuario:', error);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    router.push('/login');
+    return;
+  }
 });
 
 // Limpiar event listeners y cancelar requests al desmontar el componente
@@ -505,6 +544,31 @@ async function cargarHistorial() {
   cargando.value = true;
   error.value = null;
   
+  // Validar que el usuario esté disponible y tenga ID
+  if (!userInfo.value || !userInfo.value.id) {
+    console.error('No se puede cargar historial: usuario o ID no disponible');
+    error.value = 'Error: Usuario no válido. Redirigiendo al login...';
+    cargando.value = false;
+    
+    // Limpiar datos y redirigir
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    setTimeout(() => {
+      router.push('/login');
+    }, 2000);
+    return;
+  }
+  
+  // Verificar que el usuario tenga rol de técnico
+  if (userInfo.value.role && userInfo.value.role !== 'tecnico') {
+    error.value = 'Acceso denegado: Solo los técnicos pueden acceder al historial.';
+    cargando.value = false;
+    setTimeout(() => {
+      router.push('/');
+    }, 3000);
+    return;
+  }
+  
   // Verificar conexión a internet antes de cargar
   isOnline.value = await checkInternetConnection();
   if (!isOnline.value) {
@@ -517,13 +581,20 @@ async function cargarHistorial() {
   }
 
   try {
-    console.log('Cargando historial para usuario:', userInfo.value.id);
+    console.log('Cargando historial para usuario:', {
+      id: userInfo.value.id,
+      nombre: userInfo.value.nombre_completo || userInfo.value.nombre || userInfo.value.email
+    });
     
     // Crear un nuevo AbortController para este request
     abortController.value = new AbortController();
     
     // Obtener historial específico del usuario actual
-    const response = await axios.get(`${API_URL}/historial/${userInfo.value.id}`, {
+    console.log('Construyendo URL con ID:', userInfo.value.id);
+    const historialUrl = `${API_URL}/historial/${userInfo.value.id}`;
+    console.log('URL completa:', historialUrl);
+    
+    const response = await axios.get(historialUrl, {
       timeout: 10000, // 10 segundos de timeout
       signal: abortController.value.signal,
       headers: {
@@ -1123,6 +1194,21 @@ async function cargarHistorialActividades() {
   cargandoActividades.value = true;
   errorActividades.value = null;
   
+  // Validar que el usuario esté disponible y tenga ID
+  if (!userInfo.value || !userInfo.value.id) {
+    console.error('No se puede cargar actividades: usuario o ID no disponible');
+    errorActividades.value = 'Error: Usuario no válido.';
+    cargandoActividades.value = false;
+    return;
+  }
+  
+  // Verificar que el usuario tenga rol de técnico
+  if (userInfo.value.role && userInfo.value.role !== 'tecnico') {
+    errorActividades.value = 'Acceso denegado: Solo los técnicos pueden acceder a las actividades.';
+    cargandoActividades.value = false;
+    return;
+  }
+  
   // Verificar conexión a internet antes de cargar
   isOnline.value = await checkInternetConnection();
   if (!isOnline.value) {
@@ -1133,7 +1219,10 @@ async function cargarHistorialActividades() {
   }
 
   try {
-    console.log('Cargando historial de actividades para usuario:', userInfo.value.id);
+    console.log('Cargando historial de actividades para usuario:', {
+      id: userInfo.value.id,
+      nombre: userInfo.value.nombre_completo || userInfo.value.nombre || userInfo.value.email
+    });
     
     // Crear un nuevo AbortController para este request
     if (abortController.value) {
@@ -1142,7 +1231,11 @@ async function cargarHistorialActividades() {
     abortController.value = new AbortController();
     
     // Obtener historial de actividades específico del usuario actual
-    const response = await axios.get(`${API_URL}/actividades/${userInfo.value.id}`, {
+    console.log('Construyendo URL de actividades con ID:', userInfo.value.id);
+    const actividadesUrl = `${API_URL}/actividades/${userInfo.value.id}`;
+    console.log('URL completa de actividades:', actividadesUrl);
+    
+    const response = await axios.get(actividadesUrl, {
       timeout: 10000, // 10 segundos de timeout
       signal: abortController.value.signal,
       headers: {
@@ -1209,6 +1302,21 @@ async function cargarHistorialActividades() {
 // Función para cargar actividades desde localStorage (modo offline)
 function cargarActividadesOffline() {
   try {
+    // Validar que el usuario esté disponible
+    if (!userInfo.value || !userInfo.value.id) {
+      console.error('No se pueden cargar actividades offline: usuario no válido');
+      errorActividades.value = 'Error: Usuario no válido.';
+      historialActividades.value = [];
+      return;
+    }
+    
+    // Verificar que el usuario tenga rol de técnico
+    if (userInfo.value.role && userInfo.value.role !== 'tecnico') {
+      errorActividades.value = 'Acceso denegado: Solo los técnicos pueden acceder a las actividades.';
+      historialActividades.value = [];
+      return;
+    }
+    
     const actividadesOffline = JSON.parse(localStorage.getItem('actividades_offline') || '[]');
     const actividadesUsuario = actividadesOffline.filter(act => act.usuario_id === userInfo.value.id);
     
@@ -1226,7 +1334,7 @@ function cargarActividadesOffline() {
     }));
     
     historialActividades.value = actividadesFormateadas;
-    console.log(`📱 Cargadas ${actividadesFormateadas.length} actividades offline`);
+    console.log(`📱 Cargadas ${actividadesFormateadas.length} actividades offline para usuario ${userInfo.value.id}`);
     
     if (actividadesFormateadas.length === 0) {
       errorActividades.value = 'Sin conexión. No hay actividades guardadas offline.';
@@ -1234,12 +1342,25 @@ function cargarActividadesOffline() {
   } catch (error) {
     console.error('Error al cargar actividades offline:', error);
     errorActividades.value = 'Error al cargar actividades guardadas localmente.';
+    historialActividades.value = [];
   }
 }
 
 // Función para combinar actividades offline con las del servidor
 function combinarActividadesOffline() {
   try {
+    // Validar que el usuario esté disponible
+    if (!userInfo.value || !userInfo.value.id) {
+      console.error('No se pueden combinar actividades offline: usuario no válido');
+      return;
+    }
+    
+    // Verificar que el usuario tenga rol de técnico
+    if (userInfo.value.role && userInfo.value.role !== 'tecnico') {
+      console.error('Acceso denegado: Solo los técnicos pueden combinar actividades');
+      return;
+    }
+    
     const actividadesOffline = JSON.parse(localStorage.getItem('actividades_offline') || '[]');
     const actividadesUsuarioOffline = actividadesOffline.filter(act => 
       act.usuario_id === userInfo.value.id && !act.sincronizada
@@ -1268,7 +1389,7 @@ function combinarActividadesOffline() {
       // Ordenar por fecha (más recientes primero)
       historialActividades.value.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
       
-      console.log(`📱 Combinadas ${actividadesOfflineFormateadas.length} actividades offline con ${historialActividades.value.length - actividadesOfflineFormateadas.length} del servidor`);
+      console.log(`📱 Combinadas ${actividadesOfflineFormateadas.length} actividades offline con ${historialActividades.value.length - actividadesOfflineFormateadas.length} del servidor para usuario ${userInfo.value.id}`);
     }
   } catch (error) {
     console.error('Error al combinar actividades offline:', error);
