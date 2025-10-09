@@ -755,7 +755,18 @@ async function cargarSolicitudes() {
   try {
     console.log('📋 Cargando solicitudes pendientes...')
     
+    // Verificar usuario supervisor
+    const userData = localStorage.getItem('user')
+    if (!userData) {
+      mostrarNotificacion('Error: Sesión expirada. Por favor inicia sesión nuevamente.', 'error')
+      return
+    }
+    
+    const user = JSON.parse(userData)
+    console.log('👤 Usuario supervisor cargando solicitudes:', user)
+    
     const resultado = await SolicitudesService.obtenerSolicitudesPendientes()
+    console.log('🔍 Resultado del servicio:', resultado)
     
     if (resultado.success) {
       // Procesar las solicitudes obtenidas
@@ -765,14 +776,16 @@ async function cargarSolicitudes() {
         foto_url: solicitud.foto_equipo || solicitud.foto_url // Usar foto_equipo o foto_url para compatibilidad
       }))
       
-      console.log(`✅ ${solicitudes.value.length} solicitudes pendientes cargadas`)
+      console.log(`✅ ${solicitudes.value.length} solicitudes pendientes cargadas para supervisor ${user.id}`)
       
       if (solicitudes.value.length === 0) {
-        mostrarNotificacion('No hay solicitudes pendientes', 'success')
+        mostrarNotificacion('No hay solicitudes pendientes de tus técnicos asignados', 'info')
+      } else {
+        mostrarNotificacion(`${solicitudes.value.length} solicitudes pendientes encontradas`, 'success')
       }
     } else {
       console.error('❌ Error del servicio:', resultado.error)
-      mostrarNotificacion(resultado.error, 'error')
+      mostrarNotificacion(`Error al cargar solicitudes: ${resultado.error}`, 'error')
       solicitudes.value = []
     }
     

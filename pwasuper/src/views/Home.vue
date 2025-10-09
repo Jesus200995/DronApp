@@ -1157,6 +1157,14 @@ async function confirmarSolicitud() {
     formData.append("checklist", JSON.stringify(checklist.value));
     formData.append("observaciones", descripcion.value || "");
     
+    // 🔧 CRÍTICO: Incluir supervisor_id para que la solicitud llegue al supervisor correcto
+    if (user.value.supervisor_id) {
+      formData.append("supervisor_id", user.value.supervisor_id.toString());
+      console.log(`📤 Enviando solicitud al supervisor ${user.value.supervisor_id}`);
+    } else {
+      console.warn('⚠️ Usuario técnico sin supervisor_id asignado');
+    }
+    
     // Agregar timestamp offline si está disponible
     const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     if (isLocalDev) {

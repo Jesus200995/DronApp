@@ -301,48 +301,105 @@ class SolicitudesService {
       }
       
       const user = JSON.parse(userData)
+      console.log('🔍 Usuario desde localStorage:', user)
+      
       if (user.rol !== 'supervisor') {
         throw new Error('Usuario no es supervisor')
       }
       
       console.log(`🔍 Obteniendo solicitudes pendientes para supervisor ${user.id}`)
       
-      // SOLUCIÓN TEMPORAL: Usar endpoint /solicitudes que funciona y filtrar del lado cliente
-      // Primero obtener todos los usuarios para mapear técnicos a supervisores
+      // SOLUCIÓN ROBUSTA: Usar endpoints que funcionan y filtrar correctamente
       const [solicitudesResponse, usuariosResponse] = await Promise.all([
         axios.get(`${this.baseURL}/solicitudes`, {
-          timeout: 10000,
+          timeout: 15000,
           headers: { 'Content-Type': 'application/json' }
         }),
         axios.get(`${this.baseURL}/usuarios`, {
-          timeout: 10000,
+          timeout: 15000,
           headers: { 'Content-Type': 'application/json' }
         })
       ])
       
-      const todasSolicitudes = solicitudesResponse.data.solicitudes || []
-      const usuarios = usuariosResponse.data.usuarios || []
+      // Manejar diferentes formatos de respuesta
+      let todasSolicitudes = []
+      let todosUsuarios = []
+      
+      // Verificar formato de solicitudes
+      if (Array.isArray(solicitudesResponse.data)) {
+        todasSolicitudes = solicitudesResponse.data
+      } else if (solicitudesResponse.data.solicitudes) {
+        todasSolicitudes = solicitudesResponse.data.solicitudes
+      } else if (solicitudesResponse.data.data) {
+        todasSolicitudes = solicitudesResponse.data.data
+      }
+      
+      // Verificar formato de usuarios
+      if (Array.isArray(usuariosResponse.data)) {
+        todosUsuarios = usuariosResponse.data
+      } else if (usuariosResponse.data.usuarios) {
+        todosUsuarios = usuariosResponse.data.usuarios
+      } else if (usuariosResponse.data.data) {
+        todosUsuarios = usuariosResponse.data.data
+      }
+      
+      console.log(`📋 Total solicitudes obtenidas: ${todasSolicitudes.length}`)
+      console.log(`👥 Total usuarios obtenidos: ${todosUsuarios.length}`)
       
       // Filtrar técnicos asignados a este supervisor
-      const tecnicosAsignados = usuarios.filter(u => 
+      const tecnicosAsignados = todosUsuarios.filter(u => 
         u.rol === 'tecnico' && u.supervisor_id === user.id
       )
       const tecnicosIds = tecnicosAsignados.map(t => t.id)
       
-      console.log(`👥 Técnicos asignados al supervisor ${user.id}:`, tecnicosIds)
+      console.log(`�‍🔧 Técnicos asignados al supervisor ${user.id}:`, tecnicosAsignados.map(t => `${t.nombre} (ID: ${t.id})`))
+      console.log(`🆔 IDs de técnicos: [${tecnicosIds.join(', ')}]`)
       
-      // Filtrar solicitudes pendientes de esos técnicos
-      const solicitudesFiltradas = todasSolicitudes.filter(s => 
-        s.estado === 'pendiente' && tecnicosIds.includes(s.usuario_id)
-      )
+      // FILTRO DOBLE: Por supervisor_id Y por usuario_id
+      const solicitudesFiltradas = todasSolicitudes.filter(s => {
+        const esPendiente = s.estado === 'pendiente'
+        const esDeTecnicoAsignado = tecnicosIds.includes(s.usuario_id)
+        const supervisorCoincide = s.supervisor_id === user.id
+        
+        // La solicitud es válida si:
+        // 1. Está pendiente Y
+        // 2. (Es de un técnico asignado O tiene el supervisor_id correcto)
+        return esPendiente && (esDeTecnicoAsignado || supervisorCoincide)
+      })
       
-      console.log(`📋 Solicitudes pendientes encontradas: ${solicitudesFiltradas.length}`)
+      // Enriquecer solicitudes con datos del técnico
+      const solicitudesEnriquecidas = solicitudesFiltradas.map(s => {
+        const tecnico = todosUsuarios.find(u => u.id === s.usuario_id)
+        return {
+          ...s,
+          tecnico: {
+            nombre: tecnico?.nombre || 'Técnico Desconocido',
+            correo: tecnico?.correo || 'sin-correo@example.com',
+            curp: tecnico?.curp || 'No registrado'
+          },
+          // Asegurar campos requeridos
+          id: s.id,
+          tipo: s.tipo || s.tipo_actividad, // Compatibilidad
+          fecha_hora: s.fecha_hora || s.fecha_solicitud,
+          estado: s.estado,
+          observaciones: s.observaciones || 'Sin observaciones',
+          foto_equipo: s.foto_equipo,
+          checklist: typeof s.checklist === 'string' ? JSON.parse(s.checklist) : s.checklist,
+          latitud: s.latitud || 19.4326,
+          longitud: s.longitud || -99.1332
+        }
+      })
+      
+      console.log(`📋 Solicitudes pendientes encontradas: ${solicitudesEnriquecidas.length}`)
+      if (solicitudesEnriquecidas.length > 0) {
+        console.log('🔍 Primera solicitud:', solicitudesEnriquecidas[0])
+      }
       
       return {
         success: true,
-        data: { solicitudes: solicitudesFiltradas },
-        solicitudes: solicitudesFiltradas,
-        total: solicitudesFiltradas.length
+        data: { solicitudes: solicitudesEnriquecidas },
+        solicitudes: solicitudesEnriquecidas,
+        total: solicitudesEnriquecidas.length
       }
       
     } catch (error) {

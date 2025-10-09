@@ -796,7 +796,8 @@ async def login(usuario: UserLogin):
         
         # ✅ RESPUESTA ACTUALIZADA: Incluir supervisor_id para técnicos
         response_data = {
-            "usuario_id": user[0],  # Cambiar 'id' por 'usuario_id' para consistencia
+            "id": user[0],  # Mantener 'id' como campo principal 
+            "usuario_id": user[0],  # También incluir 'usuario_id' para compatibilidad
             "correo": user[1],
             "nombre": user[2],
             "puesto": user[3],
