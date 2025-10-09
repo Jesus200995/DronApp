@@ -794,12 +794,28 @@ async def login(usuario: UserLogin):
         
         print(f"✅ Login exitoso - Usuario: {user[2]}, Rol: {user[8]}, Supervisor ID: {user[9]}")
         
+        # ✅ GENERAR NOMBRE AUTOMÁTICO SI ESTÁ VACÍO
+        nombre_usuario = user[2]
+        if not nombre_usuario or nombre_usuario.lower() in ['none', 'null', '']:
+            # Generar nombre basado en el correo
+            correo_base = user[1].split('@')[0]
+            nombre_usuario = correo_base.replace('.', ' ').replace('_', ' ').title()
+            
+            # Intentar actualizar el nombre en la base de datos para futuros usos
+            try:
+                cursor.execute("UPDATE usuarios SET nombre = %s WHERE id = %s", (nombre_usuario, user[0]))
+                conn.commit()
+                print(f"✅ Nombre actualizado automáticamente: {nombre_usuario}")
+            except Exception as update_error:
+                print(f"⚠️ No se pudo actualizar el nombre: {update_error}")
+                conn.rollback()
+        
         # ✅ RESPUESTA ACTUALIZADA: Incluir supervisor_id para técnicos
         response_data = {
             "id": user[0],  # Mantener 'id' como campo principal 
             "usuario_id": user[0],  # También incluir 'usuario_id' para compatibilidad
             "correo": user[1],
-            "nombre": user[2],
+            "nombre": nombre_usuario,  # Usar el nombre corregido
             "puesto": user[3],
             "supervisor": user[4],  # Campo legacy
             "curp": user[5],
@@ -892,11 +908,29 @@ async def obtener_usuarios():
             # Usar el rol real de la base de datos (índice 10)
             rol_bd = row[10] if len(row) > 10 else 'tecnico'
             
+            # ✅ GENERAR NOMBRE AUTOMÁTICO SI ESTÁ VACÍO
+            nombre_usuario = row[2]  # nombre original
+            if not nombre_usuario or nombre_usuario.lower() in ['none', 'null', '']:
+                # Generar nombre basado en el correo
+                correo_base = row[1].split('@')[0]  # row[1] es el correo
+                nombre_usuario = correo_base.replace('.', ' ').replace('_', ' ').title()
+                
+                # Intentar actualizar el nombre en la base de datos
+                try:
+                    cursor.execute("UPDATE usuarios SET nombre = %s WHERE id = %s", (nombre_usuario, row[0]))
+                    conn.commit()
+                    print(f"✅ Nombre auto-actualizado para usuario {row[0]}: {nombre_usuario}")
+                except Exception as update_error:
+                    print(f"⚠️ No se pudo auto-actualizar nombre para usuario {row[0]}: {update_error}")
+                    conn.rollback()
+            
             usuario = {
                 "id": row[0],
                 "correo": row[1],
-                "nombre_completo": row[2],  # Mapear nombre a nombre_completo para compatibilidad
-                "cargo": row[3],  # Mapear puesto a cargo para compatibilidad
+                "nombre": nombre_usuario,  # ✅ CAMPO CORRECTO
+                "nombre_completo": nombre_usuario,  # Mantener compatibilidad
+                "puesto": row[3],  # ✅ CAMPO CORRECTO
+                "cargo": row[3],  # Mantener compatibilidad
                 "supervisor": row[4],  # Campo legacy
                 "curp": row[5],
                 "contrasena": row[6],
