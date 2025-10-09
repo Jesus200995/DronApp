@@ -713,6 +713,21 @@
             </div>
 
             <div class="modal-body">
+              <!-- Alerta si hay error de conectividad -->
+              <div v-if="modalEditar.error && modalEditar.error.includes('no está disponible')" class="endpoint-warning">
+                <div class="warning-icon-small">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/>
+                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <div class="warning-text-small">
+                  <strong>Funcionalidad en desarrollo</strong><br>
+                  La edición de usuarios se habilitará próximamente en el servidor de producción.
+                </div>
+              </div>
+
               <form @submit.prevent="actualizarUsuario" class="user-form">
                 <div class="form-grid">
                   <!-- Nombre Completo -->
@@ -907,7 +922,7 @@
               <button 
                 @click="actualizarUsuario" 
                 class="modal-btn save-btn"
-                :disabled="modalEditar.guardando"
+                :disabled="modalEditar.guardando || (modalEditar.error && modalEditar.error.includes('no está disponible'))"
               >
                 <svg v-if="modalEditar.guardando" class="spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M21 12a9 9 0 11-6.219-8.56"/>
@@ -917,7 +932,7 @@
                   <polyline points="17,21 17,13 7,13 7,21"/>
                   <polyline points="7,3 7,8 15,8"/>
                 </svg>
-                {{ modalEditar.guardando ? 'Actualizando...' : 'Actualizar Usuario' }}
+                {{ modalEditar.guardando ? 'Actualizando...' : (modalEditar.error && modalEditar.error.includes('no está disponible') ? 'No Disponible' : 'Actualizar Usuario') }}
               </button>
             </div>
           </div>
@@ -1434,9 +1449,45 @@ const crearUsuario = async () => {
   }
 }
 
+// Verificar si el endpoint PUT está disponible
+const verificarEndpointEdicion = async (usuarioId) => {
+  try {
+    console.log('🧪 Verificando endpoint de edición...')
+    
+    // Hacer una petición HEAD o GET para ver si el endpoint responde
+    const response = await fetch(`${API_CONFIG.baseURL}/usuarios/${usuarioId}`, {
+      method: 'HEAD',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    console.log('🧪 Endpoint check - Status:', response.status)
+    
+    // Si responde con 200, 405 (método no permitido) o 404, el servidor está ahí
+    if (response.status === 200 || response.status === 405 || response.status === 404) {
+      return true
+    }
+    
+    return false
+  } catch (error) {
+    console.warn('⚠️ Error verificando endpoint:', error)
+    return false
+  }
+}
+
 // Métodos para modal de editar usuario
-const abrirModalEditar = (usuario) => {
+const abrirModalEditar = async (usuario) => {
   console.log('✏️ Abriendo modal para editar usuario:', usuario.id)
+  
+  // Verificar si el endpoint de edición está disponible
+  const endpointDisponible = await verificarEndpointEdicion(usuario.id)
+  if (!endpointDisponible) {
+    // Mostrar mensaje amigable si el endpoint no está disponible
+    modalEditar.value.error = '⚠️ La funcionalidad de edición de usuarios aún no está disponible en el servidor de producción. Esta característica será habilitada próximamente.'
+    console.warn('⚠️ Endpoint de edición no disponible')
+  }
+  
   modalEditar.value.usuario = {
     id: usuario.id,
     correo: usuario.correo,
@@ -1448,8 +1499,7 @@ const abrirModalEditar = (usuario) => {
     contrasena: '' // Vacío para no cambiar contraseña por defecto
   }
   modalEditar.value.mostrar = true
-  modalEditar.value.error = null
-  cargarSupervisores()
+  await cargarSupervisores()
 }
 
 const cerrarModalEditar = () => {
@@ -1507,28 +1557,66 @@ const actualizarUsuario = async () => {
       throw new Error('Los técnicos deben tener un supervisor asignado')
     }
 
-    console.log('📝 Actualizando usuario:', modalEditar.value.usuario.id)
+    console.log('📝 Intentando actualizar usuario:', modalEditar.value.usuario.id)
+    console.log('🔗 URL:', `${API_CONFIG.baseURL}/usuarios/${modalEditar.value.usuario.id}`)
 
-    const response = await fetch(`${API_CONFIG.BASE_URL}/usuarios/${modalEditar.value.usuario.id}`, {
+    const requestData = {
+      correo: modalEditar.value.usuario.correo.trim(),
+      nombre: modalEditar.value.usuario.nombre.trim(),
+      puesto: modalEditar.value.usuario.puesto.trim(),
+      telefono: modalEditar.value.usuario.telefono.trim(),
+      rol: modalEditar.value.usuario.rol,
+      supervisor_id: modalEditar.value.usuario.supervisor_id,
+      contrasena: modalEditar.value.usuario.contrasena.trim() || null
+    }
+    
+    console.log('📤 Datos a enviar:', requestData)
+
+    // Primero intentar con PUT
+    let response = await fetch(`${API_CONFIG.baseURL}/usuarios/${modalEditar.value.usuario.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        correo: modalEditar.value.usuario.correo.trim(),
-        nombre: modalEditar.value.usuario.nombre.trim(),
-        puesto: modalEditar.value.usuario.puesto.trim(),
-        telefono: modalEditar.value.usuario.telefono.trim(),
-        rol: modalEditar.value.usuario.rol,
-        supervisor_id: modalEditar.value.usuario.supervisor_id,
-        contrasena: modalEditar.value.usuario.contrasena.trim() || null
-      })
+      body: JSON.stringify(requestData)
     })
 
-    const data = await response.json()
+    console.log('📥 Response status:', response.status)
+    
+    // Si el endpoint PUT no existe (404 o 405), mostrar mensaje informativo
+    if (response.status === 404 || response.status === 405) {
+      throw new Error('⚠️ El endpoint de edición aún no está disponible en el servidor de producción. Por favor, contacta al administrador del sistema para habilitar esta funcionalidad.')
+    }
+
+    // Verificar si la respuesta tiene contenido
+    const responseText = await response.text()
+    console.log('📥 Response text:', responseText)
+    
+    let data = {}
+    if (responseText) {
+      try {
+        data = JSON.parse(responseText)
+      } catch (e) {
+        console.error('❌ Error parsing JSON:', e)
+        
+        // Si no se puede parsear el JSON, verificar si es un error de servidor
+        if (response.status >= 500) {
+          throw new Error('❌ Error interno del servidor. El endpoint de edición puede no estar implementado aún.')
+        }
+        
+        throw new Error(`Error en la respuesta del servidor: ${responseText.substring(0, 100)}...`)
+      }
+    } else {
+      // Respuesta vacía pero status OK
+      if (response.ok) {
+        data = { mensaje: 'Usuario actualizado exitosamente' }
+      } else {
+        throw new Error(`Error ${response.status}: Sin respuesta del servidor`)
+      }
+    }
 
     if (!response.ok) {
-      throw new Error(data.detail || 'Error al actualizar usuario')
+      throw new Error(data.detail || data.message || `Error ${response.status}: ${responseText || 'Sin detalles'}`)
     }
 
     console.log('✅ Usuario actualizado exitosamente:', data)
@@ -1537,7 +1625,7 @@ const actualizarUsuario = async () => {
     cerrarModalEditar()
     
     // Mostrar toast de éxito
-    mostrarToastExito('Usuario actualizado exitosamente', 'success')
+    mostrarToastExito(data.mensaje || 'Usuario actualizado exitosamente', 'success')
     
     // Recargar lista de usuarios
     await cargarUsuarios()
@@ -2842,6 +2930,48 @@ const logout = () => {
 .form-input.error {
   border-color: #dc2626;
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* === MODAL EDICIÓN - ADVERTENCIAS === */
+.endpoint-warning {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  background: linear-gradient(135deg, #fef3cd 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.1);
+}
+
+.warning-icon-small {
+  width: 24px;
+  height: 24px;
+  background: #f59e0b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.warning-icon-small svg {
+  width: 14px;
+  height: 14px;
+  color: white;
+}
+
+.warning-text-small {
+  flex: 1;
+  font-size: 14px;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+.warning-text-small strong {
+  color: #78350f;
+  font-weight: 600;
 }
 
 /* === MODAL DE ELIMINACIÓN === */
