@@ -243,7 +243,7 @@
                   </div>
                   
                   <!-- Botones de acción para solicitudes pendientes -->
-                  <div v-if="item.estado_final === 'pendiente' && userInfo && userInfo.id && (userInfo.role === 'tecnico' || userInfo.role === 'admin')" 
+                  <div v-if="item.estado_final === 'pendiente' && userInfo && userInfo.id && (userInfo.role === 'tecnico' || userInfo.role === 'supervisor' || userInfo.role === 'admin')" 
                        class="flex gap-2 mt-3">
                     <button @click="editarSolicitud(item.solicitud_id)" 
                             class="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-200 transition-colors">
@@ -493,19 +493,29 @@ onMounted(async () => {
       return;
     }
     
-    // Verificar que el usuario tenga rol de técnico
-    if (userData.role && userData.role !== 'tecnico') {
-      console.error('Usuario sin permisos de técnico:', userData.role);
-      alert('Acceso denegado: Solo los técnicos pueden acceder al historial.');
+    // Verificar que el usuario tenga rol de técnico, supervisor o admin  
+    const userRole = userData.rol || userData.puesto || userData.role;
+    if (userRole && userRole !== 'tecnico' && userRole !== 'supervisor' && userRole !== 'admin') {
+      console.error('Usuario sin permisos de acceso al historial:', userRole);
+      alert('Acceso denegado: Solo los técnicos, supervisores y administradores pueden acceder al historial.');
       router.push('/');
       return;
     }
     
-    userInfo.value = userData;
+    // Mapear correctamente los campos del usuario
+    userInfo.value = {
+      id: userData.usuario_id || userData.id,
+      nombre_completo: userData.nombre || userData.nombre_completo,
+      email: userData.correo || userData.email,
+      role: userData.rol || userData.puesto || 'tecnico', // Priorizar rol sobre puesto
+      puesto: userData.puesto,
+      rol: userData.rol
+    };
+    
     console.log('Usuario cargado correctamente:', {
-      id: userData.id,
-      nombre: userData.nombre_completo || userData.nombre || userData.email,
-      role: userData.role
+      id: userInfo.value.id,
+      nombre: userInfo.value.nombre_completo,
+      role: userInfo.value.role
     });
     
     // Verificar conexión a internet
@@ -559,9 +569,9 @@ async function cargarHistorial() {
     return;
   }
   
-  // Verificar que el usuario tenga rol de técnico
-  if (userInfo.value.role && userInfo.value.role !== 'tecnico') {
-    error.value = 'Acceso denegado: Solo los técnicos pueden acceder al historial.';
+  // Verificar que el usuario tenga rol de técnico, supervisor o admin
+  if (userInfo.value.role && userInfo.value.role !== 'tecnico' && userInfo.value.role !== 'supervisor' && userInfo.value.role !== 'admin') {
+    error.value = 'Acceso denegado: Solo los técnicos, supervisores y administradores pueden acceder al historial.';
     cargando.value = false;
     setTimeout(() => {
       router.push('/');

@@ -2941,6 +2941,125 @@ async def startup_event():
     else:
         print("⚠️ Servidor iniciado SIN base de datos - algunos endpoints fallarán")
 
+# ==============================================
+# ENDPOINTS DE ASISTENCIAS Y REGISTROS
+# ==============================================
+
+@app.get("/asistencia/hoy/{usuario_id}")
+async def consultar_asistencia_hoy(usuario_id: int):
+    """
+    Consultar asistencia del día actual para un usuario
+    """
+    try:
+        print(f"🔍 Consultando asistencia hoy para usuario {usuario_id}")
+        
+        # Obtener fecha actual en zona horaria de México
+        mexico_tz = pytz.timezone('America/Mexico_City')
+        hoy = datetime.now(mexico_tz).strftime('%Y-%m-%d')
+        
+        if use_sqlite:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT * FROM asistencias 
+                WHERE usuario_id = ? 
+                AND DATE(fecha_registro) = ?
+                ORDER BY fecha_registro DESC
+                LIMIT 1
+            """, (usuario_id, hoy))
+            
+            asistencia = cursor.fetchone()
+            
+            if asistencia:
+                # Convertir tupla a diccionario
+                columns = [desc[0] for desc in cursor.description]
+                asistencia_dict = dict(zip(columns, asistencia))
+                return {
+                    "tiene_asistencia": True,
+                    "asistencia": asistencia_dict
+                }
+            else:
+                return {
+                    "tiene_asistencia": False,
+                    "asistencia": None
+                }
+        else:
+            # PostgreSQL
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute("""
+                SELECT * FROM asistencias 
+                WHERE usuario_id = %s 
+                AND DATE(fecha_registro) = %s
+                ORDER BY fecha_registro DESC
+                LIMIT 1
+            """, (usuario_id, hoy))
+            
+            asistencia = cursor.fetchone()
+            cursor.close()
+            
+            if asistencia:
+                return {
+                    "tiene_asistencia": True,
+                    "asistencia": dict(asistencia)
+                }
+            else:
+                return {
+                    "tiene_asistencia": False,
+                    "asistencia": None
+                }
+                
+    except Exception as e:
+        print(f"❌ Error consultando asistencia del día: {e}")
+        raise HTTPException(status_code=500, detail=f"Error consultando asistencia: {str(e)}")
+
+@app.get("/registros")
+async def obtener_registros_usuario(usuario_id: int):
+    """
+    Obtener registros de actividades de un usuario
+    """
+    try:
+        print(f"🔍 Obteniendo registros para usuario {usuario_id}")
+        
+        if use_sqlite:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT * FROM registros 
+                WHERE usuario_id = ? 
+                ORDER BY fecha_registro DESC
+                LIMIT 50
+            """, (usuario_id,))
+            
+            registros = cursor.fetchall()
+            
+            # Convertir a lista de diccionarios
+            columns = [desc[0] for desc in cursor.description]
+            registros_list = [dict(zip(columns, registro)) for registro in registros]
+            
+            return {
+                "registros": registros_list,
+                "total": len(registros_list)
+            }
+        else:
+            # PostgreSQL
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+            cursor.execute("""
+                SELECT * FROM registros 
+                WHERE usuario_id = %s 
+                ORDER BY fecha_registro DESC
+                LIMIT 50
+            """, (usuario_id,))
+            
+            registros = cursor.fetchall()
+            cursor.close()
+            
+            return {
+                "registros": [dict(registro) for registro in registros],
+                "total": len(registros)
+            }
+                
+    except Exception as e:
+        print(f"❌ Error obteniendo registros: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo registros: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     # Conectar a la base de datos antes de iniciar el servidor
