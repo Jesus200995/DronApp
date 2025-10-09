@@ -695,11 +695,24 @@ async def crear_usuario(usuario: UserCreate):
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="La CURP ya está registrada")
         
-        # Validar supervisor_id si es técnico
-        if usuario.rol == "tecnico" and usuario.supervisor_id:
-            cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario.supervisor_id,))
-            if not cursor.fetchone():
-                raise HTTPException(status_code=400, detail="El supervisor especificado no existe")
+        # ✅ LÓGICA CORREGIDA: Manejar supervisor_id según el rol al crear
+        supervisor_id_final = None
+        
+        if usuario.rol == "tecnico":
+            # Si es técnico, validar el supervisor_id si se proporciona
+            if usuario.supervisor_id:
+                cursor.execute("SELECT id, rol FROM usuarios WHERE id = %s", (usuario.supervisor_id,))
+                supervisor_data = cursor.fetchone()
+                if not supervisor_data:
+                    raise HTTPException(status_code=400, detail="El supervisor especificado no existe")
+                if supervisor_data[1] != 'supervisor':
+                    raise HTTPException(status_code=400, detail="El usuario asignado como supervisor no tiene el rol de supervisor")
+                supervisor_id_final = usuario.supervisor_id
+            # Si no se proporciona supervisor_id, queda como None
+        elif usuario.rol == "supervisor":
+            # ✅ CORREGIDO: Si es supervisor, SIEMPRE supervisor_id = NULL
+            supervisor_id_final = None
+            print("🧹 Creando supervisor sin supervisor_id")
         
         # Encriptar contraseña usando bcrypt
         import bcrypt
@@ -709,7 +722,7 @@ async def crear_usuario(usuario: UserCreate):
         cursor.execute(
             """INSERT INTO usuarios (correo, nombre, puesto, supervisor, contrasena, curp, telefono, rol, supervisor_id, fecha_registro) 
                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, NOW()) RETURNING id""",
-            (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, hashed_password, curp_upper, usuario.telefono, usuario.rol, usuario.supervisor_id)
+            (usuario.correo, usuario.nombre, usuario.puesto, usuario.supervisor, hashed_password, curp_upper, usuario.telefono, usuario.rol, supervisor_id_final)
         )
         
         user_id = cursor.fetchone()[0]
@@ -983,11 +996,24 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
         if cursor.fetchone():
             raise HTTPException(status_code=400, detail="El correo ya está registrado por otro usuario")
         
-        # Validar supervisor_id si es técnico
-        if usuario.rol == "tecnico" and usuario.supervisor_id:
-            cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario.supervisor_id,))
-            if not cursor.fetchone():
-                raise HTTPException(status_code=400, detail="El supervisor especificado no existe")
+        # ✅ LÓGICA CORREGIDA: Manejar supervisor_id según el rol
+        supervisor_id_final = None
+        
+        if usuario.rol == "tecnico":
+            # Si es técnico, validar el supervisor_id si se proporciona
+            if usuario.supervisor_id:
+                cursor.execute("SELECT id, rol FROM usuarios WHERE id = %s", (usuario.supervisor_id,))
+                supervisor_data = cursor.fetchone()
+                if not supervisor_data:
+                    raise HTTPException(status_code=400, detail="El supervisor especificado no existe")
+                if supervisor_data[1] != 'supervisor':
+                    raise HTTPException(status_code=400, detail="El usuario asignado como supervisor no tiene el rol de supervisor")
+                supervisor_id_final = usuario.supervisor_id
+            # Si no se proporciona supervisor_id, queda como None
+        elif usuario.rol == "supervisor":
+            # ✅ CORREGIDO: Si es supervisor, SIEMPRE limpiar supervisor_id
+            supervisor_id_final = None
+            print("🧹 Limpiando supervisor_id porque el rol es supervisor")
         
         # Preparar la actualización
         campos_actualizacion = []
@@ -1007,7 +1033,7 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
             usuario.puesto,
             usuario.telefono,
             usuario.rol,
-            usuario.supervisor_id
+            supervisor_id_final  # ✅ Usar el valor calculado
         ])
         
         # Si se proporciona nueva contraseña, actualizarla
@@ -1030,9 +1056,20 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
         conn.commit()
         
         # ✅ VERIFICAR QUE SE GUARDÓ CORRECTAMENTE
-        cursor.execute("SELECT rol FROM usuarios WHERE id = %s", (usuario_id,))
-        rol_guardado = cursor.fetchone()
-        print(f"✅ ROL GUARDADO EN BD: '{rol_guardado[0] if rol_guardado else 'NULL'}'")
+        cursor.execute("SELECT rol, supervisor_id FROM usuarios WHERE id = %s", (usuario_id,))
+        datos_guardados = cursor.fetchone()
+        if datos_guardados:
+            print(f"✅ DATOS GUARDADOS EN BD:")
+            print(f"   ROL: '{datos_guardados[0]}'")
+            print(f"   SUPERVISOR_ID: {datos_guardados[1]}")
+            
+            # Verificar consistencia
+            if datos_guardados[0] == 'supervisor' and datos_guardados[1] is not None:
+                print("⚠️ ADVERTENCIA: Supervisor tiene supervisor_id asignado (inconsistencia)")
+            elif datos_guardados[0] == 'tecnico' and datos_guardados[1] is None:
+                print("⚠️ ADVERTENCIA: Técnico sin supervisor_id asignado")
+            else:
+                print("✅ Datos consistentes")
         
         print(f"✅ Usuario {usuario_id} actualizado exitosamente")
         
@@ -1045,8 +1082,9 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
                 "puesto": usuario.puesto,
                 "telefono": usuario.telefono,
                 "rol": usuario.rol,
-                "rol_guardado": rol_guardado[0] if rol_guardado else None,  # Agregar verificación
-                "supervisor_id": usuario.supervisor_id,
+                "rol_guardado": datos_guardados[0] if datos_guardados else None,  # Agregar verificación
+                "supervisor_id_guardado": datos_guardados[1] if datos_guardados else None,  # Agregar verificación
+                "supervisor_id": supervisor_id_final,
                 "contrasena_actualizada": bool(usuario.contrasena and usuario.contrasena.strip())
             }
         }

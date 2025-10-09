@@ -826,7 +826,7 @@
                       id="editRol"
                       v-model="modalEditar.usuario.rol"
                       class="form-select"
-                      @change="onRolChange"
+                      @change="onRolChangeEditar"
                       required
                     >
                       <option value="tecnico">Técnico</option>
@@ -1366,12 +1366,31 @@ const cargarSupervisores = async () => {
 }
 
 const onRolChange = () => {
-  // Si cambia a supervisor, limpiar supervisor_id
+  console.log('🔄 Rol cambiado a:', modalAgregar.value.usuario.rol)
+  
+  // ✅ CORREGIDO: Si cambia a supervisor, limpiar supervisor_id
   if (modalAgregar.value.usuario.rol === 'supervisor') {
-    modalAgregar.value.usuario.supervisor_id = ''
+    console.log('🧹 Limpiando supervisor_id porque el rol es supervisor')
+    modalAgregar.value.usuario.supervisor_id = null
   }
   // Si cambia a técnico, cargar supervisores
   if (modalAgregar.value.usuario.rol === 'tecnico' && supervisores.value.length === 0) {
+    console.log('📋 Cargando supervisores para selección')
+    cargarSupervisores()
+  }
+}
+
+const onRolChangeEditar = () => {
+  console.log('🔄 Rol en edición cambiado a:', modalEditar.value.usuario.rol)
+  
+  // ✅ CORREGIDO: Si cambia a supervisor, limpiar supervisor_id
+  if (modalEditar.value.usuario.rol === 'supervisor') {
+    console.log('🧹 Limpiando supervisor_id en edición porque el rol es supervisor')
+    modalEditar.value.usuario.supervisor_id = null
+  }
+  // Si cambia a técnico, cargar supervisores
+  if (modalEditar.value.usuario.rol === 'tecnico' && supervisores.value.length === 0) {
+    console.log('📋 Cargando supervisores para edición')
     cargarSupervisores()
   }
 }
@@ -1575,7 +1594,7 @@ const actualizarUsuario = async () => {
       throw new Error('El teléfono debe incluir código de país (ej: +52 5512345678)')
     }
 
-    // Si es técnico, debe tener supervisor asignado
+    // ✅ CORREGIDO: Validar supervisor solo para técnicos
     if (modalEditar.value.usuario.rol === 'tecnico' && !modalEditar.value.usuario.supervisor_id) {
       throw new Error('Los técnicos deben tener un supervisor asignado')
     }
@@ -1583,13 +1602,20 @@ const actualizarUsuario = async () => {
     console.log('📝 Intentando actualizar usuario:', modalEditar.value.usuario.id)
     console.log('🔗 URL:', `${API_CONFIG.baseURL}/usuarios/${modalEditar.value.usuario.id}`)
 
+    // ✅ CORREGIDO: Lógica para supervisor_id según rol
+    let supervisor_id_final = null
+    if (modalEditar.value.usuario.rol === 'tecnico') {
+      supervisor_id_final = modalEditar.value.usuario.supervisor_id
+    }
+    // Si es supervisor, supervisor_id_final queda como null
+
     const requestData = {
       correo: modalEditar.value.usuario.correo.trim(),
       nombre: modalEditar.value.usuario.nombre.trim(),
       puesto: modalEditar.value.usuario.puesto.trim(),
       telefono: modalEditar.value.usuario.telefono.trim(),
       rol: modalEditar.value.usuario.rol,
-      supervisor_id: modalEditar.value.usuario.supervisor_id
+      supervisor_id: supervisor_id_final
     }
     
     // ✅ LOGGING PARA DEBUG DE ROL
