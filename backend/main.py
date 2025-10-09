@@ -1293,7 +1293,7 @@ async def obtener_solicitudes_supervisor(supervisor_id: int):
                     print("✅ Usando consulta con supervisor_id")
                     cursor.execute("""
                         SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-                               ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                               s.longitud, s.latitud,
                                s.ubicacion::text, s.observaciones, s.estado,
                                u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist,
                                s.supervisor_id, s.respuesta_supervisor
@@ -1312,7 +1312,7 @@ async def obtener_solicitudes_supervisor(supervisor_id: int):
                         placeholders = ','.join(['%s'] * len(tecnicos_ids))
                         cursor.execute(f"""
                             SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-                                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                                   s.longitud, s.latitud,
                                    s.ubicacion::text, s.observaciones, s.estado,
                                    u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist,
                                    NULL as supervisor_id, NULL as respuesta_supervisor

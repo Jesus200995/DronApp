@@ -307,18 +307,42 @@ class SolicitudesService {
       
       console.log(`🔍 Obteniendo solicitudes pendientes para supervisor ${user.id}`)
       
-      const response = await axios.get(`${this.baseURL}/supervisor/solicitudes/${user.id}`, {
-        timeout: 10000,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
+      // SOLUCIÓN TEMPORAL: Usar endpoint /solicitudes que funciona y filtrar del lado cliente
+      // Primero obtener todos los usuarios para mapear técnicos a supervisores
+      const [solicitudesResponse, usuariosResponse] = await Promise.all([
+        axios.get(`${this.baseURL}/solicitudes`, {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' }
+        }),
+        axios.get(`${this.baseURL}/usuarios`, {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' }
+        })
+      ])
+      
+      const todasSolicitudes = solicitudesResponse.data.solicitudes || []
+      const usuarios = usuariosResponse.data.usuarios || []
+      
+      // Filtrar técnicos asignados a este supervisor
+      const tecnicosAsignados = usuarios.filter(u => 
+        u.rol === 'tecnico' && u.supervisor_id === user.id
+      )
+      const tecnicosIds = tecnicosAsignados.map(t => t.id)
+      
+      console.log(`👥 Técnicos asignados al supervisor ${user.id}:`, tecnicosIds)
+      
+      // Filtrar solicitudes pendientes de esos técnicos
+      const solicitudesFiltradas = todasSolicitudes.filter(s => 
+        s.estado === 'pendiente' && tecnicosIds.includes(s.usuario_id)
+      )
+      
+      console.log(`📋 Solicitudes pendientes encontradas: ${solicitudesFiltradas.length}`)
       
       return {
         success: true,
-        data: response.data,
-        solicitudes: response.data.solicitudes || [],
-        total: response.data.solicitudes?.length || 0
+        data: { solicitudes: solicitudesFiltradas },
+        solicitudes: solicitudesFiltradas,
+        total: solicitudesFiltradas.length
       }
       
     } catch (error) {
