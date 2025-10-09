@@ -694,6 +694,235 @@
           </div>
         </div>
 
+        <!-- Modal Editar Usuario -->
+        <div v-if="modalEditar.mostrar" class="modal-overlay" @click="cerrarModalEditar">
+          <div class="modal-container add-user-modal" @click.stop>
+            <div class="modal-header">
+              <h3>
+                <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                </svg>
+                Editar Usuario
+              </h3>
+              <button @click="cerrarModalEditar" class="modal-close">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="modal-body">
+              <form @submit.prevent="actualizarUsuario" class="user-form">
+                <div class="form-grid">
+                  <!-- Nombre Completo -->
+                  <div class="form-group">
+                    <label for="editNombre" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                      </svg>
+                      Nombre Completo *
+                    </label>
+                    <input
+                      id="editNombre"
+                      v-model="modalEditar.usuario.nombre"
+                      type="text"
+                      class="form-input"
+                      placeholder="Nombre completo del usuario"
+                      required
+                    />
+                  </div>
+
+                  <!-- Correo Electrónico -->
+                  <div class="form-group">
+                    <label for="editCorreo" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                      </svg>
+                      Correo Electrónico *
+                    </label>
+                    <input
+                      id="editCorreo"
+                      v-model="modalEditar.usuario.correo"
+                      type="email"
+                      class="form-input"
+                      placeholder="correo@ejemplo.com"
+                      required
+                    />
+                  </div>
+
+                  <!-- Puesto -->
+                  <div class="form-group">
+                    <label for="editPuesto" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
+                      </svg>
+                      Puesto/Cargo *
+                    </label>
+                    <input
+                      id="editPuesto"
+                      v-model="modalEditar.usuario.puesto"
+                      type="text"
+                      class="form-input"
+                      placeholder="Puesto o cargo del usuario"
+                      required
+                    />
+                  </div>
+
+                  <!-- Teléfono -->
+                  <div class="form-group">
+                    <label for="editTelefono" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                      </svg>
+                      Teléfono *
+                    </label>
+                    <div class="phone-input-container">
+                      <select class="country-select">
+                        <option value="+52">🇲🇽 +52</option>
+                      </select>
+                      <input
+                        id="editTelefono"
+                        v-model="modalEditar.usuario.telefono"
+                        type="tel"
+                        class="form-input phone-number"
+                        placeholder="5512345678"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Rol -->
+                  <div class="form-group">
+                    <label for="editRol" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <path d="M20 8v6"/>
+                        <path d="M23 11h-6"/>
+                      </svg>
+                      Rol *
+                    </label>
+                    <select
+                      id="editRol"
+                      v-model="modalEditar.usuario.rol"
+                      class="form-select"
+                      @change="onRolChange"
+                      required
+                    >
+                      <option value="tecnico">Técnico</option>
+                      <option value="supervisor">Supervisor</option>
+                    </select>
+                  </div>
+
+                  <!-- Supervisor (solo si es técnico) -->
+                  <div v-if="modalEditar.usuario.rol === 'tecnico'" class="form-group">
+                    <label for="editSupervisor" class="form-label">
+                      <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <path d="M17 11h6"/>
+                        <path d="M20 8v6"/>
+                      </svg>
+                      Supervisor
+                    </label>
+                    <select
+                      id="editSupervisor"
+                      v-model="modalEditar.usuario.supervisor_id"
+                      class="form-select"
+                    >
+                      <option value="">Seleccionar supervisor...</option>
+                      <option 
+                        v-for="supervisor in supervisores" 
+                        :key="supervisor.id" 
+                        :value="supervisor.id"
+                      >
+                        {{ supervisor.nombre }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Cambiar Contraseña (Opcional) -->
+                <div class="form-group" style="grid-column: 1 / -1;">
+                  <label for="editContrasena" class="form-label">
+                    <svg class="form-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                      <circle cx="12" cy="16" r="1"/>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Nueva Contraseña (Opcional)
+                  </label>
+                  <div class="password-input-container">
+                    <input
+                      id="editContrasena"
+                      v-model="modalEditar.usuario.contrasena"
+                      :type="modalEditar.mostrarContrasena ? 'text' : 'password'"
+                      class="form-input password-field"
+                      placeholder="Dejar vacío para mantener la contraseña actual"
+                    />
+                    <button
+                      type="button"
+                      @click="modalEditar.mostrarContrasena = !modalEditar.mostrarContrasena"
+                      class="password-toggle"
+                    >
+                      <svg v-if="modalEditar.mostrarContrasena" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      </svg>
+                    </button>
+                  </div>
+                  <p style="font-size: 12px; color: #64748b; margin-top: 4px;">
+                    💡 Dejar vacío para mantener la contraseña actual
+                  </p>
+                </div>
+
+                <div v-if="modalEditar.error" class="error-message">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  {{ modalEditar.error }}
+                </div>
+              </form>
+            </div>
+
+            <div class="modal-actions">
+              <button @click="cerrarModalEditar" class="modal-btn close-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/>
+                  <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+                Cancelar
+              </button>
+              <button 
+                @click="actualizarUsuario" 
+                class="modal-btn save-btn"
+                :disabled="modalEditar.guardando"
+              >
+                <svg v-if="modalEditar.guardando" class="spinning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                </svg>
+                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/>
+                  <polyline points="17,21 17,13 7,13 7,21"/>
+                  <polyline points="7,3 7,8 15,8"/>
+                </svg>
+                {{ modalEditar.guardando ? 'Actualizando...' : 'Actualizar Usuario' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Modal de confirmación de eliminación -->
         <div v-if="modalEliminar.mostrar" class="modal-overlay" @click="cerrarModalEliminar">
           <div class="modal-container delete-modal" @click.stop>
@@ -866,6 +1095,24 @@ const modalEliminar = ref({
   usuario: null
 })
 
+// Modal de editar usuario
+const modalEditar = ref({
+  mostrar: false,
+  guardando: false,
+  error: null,
+  mostrarContrasena: false,
+  usuario: {
+    id: null,
+    correo: '',
+    nombre: '',
+    puesto: '',
+    telefono: '',
+    rol: 'tecnico',
+    supervisor_id: null,
+    contrasena: '' // Opcional para cambiar contraseña
+  }
+})
+
 // Toast de éxito
 const toastExito = ref({
   mostrar: false,
@@ -1024,9 +1271,8 @@ const cerrarModalDetalles = () => {
 
 const editarUsuario = (usuario) => {
   console.log('✏️ Editando usuario:', usuario.id)
-  // Aquí se implementará la funcionalidad de edición
   cerrarModalDetalles()
-  alert(`Funcionalidad de edición para ${usuario.nombre_completo || usuario.nombre} en desarrollo`)
+  abrirModalEditar(usuario)
 }
 
 // Métodos para modal de agregar usuario
@@ -1185,6 +1431,122 @@ const crearUsuario = async () => {
     modalAgregar.value.error = err.message
   } finally {
     modalAgregar.value.guardando = false
+  }
+}
+
+// Métodos para modal de editar usuario
+const abrirModalEditar = (usuario) => {
+  console.log('✏️ Abriendo modal para editar usuario:', usuario.id)
+  modalEditar.value.usuario = {
+    id: usuario.id,
+    correo: usuario.correo,
+    nombre: usuario.nombre_completo || usuario.nombre,
+    puesto: usuario.cargo || usuario.puesto,
+    telefono: usuario.telefono || '',
+    rol: usuario.rol || 'tecnico',
+    supervisor_id: usuario.supervisor_id || null,
+    contrasena: '' // Vacío para no cambiar contraseña por defecto
+  }
+  modalEditar.value.mostrar = true
+  modalEditar.value.error = null
+  cargarSupervisores()
+}
+
+const cerrarModalEditar = () => {
+  modalEditar.value.mostrar = false
+  modalEditar.value.error = null
+  modalEditar.value.mostrarContrasena = false
+  // Resetear formulario
+  modalEditar.value.usuario = {
+    id: null,
+    correo: '',
+    nombre: '',
+    puesto: '',
+    telefono: '',
+    rol: 'tecnico',
+    supervisor_id: null,
+    contrasena: ''
+  }
+}
+
+const actualizarUsuario = async () => {
+  modalEditar.value.guardando = true
+  modalEditar.value.error = null
+
+  try {
+    // Validaciones básicas
+    if (!modalEditar.value.usuario.correo.trim()) {
+      throw new Error('El correo es obligatorio')
+    }
+    
+    if (!modalEditar.value.usuario.nombre.trim()) {
+      throw new Error('El nombre es obligatorio')
+    }
+    
+    if (!modalEditar.value.usuario.puesto.trim()) {
+      throw new Error('El puesto es obligatorio')
+    }
+    
+    if (!modalEditar.value.usuario.telefono.trim()) {
+      throw new Error('El teléfono es obligatorio')
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(modalEditar.value.usuario.correo)) {
+      throw new Error('El formato del correo no es válido')
+    }
+
+    // Validar teléfono
+    if (!modalEditar.value.usuario.telefono.match(/^\+[0-9]+\s*[0-9]+$/)) {
+      throw new Error('El teléfono debe incluir código de país (ej: +52 5512345678)')
+    }
+
+    // Si es técnico, debe tener supervisor asignado
+    if (modalEditar.value.usuario.rol === 'tecnico' && !modalEditar.value.usuario.supervisor_id) {
+      throw new Error('Los técnicos deben tener un supervisor asignado')
+    }
+
+    console.log('📝 Actualizando usuario:', modalEditar.value.usuario.id)
+
+    const response = await fetch(`${API_CONFIG.BASE_URL}/usuarios/${modalEditar.value.usuario.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        correo: modalEditar.value.usuario.correo.trim(),
+        nombre: modalEditar.value.usuario.nombre.trim(),
+        puesto: modalEditar.value.usuario.puesto.trim(),
+        telefono: modalEditar.value.usuario.telefono.trim(),
+        rol: modalEditar.value.usuario.rol,
+        supervisor_id: modalEditar.value.usuario.supervisor_id,
+        contrasena: modalEditar.value.usuario.contrasena.trim() || null
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.detail || 'Error al actualizar usuario')
+    }
+
+    console.log('✅ Usuario actualizado exitosamente:', data)
+
+    // Cerrar modal
+    cerrarModalEditar()
+    
+    // Mostrar toast de éxito
+    mostrarToastExito('Usuario actualizado exitosamente', 'success')
+    
+    // Recargar lista de usuarios
+    await cargarUsuarios()
+    
+  } catch (err) {
+    console.error('❌ Error actualizando usuario:', err.message)
+    modalEditar.value.error = err.message
+  } finally {
+    modalEditar.value.guardando = false
   }
 }
 

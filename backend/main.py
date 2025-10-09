@@ -587,6 +587,15 @@ class PasswordChange(BaseModel):
     usuario_id: int
     nueva_contrasena: str
 
+class UserUpdate(BaseModel):
+    correo: str
+    nombre: str
+    puesto: str
+    telefono: str
+    rol: str
+    supervisor_id: int = None
+    contrasena: str = None  # Optional: si se proporciona, se actualiza
+
 # ==================== ENDPOINT DE SALUD ====================
 
 @app.get("/health")
@@ -914,6 +923,119 @@ async def obtener_supervisores():
     except Exception as e:
         print(f"❌ Error al obtener supervisores: {e}")
         raise HTTPException(status_code=500, detail=f"Error al obtener supervisores: {str(e)}")
+
+@app.put("/usuarios/{usuario_id}")
+async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
+    """Actualizar un usuario existente"""
+    try:
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+            
+        print(f"✏️ Actualizando usuario ID: {usuario_id}")
+        
+        # Verificar que el usuario existe
+        cursor.execute("SELECT id, correo FROM usuarios WHERE id = %s", (usuario_id,))
+        usuario_existente = cursor.fetchone()
+        
+        if not usuario_existente:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        print(f"👤 Usuario a actualizar: {usuario_existente[1]}")
+        
+        # Validación de rol obligatorio
+        if not usuario.rol or not usuario.rol.strip():
+            raise HTTPException(status_code=400, detail="El rol es obligatorio")
+        
+        # Validar que el rol sea válido
+        roles_validos = ["tecnico", "supervisor"]
+        if usuario.rol not in roles_validos:
+            raise HTTPException(status_code=400, detail=f"El rol debe ser uno de: {', '.join(roles_validos)}")
+        
+        # Validación de teléfono obligatorio
+        if not usuario.telefono or not usuario.telefono.strip():
+            raise HTTPException(status_code=400, detail="El número de teléfono es obligatorio")
+        
+        # Validación básica de formato de teléfono (permitir números, +, espacios y -)
+        if not re.match(r'^[0-9\+\s\-]+$', usuario.telefono):
+            raise HTTPException(status_code=400, detail="El número de teléfono contiene caracteres no válidos")
+            
+        # Validar que el formato general sea correcto (al menos debe tener un + y números)
+        if not re.match(r'^\+[0-9]+\s*[0-9]+$', usuario.telefono.strip()):
+            raise HTTPException(status_code=400, detail="El formato del teléfono debe incluir código de país con + y números")
+        
+        # Comprobar si el correo ya existe en otro usuario
+        cursor.execute("SELECT id FROM usuarios WHERE correo = %s AND id != %s", (usuario.correo, usuario_id))
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail="El correo ya está registrado por otro usuario")
+        
+        # Validar supervisor_id si es técnico
+        if usuario.rol == "tecnico" and usuario.supervisor_id:
+            cursor.execute("SELECT id FROM usuarios WHERE id = %s", (usuario.supervisor_id,))
+            if not cursor.fetchone():
+                raise HTTPException(status_code=400, detail="El supervisor especificado no existe")
+        
+        # Preparar la actualización
+        campos_actualizacion = []
+        valores = []
+        
+        campos_actualizacion.extend([
+            "correo = %s",
+            "nombre = %s", 
+            "puesto = %s",
+            "telefono = %s",
+            "rol = %s",
+            "supervisor_id = %s"
+        ])
+        valores.extend([
+            usuario.correo,
+            usuario.nombre,
+            usuario.puesto,
+            usuario.telefono,
+            usuario.rol,
+            usuario.supervisor_id
+        ])
+        
+        # Si se proporciona nueva contraseña, actualizarla
+        if usuario.contrasena and usuario.contrasena.strip():
+            print("🔒 Actualizando contraseña también")
+            hashed_password = bcrypt.hashpw(usuario.contrasena.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            campos_actualizacion.append("contrasena = %s")
+            valores.append(hashed_password)
+        
+        # Agregar el ID del usuario para la cláusula WHERE
+        valores.append(usuario_id)
+        
+        # Ejecutar la actualización
+        query = f"UPDATE usuarios SET {', '.join(campos_actualizacion)} WHERE id = %s"
+        cursor.execute(query, valores)
+        
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        conn.commit()
+        
+        print(f"✅ Usuario {usuario_id} actualizado exitosamente")
+        
+        return {
+            "mensaje": f"Usuario '{usuario.nombre}' actualizado exitosamente",
+            "usuario_actualizado": {
+                "id": usuario_id,
+                "correo": usuario.correo,
+                "nombre": usuario.nombre,
+                "puesto": usuario.puesto,
+                "telefono": usuario.telefono,
+                "rol": usuario.rol,
+                "supervisor_id": usuario.supervisor_id,
+                "contrasena_actualizada": bool(usuario.contrasena and usuario.contrasena.strip())
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error al actualizar usuario: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar usuario: {str(e)}")
 
 @app.delete("/usuarios/{usuario_id}")
 async def eliminar_usuario(usuario_id: int):
