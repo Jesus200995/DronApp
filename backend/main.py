@@ -70,7 +70,7 @@ def conectar_base_datos():
         )
         cursor = conn.cursor()
         print("✅ Conexión a PostgreSQL exitosa (PRODUCCIÓN)")
-        use_sqlite = True
+        use_sqlite = False  # CORREGIDO: PostgreSQL = False
         return True
         
     except Exception as e:

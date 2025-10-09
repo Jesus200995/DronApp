@@ -8,52 +8,65 @@ import json
 import sys
 
 # Configuración del endpoint 
-BASE_URL = "http://localhost:8000"
+BASE_URL = "https://apidron.sembrandodatos.com"
 
 def probar_endpoint_supervisor():
     """Verificar si el endpoint de solicitudes pendientes está funcionando"""
     print("🔍 Probando endpoint de solicitudes pendientes para supervisor...")
     
     try:
-        # Hacer request al endpoint
-        response = requests.get(
-            f"{BASE_URL}/supervisor/solicitudes", 
-            timeout=10
-        )
+        # Probar varios IDs de supervisor
+        supervisor_ids = [1, 2, 3, 4, 5]  # IDs de prueba
         
-        print(f"📡 Status: {response.status_code}")
-        
-        if response.status_code == 200:
-            data = response.json()
-            num_solicitudes = len(data.get('solicitudes', []))
+        for supervisor_id in supervisor_ids:
+            print(f"\n🧑‍💼 Probando supervisor ID: {supervisor_id}")
             
-            print(f"✅ El endpoint funciona correctamente!")
-            print(f"📊 Se encontraron {num_solicitudes} solicitudes pendientes")
+            try:
+                # Hacer request al endpoint
+                response = requests.get(
+                    f"{BASE_URL}/supervisor/solicitudes/{supervisor_id}", 
+                    timeout=10
+                )
             
-            # Mostrar detalles si hay solicitudes
-            if num_solicitudes > 0:
-                print("\n🔎 Primeras solicitudes encontradas:")
-                for i, solicitud in enumerate(data['solicitudes'][:3]):  # Mostrar máximo 3
-                    print(f"\n--- Solicitud {i+1} ---")
-                    print(f"ID: {solicitud.get('id')}")
-                    print(f"Tipo: {solicitud.get('tipo')}")
-                    print(f"Fecha: {solicitud.get('fecha_hora')}")
-                    print(f"Estado: {solicitud.get('estado')}")
-                    print(f"Técnico: {solicitud.get('tecnico', {}).get('nombre')}")
-            else:
-                print("\n⚠️ No hay solicitudes pendientes en la base de datos")
-                print("   Esto puede indicar que:")
-                print("   1. No se han creado solicitudes")
-                print("   2. Todas las solicitudes ya han sido procesadas")
-            
-        else:
-            print(f"❌ Error {response.status_code}: {response.text}")
+                print(f"📡 Status: {response.status_code}")
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    num_solicitudes = len(data.get('solicitudes', []))
+                    
+                    print(f"✅ El endpoint funciona correctamente para supervisor {supervisor_id}!")
+                    print(f"📊 Se encontraron {num_solicitudes} solicitudes pendientes")
+                    
+                    # Mostrar detalles si hay solicitudes
+                    if num_solicitudes > 0:
+                        print("\n🔎 Primeras solicitudes encontradas:")
+                        for i, solicitud in enumerate(data['solicitudes'][:3]):  # Mostrar máximo 3
+                            print(f"\n--- Solicitud {i+1} ---")
+                            print(f"ID: {solicitud.get('id')}")
+                            print(f"Tipo: {solicitud.get('tipo')}")
+                            print(f"Fecha: {solicitud.get('fecha_hora')}")
+                            print(f"Estado: {solicitud.get('estado')}")
+                            print(f"Técnico: {solicitud.get('tecnico', {}).get('nombre')}")
+                        # Si encontramos solicitudes, no necesitamos seguir probando
+                        return True
+                    else:
+                        print(f"⚠️ No hay solicitudes para supervisor {supervisor_id}")
+                        
+                else:
+                    print(f"❌ Error {response.status_code}: {response.text}")
+                    
+            except requests.exceptions.Timeout:
+                print(f"⏰ Timeout para supervisor {supervisor_id}")
+            except Exception as e:
+                print(f"❌ Error con supervisor {supervisor_id}: {e}")
             
     except requests.exceptions.ConnectionError:
-        print("❌ Error: No se puede conectar al servidor en http://localhost:8000")
+        print("❌ Error: No se puede conectar al servidor")
         print("   ¿Está ejecutándose el servidor?")
     except Exception as e:
         print(f"❌ Error inesperado: {e}")
+    
+    return False
 
 def crear_solicitud_prueba():
     """Crear una solicitud de prueba"""
