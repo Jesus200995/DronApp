@@ -1219,7 +1219,8 @@ const cargarUsuarios = async () => {
         // Normalizar campos para compatibilidad
         nombre_completo: usuario.nombre_completo || usuario.nombre,
         cargo: usuario.cargo || usuario.puesto,
-        rol: usuario.rol || (usuario.puesto && usuario.puesto.toLowerCase().includes('supervisor') ? 'supervisor' : 'tecnico')
+        // ✅ CORREGIDO: Usar solo el rol de la BD, sin inferencia basada en puesto
+        rol: usuario.rol || 'tecnico'
       }))
       console.log('✅ Usuarios procesados desde data.usuarios:', usuarios.value.length)
     } else if (Array.isArray(data)) {
@@ -1229,7 +1230,8 @@ const cargarUsuarios = async () => {
         // Normalizar campos para compatibilidad
         nombre_completo: usuario.nombre_completo || usuario.nombre,
         cargo: usuario.cargo || usuario.puesto,
-        rol: usuario.rol || (usuario.puesto && usuario.puesto.toLowerCase().includes('supervisor') ? 'supervisor' : 'tecnico')
+        // ✅ CORREGIDO: Usar solo el rol de la BD, sin inferencia basada en puesto
+        rol: usuario.rol || 'tecnico'
       }))
       console.log('✅ Usuarios procesados desde array directo:', usuarios.value.length)
     } else if (data && typeof data === 'object' && data.usuarios) {
@@ -1240,7 +1242,8 @@ const cargarUsuarios = async () => {
         // Normalizar campos para compatibilidad
         nombre_completo: usuario.nombre_completo || usuario.nombre,
         cargo: usuario.cargo || usuario.puesto,
-        rol: usuario.rol || (usuario.puesto && usuario.puesto.toLowerCase().includes('supervisor') ? 'supervisor' : 'tecnico')
+        // ✅ CORREGIDO: Usar solo el rol de la BD, sin inferencia basada en puesto
+        rol: usuario.rol || 'tecnico'
       }))
       console.log('✅ Usuarios procesados desde objeto:', usuarios.value.length)
     } else {
@@ -1410,6 +1413,10 @@ const crearUsuario = async () => {
       userData.supervisor_id = parseInt(usuario.supervisor_id)
     }
 
+    // ✅ LOGGING PARA DEBUG DE ROL
+    console.log('🔍 DEBUG - DATOS DE CREACIÓN:')
+    console.log('   ROL enviado:', usuario.rol)
+    console.log('   Supervisor ID:', userData.supervisor_id)
     console.log('📤 Enviando datos:', { ...userData, contrasena: '***' })
 
     const apiUrl = `${API_CONFIG.baseURL}${API_CONFIG.endpoints.usuarios}`
@@ -1573,6 +1580,12 @@ const actualizarUsuario = async () => {
       rol: modalEditar.value.usuario.rol,
       supervisor_id: modalEditar.value.usuario.supervisor_id
     }
+    
+    // ✅ LOGGING PARA DEBUG DE ROL
+    console.log('🔍 DEBUG - DATOS DE ACTUALIZACIÓN:')
+    console.log('   ROL enviado:', modalEditar.value.usuario.rol)
+    console.log('   Supervisor ID:', modalEditar.value.usuario.supervisor_id)
+    console.log('   Usuario completo:', modalEditar.value.usuario)
     
     // Solo incluir contraseña si realmente tiene valor
     if (modalEditar.value.usuario.contrasena && modalEditar.value.usuario.contrasena.trim()) {

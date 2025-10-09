@@ -647,6 +647,9 @@ async def crear_usuario(usuario: UserCreate):
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
             
         print(f"👤 Creando usuario: {usuario.correo}")
+        print(f"🔍 DATOS PARA CREACIÓN:")
+        print(f"   Rol enviado: '{usuario.rol}'")
+        print(f"   Supervisor ID: {usuario.supervisor_id}")
         
         # Validación de CURP obligatoria
         if not usuario.curp or not usuario.curp.strip():
@@ -712,12 +715,18 @@ async def crear_usuario(usuario: UserCreate):
         user_id = cursor.fetchone()[0]
         print(f"✅ Usuario creado con ID: {user_id}")
         
+        # ✅ VERIFICAR QUE SE GUARDÓ CORRECTAMENTE
+        cursor.execute("SELECT rol FROM usuarios WHERE id = %s", (user_id,))
+        rol_guardado = cursor.fetchone()
+        print(f"✅ ROL GUARDADO EN BD: '{rol_guardado[0] if rol_guardado else 'NULL'}'")
+        
         conn.commit()
         
         return {
             "id": user_id, 
             "mensaje": "Usuario creado exitosamente", 
-            "curp": curp_upper
+            "curp": curp_upper,
+            "rol_guardado": rol_guardado[0] if rol_guardado else None
         }
         
     except HTTPException:
@@ -840,7 +849,8 @@ async def obtener_usuarios():
             u.contrasena, 
             u.telefono,
             u.supervisor_id,
-            s.nombre as supervisor_nombre
+            s.nombre as supervisor_nombre,
+            COALESCE(u.rol, 'tecnico') as rol
         FROM usuarios u
         LEFT JOIN usuarios s ON u.supervisor_id = s.id
         ORDER BY u.id DESC
@@ -856,8 +866,8 @@ async def obtener_usuarios():
         # Convertir tuplas a diccionarios manualmente
         usuarios = []
         for row in resultados:
-            # Determinar el rol basado en el puesto o supervisor_id
-            rol = 'supervisor' if row[3] and ('supervisor' in row[3].lower() or 'jefe' in row[3].lower()) else 'tecnico'
+            # Usar el rol real de la base de datos (índice 10)
+            rol_bd = row[10] if len(row) > 10 else 'tecnico'
             
             usuario = {
                 "id": row[0],
@@ -870,7 +880,7 @@ async def obtener_usuarios():
                 "telefono": row[7] if len(row) > 7 else None,
                 "supervisor_id": row[8] if len(row) > 8 else None,
                 "supervisor_nombre": row[9] if len(row) > 9 and row[9] else None,
-                "rol": rol
+                "rol": rol_bd  # Usar el rol real de la BD
             }
             usuarios.append(usuario)
         
@@ -932,6 +942,10 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
             raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
             
         print(f"✏️ Actualizando usuario ID: {usuario_id}")
+        print(f"🔍 DATOS RECIBIDOS PARA ACTUALIZACIÓN:")
+        print(f"   Usuario ID: {usuario_id}")
+        print(f"   Rol enviado: '{usuario.rol}'")
+        print(f"   Supervisor ID: {usuario.supervisor_id}")
         
         # Verificar que el usuario existe
         cursor.execute("SELECT id, correo FROM usuarios WHERE id = %s", (usuario_id,))
@@ -1014,6 +1028,11 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
         
         conn.commit()
         
+        # ✅ VERIFICAR QUE SE GUARDÓ CORRECTAMENTE
+        cursor.execute("SELECT rol FROM usuarios WHERE id = %s", (usuario_id,))
+        rol_guardado = cursor.fetchone()
+        print(f"✅ ROL GUARDADO EN BD: '{rol_guardado[0] if rol_guardado else 'NULL'}'")
+        
         print(f"✅ Usuario {usuario_id} actualizado exitosamente")
         
         return {
@@ -1025,6 +1044,7 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
                 "puesto": usuario.puesto,
                 "telefono": usuario.telefono,
                 "rol": usuario.rol,
+                "rol_guardado": rol_guardado[0] if rol_guardado else None,  # Agregar verificación
                 "supervisor_id": usuario.supervisor_id,
                 "contrasena_actualizada": bool(usuario.contrasena and usuario.contrasena.strip())
             }
