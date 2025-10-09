@@ -227,7 +227,7 @@
                       <span>{{ usuario.telefono || 'Sin teléfono' }}</span>
                     </div>
                   </td>
-                  <td class="table-cell position-cell">{{ usuario.cargo || usuario.puesto || 'Sin puesto' }}</td>
+                  <td class="table-cell cargo-cell">{{ usuario.cargo || usuario.puesto || 'Sin puesto' }}</td>
                   <td class="table-cell supervisor-cell">
                     <span v-if="usuario.supervisor_nombre" class="supervisor-assigned">
                       <svg class="supervisor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1784,7 +1784,7 @@ const logout = () => {
   min-height: 100vh;
   position: relative;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow-x: auto;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1972,13 +1972,14 @@ const logout = () => {
 /* === CONTENT STYLES === */
 .page-content {
   flex: 1;
-  padding: 24px;
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 16px;
   width: 100%;
+  max-width: none;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+  box-sizing: border-box;
 }
 
 /* === SEARCH SECTION === */
@@ -2268,29 +2269,38 @@ const logout = () => {
   overflow: hidden;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
+  width: 100%;
+  max-width: none;
 }
 
 .table-container {
-  overflow-x: auto;
+  width: 100%;
+  border-radius: 16px;
+  background: white;
+  overflow: visible;
 }
 
 .users-table {
   width: 100%;
   border-collapse: collapse;
   font-family: 'Inter', sans-serif;
+  table-layout: auto;
 }
 
 .table-header {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  padding: 12px 8px;
+  padding: 14px 12px;
   text-align: left;
   font-weight: 600;
-  font-size: 11px;
+  font-size: 12px;
   color: #475569;
   border-bottom: 2px solid #e2e8f0;
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .table-row {
@@ -2306,84 +2316,97 @@ const logout = () => {
 
 .table-cell {
   padding: 12px 8px;
-  font-size: 12px;
+  font-size: 13px;
   vertical-align: middle;
   border-bottom: 1px solid #f1f5f9;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  line-height: 1.4;
 }
 
-/* Estilos específicos para cada columna */
+/* Estilos específicos para cada columna - RESPONSIVO */
 .id-cell {
   font-weight: 600;
   color: #3b82f6;
   font-family: 'JetBrains Mono', monospace;
-  width: 60px;
+  width: 5%;
+  min-width: 50px;
+  max-width: 70px;
+  text-align: center;
 }
 
 .name-cell {
-  min-width: 180px;
+  width: 18%;
+  min-width: 150px;
 }
 
 .user-name-container {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .user-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 }
 
 .user-avatar svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: white;
 }
 
 .user-name {
   font-weight: 600;
   color: #1e293b;
+  line-height: 1.3;
+  word-break: break-word;
 }
 
 .email-container, .phone-container {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .email-icon, .phone-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   color: #64748b;
   flex-shrink: 0;
 }
 
 .curp-code {
   background: #f1f5f9;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 3px 6px;
+  border-radius: 4px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 11px;
   color: #475569;
   border: 1px solid #e2e8f0;
+  display: block;
+  line-height: 1.2;
 }
 
 .role-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
 }
 
 .role-tecnico {
@@ -2404,15 +2427,16 @@ const logout = () => {
 
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   align-items: center;
+  justify-content: center;
 }
 
 .action-btn {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2439,8 +2463,8 @@ const logout = () => {
 }
 
 .action-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   color: white;
 }
 
@@ -2485,21 +2509,106 @@ const logout = () => {
 
 @media (max-width: 480px) {
   .page-content {
-    padding: 12px;
+    padding: 4px 2px;
   }
   
   .empty-content {
-    padding: 30px 15px;
+    padding: 20px 10px;
   }
   
   .empty-icon {
-    width: 60px;
-    height: 60px;
+    width: 40px;
+    height: 40px;
   }
   
   .empty-icon svg {
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Pantallas muy pequeñas - máxima compresión */
+  .table-header, .table-cell {
+    padding: 6px 2px !important;
+    font-size: 10px !important;
+  }
+
+  .user-name-container {
+    gap: 4px;
+  }
+
+  .user-avatar {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .user-avatar svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+
+  .action-buttons {
+    gap: 2px;
+  }
+
+  .action-btn {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .action-btn svg {
+    width: 9px !important;
+    height: 9px !important;
+  }
+
+  .role-badge {
+    padding: 1px 4px !important;
+    font-size: 8px !important;
+  }
+
+  /* Reducir aún más los anchos para pantallas muy pequeñas */
+  .id-cell {
+    width: 6% !important;
+    min-width: 35px !important;
+  }
+
+  .name-cell {
+    width: 18% !important;
+    min-width: 80px !important;
+  }
+
+  .email-cell {
+    width: 25% !important;
+    min-width: 100px !important;
+  }
+
+  .curp-cell {
+    width: 12% !important;
+    min-width: 70px !important;
+  }
+
+  .phone-cell {
+    width: 10% !important;
+    min-width: 70px !important;
+  }
+
+  .cargo-cell {
+    width: 12% !important;
+    min-width: 70px !important;
+  }
+
+  .supervisor-cell {
+    width: 12% !important;
+    min-width: 80px !important;
+  }
+
+  .role-cell {
+    width: 8% !important;
+    min-width: 50px !important;
+  }
+
+  .actions-cell {
+    width: 7% !important;
+    min-width: 60px !important;
   }
 }
 
@@ -2807,8 +2916,40 @@ const logout = () => {
   font-weight: 400;
 }
 
+/* Anchos responsivos para todas las columnas */
+.email-cell {
+  width: 20%;
+  min-width: 180px;
+}
+
+.curp-cell {
+  width: 12%;
+  min-width: 130px;
+}
+
+.phone-cell {
+  width: 10%;
+  min-width: 120px;
+}
+
+.cargo-cell {
+  width: 12%;
+  min-width: 120px;
+}
+
 .supervisor-cell {
-  min-width: 200px;
+  width: 15%;
+  min-width: 140px;
+}
+
+.role-cell {
+  width: 8%;
+  min-width: 100px;
+}
+
+.actions-cell {
+  width: 10%;
+  min-width: 110px;
 }
 
 /* === RESPONSIVE === */
@@ -2821,8 +2962,8 @@ const logout = () => {
 
 @media (max-width: 768px) {
   .page-content {
-    padding: 16px;
-    gap: 16px;
+    padding: 8px 4px;
+    gap: 12px;
   }
 
   .search-container {
@@ -2836,37 +2977,100 @@ const logout = () => {
 
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px;
   }
 
   .stat-card {
-    padding: 16px;
+    padding: 12px;
   }
 
   .stat-number {
-    font-size: 24px;
-  }
-
-  .table-container {
-    font-size: 13px;
+    font-size: 20px;
   }
 
   .table-header, .table-cell {
-    padding: 12px 8px;
+    padding: 8px 4px;
+    font-size: 11px;
   }
 
   .user-avatar {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
   }
 
   .user-avatar svg {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
+  }
+
+  .action-btn {
+    width: 20px;
+    height: 20px;
+  }
+
+  .action-btn svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .role-badge {
+    padding: 1px 6px;
+    font-size: 9px;
+  }
+
+  /* Ocultar iconos en móvil para ahorrar espacio */
+  .email-icon, .phone-icon, .supervisor-icon {
+    display: none;
+  }
+
+  .email-container, .phone-container {
+    gap: 0;
+  }
+
+  /* Ajustar anchos en móvil para que todo quepa */
+  .id-cell {
+    width: 8%;
+    min-width: 40px;
+  }
+
+  .name-cell {
+    width: 20%;
+    min-width: 100px;
+  }
+
+  .email-cell {
+    width: 22%;
+    min-width: 120px;
+  }
+
+  .curp-cell {
+    width: 15%;
+    min-width: 80px;
+  }
+
+  .phone-cell {
+    width: 12%;
+    min-width: 80px;
+  }
+
+  .cargo-cell {
+    width: 15%;
+    min-width: 80px;
   }
 
   .supervisor-cell {
-    min-width: 140px;
+    width: 15%;
+    min-width: 90px;
+  }
+
+  .role-cell {
+    width: 10%;
+    min-width: 60px;
+  }
+
+  .actions-cell {
+    width: 8%;
+    min-width: 70px;
   }
 
   .modal-container {
