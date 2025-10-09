@@ -1281,17 +1281,49 @@ async def obtener_solicitudes_supervisor(supervisor_id: int):
         else:
             print(f"🐘 Usando PostgreSQL - Consultando solicitudes para supervisor {supervisor_id}...")
             try:
+                # Verificar si existe la columna supervisor_id
                 cursor.execute("""
-                    SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
-                           ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
-                           s.ubicacion::text, s.observaciones, s.estado,
-                           u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist,
-                           s.supervisor_id, s.respuesta_supervisor
-                    FROM solicitudes_dron s
-                    LEFT JOIN usuarios u ON s.usuario_id = u.id
-                    WHERE s.estado = 'pendiente' AND s.supervisor_id = %s
-                    ORDER BY s.fecha_hora DESC
-                """, (supervisor_id,))
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name='solicitudes_dron' AND column_name='supervisor_id'
+                """)
+                supervisor_column_exists = cursor.fetchone() is not None
+                
+                if supervisor_column_exists:
+                    print("✅ Usando consulta con supervisor_id")
+                    cursor.execute("""
+                        SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
+                               ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                               s.ubicacion::text, s.observaciones, s.estado,
+                               u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist,
+                               s.supervisor_id, s.respuesta_supervisor
+                        FROM solicitudes_dron s
+                        LEFT JOIN usuarios u ON s.usuario_id = u.id
+                        WHERE s.estado = 'pendiente' AND s.supervisor_id = %s
+                        ORDER BY s.fecha_hora DESC
+                    """, (supervisor_id,))
+                else:
+                    print("⚠️ Columna supervisor_id no existe, usando consulta por usuario")
+                    # Obtener los IDs de técnicos asignados a este supervisor
+                    cursor.execute("SELECT id FROM usuarios WHERE rol = 'tecnico' AND supervisor_id = %s", (supervisor_id,))
+                    tecnicos_ids = [row[0] for row in cursor.fetchall()]
+                    
+                    if tecnicos_ids:
+                        placeholders = ','.join(['%s'] * len(tecnicos_ids))
+                        cursor.execute(f"""
+                            SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
+                                   ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
+                                   s.ubicacion::text, s.observaciones, s.estado,
+                                   u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist,
+                                   NULL as supervisor_id, NULL as respuesta_supervisor
+                            FROM solicitudes_dron s
+                            LEFT JOIN usuarios u ON s.usuario_id = u.id
+                            WHERE s.estado = 'pendiente' AND s.usuario_id IN ({placeholders})
+                            ORDER BY s.fecha_hora DESC
+                        """, tecnicos_ids)
+                    else:
+                        print("⚠️ No hay técnicos asignados a este supervisor")
+                        cursor.execute("SELECT NULL LIMIT 0")  # Consulta vacía
                 solicitudes_raw = cursor.fetchall()
                 
             except Exception as e:
@@ -1551,29 +1583,62 @@ async def crear_solicitud_dron(
         punto_ubicacion = f"POINT({longitud} {latitud})"
         
         # Obtener datos del usuario para asignación de supervisor
-        cursor.execute("SELECT nombre, puesto, rol, supervisor_id FROM usuarios WHERE id = %s", (usuario_id,))
-        usuario_data = cursor.fetchone()
+        try:
+            cursor.execute("SELECT nombre, puesto, rol, supervisor_id FROM usuarios WHERE id = %s", (usuario_id,))
+            usuario_data = cursor.fetchone()
+        except Exception as e:
+            print(f"⚠️ Error obteniendo supervisor_id (probablemente columna no existe): {e}")
+            # Intentar sin la columna supervisor_id
+            cursor.execute("SELECT nombre, puesto, rol FROM usuarios WHERE id = %s", (usuario_id,))
+            usuario_data_temp = cursor.fetchone()
+            if usuario_data_temp:
+                usuario_data = usuario_data_temp + (None,)  # Agregar None para supervisor_id
+            else:
+                usuario_data = None
+        
         if not usuario_data:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         
         # Determinar supervisor_id para la solicitud
         supervisor_id_solicitud = None
-        if usuario_data[2] == 'tecnico' and usuario_data[3]:  # Si es técnico y tiene supervisor asignado
+        if len(usuario_data) > 3 and usuario_data[2] == 'tecnico' and usuario_data[3]:  # Si es técnico y tiene supervisor asignado
             supervisor_id_solicitud = usuario_data[3]
             print(f"👥 Asignando supervisor {supervisor_id_solicitud} a solicitud de técnico {usuario_id}")
+        else:
+            print(f"ℹ️ Usuario {usuario_id} no tiene supervisor asignado o columna no existe")
 
         # IMPORTANTE: Guardar solo el nombre del archivo en la BD, no la ruta completa
         # Esto permite que el frontend construya la URL correcta usando el endpoint de imágenes
         print(f"💾 Guardando en BD solo el nombre de archivo: {nombre_archivo}")
         
         # Insertar solicitud en la base de datos
+        # Verificar si existe la columna supervisor_id
         cursor.execute("""
-            INSERT INTO solicitudes_dron 
-            (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado, supervisor_id) 
-            VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s)
-            RETURNING id
-        """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
-              observaciones, punto_ubicacion, 'pendiente', supervisor_id_solicitud))
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='solicitudes_dron' AND column_name='supervisor_id'
+        """)
+        
+        supervisor_column_exists = cursor.fetchone() is not None
+        
+        if supervisor_column_exists:
+            print("✅ Columna supervisor_id existe, insertando con supervisor asignado")
+            cursor.execute("""
+                INSERT INTO solicitudes_dron 
+                (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado, supervisor_id) 
+                VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s)
+                RETURNING id
+            """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
+                  observaciones, punto_ubicacion, 'pendiente', supervisor_id_solicitud))
+        else:
+            print("⚠️ Columna supervisor_id no existe, insertando sin supervisor")
+            cursor.execute("""
+                INSERT INTO solicitudes_dron 
+                (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
+                VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
+                RETURNING id
+            """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
+                  observaciones, punto_ubicacion, 'pendiente'))
         
         solicitud_id = cursor.fetchone()[0]
         
