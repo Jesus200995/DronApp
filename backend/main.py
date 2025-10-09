@@ -899,11 +899,11 @@ async def obtener_supervisores():
     try:
         print("🔍 Obteniendo supervisores...")
         
-        # Query para obtener usuarios que son supervisores
+        # ✅ CORREGIDO: Filtrar por campo 'rol' en lugar de 'puesto'
         query = """
-        SELECT id, nombre, correo, puesto 
+        SELECT id, nombre, correo, puesto, rol 
         FROM usuarios 
-        WHERE puesto ILIKE '%supervisor%' OR puesto ILIKE '%jefe%'
+        WHERE COALESCE(rol, 'tecnico') = 'supervisor'
         ORDER BY nombre ASC
         """
         
@@ -921,11 +921,12 @@ async def obtener_supervisores():
                 "id": row[0],
                 "nombre": row[1],
                 "correo": row[2],
-                "puesto": row[3]
+                "puesto": row[3],
+                "rol": row[4] if len(row) > 4 else 'supervisor'
             }
             supervisores.append(supervisor)
         
-        print(f"✅ Supervisores procesados correctamente")
+        print(f"✅ Supervisores procesados correctamente: {[s['nombre'] for s in supervisores]}")
         return {"supervisores": supervisores}
         
     except HTTPException:

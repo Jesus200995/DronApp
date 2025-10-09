@@ -1324,6 +1324,8 @@ const cargarSupervisores = async () => {
     console.log('🔄 Cargando supervisores...')
     
     const apiUrl = `${API_CONFIG.baseURL}/supervisores`
+    console.log('🔗 URL de supervisores:', apiUrl)
+    
     const response = await fetch(apiUrl, {
       method: 'GET',
       headers: {
@@ -1337,17 +1339,26 @@ const cargarSupervisores = async () => {
     }
 
     const data = await response.json()
-    console.log('📊 Supervisores cargados:', data)
+    console.log('📊 Respuesta completa de supervisores:', data)
 
     if (data && data.supervisores && Array.isArray(data.supervisores)) {
       supervisores.value = data.supervisores
+      console.log('✅ Supervisores desde data.supervisores:', supervisores.value)
     } else if (Array.isArray(data)) {
       supervisores.value = data
+      console.log('✅ Supervisores desde array directo:', supervisores.value)
     } else {
       supervisores.value = []
+      console.log('⚠️ No se encontraron supervisores en la respuesta')
     }
     
-    console.log('✅ Supervisores procesados:', supervisores.value.length)
+    console.log(`✅ Total supervisores cargados: ${supervisores.value.length}`)
+    if (supervisores.value.length > 0) {
+      console.log('📋 Lista de supervisores:')
+      supervisores.value.forEach((sup, index) => {
+        console.log(`   ${index + 1}. ID: ${sup.id}, Nombre: ${sup.nombre}, Rol: ${sup.rol}`)
+      })
+    }
   } catch (err) {
     console.error('❌ Error al cargar supervisores:', err)
     supervisores.value = []
