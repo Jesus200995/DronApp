@@ -593,8 +593,8 @@ class UserUpdate(BaseModel):
     puesto: str
     telefono: str
     rol: str
-    supervisor_id: int = None
-    contrasena: str = None  # Optional: si se proporciona, se actualiza
+    supervisor_id: Optional[int] = None
+    contrasena: Optional[str] = None  # Optional: si se proporciona, se actualiza
 
 # ==================== ENDPOINT DE SALUD ====================
 
@@ -996,7 +996,7 @@ async def actualizar_usuario(usuario_id: int, usuario: UserUpdate):
         ])
         
         # Si se proporciona nueva contraseña, actualizarla
-        if usuario.contrasena and usuario.contrasena.strip():
+        if usuario.contrasena is not None and usuario.contrasena.strip():
             print("🔒 Actualizando contraseña también")
             hashed_password = bcrypt.hashpw(usuario.contrasena.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             campos_actualizacion.append("contrasena = %s")

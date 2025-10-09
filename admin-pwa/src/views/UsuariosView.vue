@@ -1454,9 +1454,9 @@ const verificarEndpointEdicion = async (usuarioId) => {
   try {
     console.log('🧪 Verificando endpoint de edición...')
     
-    // Hacer una petición HEAD o GET para ver si el endpoint responde
+    // Hacer una petición OPTIONS para verificar métodos permitidos
     const response = await fetch(`${API_CONFIG.baseURL}/usuarios/${usuarioId}`, {
-      method: 'HEAD',
+      method: 'OPTIONS',
       headers: {
         'Content-Type': 'application/json'
       }
@@ -1464,15 +1464,17 @@ const verificarEndpointEdicion = async (usuarioId) => {
     
     console.log('🧪 Endpoint check - Status:', response.status)
     
-    // Si responde con 200, 405 (método no permitido) o 404, el servidor está ahí
-    if (response.status === 200 || response.status === 405 || response.status === 404) {
+    // Si responde con cualquier status válido, el endpoint existe
+    // Error 405 con HEAD significa que el endpoint existe pero no acepta HEAD
+    if (response.status < 500) {
       return true
     }
     
     return false
   } catch (error) {
     console.warn('⚠️ Error verificando endpoint:', error)
-    return false
+    // Si hay error de red, asumir que el endpoint existe y probar directamente
+    return true
   }
 }
 
@@ -1486,6 +1488,9 @@ const abrirModalEditar = async (usuario) => {
     // Mostrar mensaje amigable si el endpoint no está disponible
     modalEditar.value.error = '⚠️ La funcionalidad de edición de usuarios aún no está disponible en el servidor de producción. Esta característica será habilitada próximamente.'
     console.warn('⚠️ Endpoint de edición no disponible')
+  } else {
+    // Limpiar cualquier error previo si el endpoint está disponible
+    modalEditar.value.error = null
   }
   
   modalEditar.value.usuario = {
@@ -1566,8 +1571,12 @@ const actualizarUsuario = async () => {
       puesto: modalEditar.value.usuario.puesto.trim(),
       telefono: modalEditar.value.usuario.telefono.trim(),
       rol: modalEditar.value.usuario.rol,
-      supervisor_id: modalEditar.value.usuario.supervisor_id,
-      contrasena: modalEditar.value.usuario.contrasena.trim() || null
+      supervisor_id: modalEditar.value.usuario.supervisor_id
+    }
+    
+    // Solo incluir contraseña si realmente tiene valor
+    if (modalEditar.value.usuario.contrasena && modalEditar.value.usuario.contrasena.trim()) {
+      requestData.contrasena = modalEditar.value.usuario.contrasena.trim()
     }
     
     console.log('📤 Datos a enviar:', requestData)
@@ -1616,6 +1625,15 @@ const actualizarUsuario = async () => {
     }
 
     if (!response.ok) {
+      // Manejar errores de validación específicos (422)
+      if (response.status === 422 && data.detail && Array.isArray(data.detail)) {
+        const errores = data.detail.map(error => {
+          const campo = error.loc ? error.loc.join('.') : 'Campo desconocido'
+          return `${campo}: ${error.msg}`
+        }).join(', ')
+        throw new Error(`Errores de validación: ${errores}`)
+      }
+      
       throw new Error(data.detail || data.message || `Error ${response.status}: ${responseText || 'Sin detalles'}`)
     }
 
@@ -1631,8 +1649,8 @@ const actualizarUsuario = async () => {
     await cargarUsuarios()
     
   } catch (err) {
-    console.error('❌ Error actualizando usuario:', err.message)
-    modalEditar.value.error = err.message
+    console.error('❌ Error actualizando usuario:', err)
+    modalEditar.value.error = err.message || err.toString()
   } finally {
     modalEditar.value.guardando = false
   }
