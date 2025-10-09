@@ -2156,8 +2156,9 @@ async function cargarHistorial(forceRefresh = false) {
     );
     
     // Procesamos los registros del servidor
-    const registrosOnline = response.data.map(r => ({
-      fecha: new Date(r.timestamp).toLocaleString(),
+    const registrosData = response.data.registros || response.data || [];
+    const registrosOnline = registrosData.map(r => ({
+      fecha: new Date(r.timestamp || r.fecha_registro).toLocaleString(),
       latitud: r.latitud,
       longitud: r.longitud,
       descripcion: r.descripcion || 'Sin descripción',
@@ -2192,6 +2193,8 @@ async function cargarHistorial(forceRefresh = false) {
     
   } catch (error) {
     console.error('❌ Error cargando historial:', error);
+    console.log('🔄 Endpoint no disponible, mostrando solo datos offline para continuar');
+    
     // En caso de error, intentar mostrar datos offline
     try {
       const pendientes = await offlineService.obtenerResumenPendientes();
