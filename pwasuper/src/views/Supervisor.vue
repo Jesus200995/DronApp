@@ -155,8 +155,7 @@
         <!-- Solicitudes List - Vista Responsive Optimizada -->
         <div v-else class="space-y-2 sm:space-y-3 overflow-y-auto solicitudes-scroll-container flex-1 p-2 sm:p-3" ref="solicitudesContainer">
           <div v-for="solicitud in solicitudes" :key="solicitud.id" 
-               class="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 cursor-pointer group overflow-hidden"
-               @click="abrirModalSolicitud(solicitud)">
+               class="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200 group overflow-hidden">
             
             <!-- Mensaje responsive -->
             <div class="p-3 sm:p-4">
@@ -210,8 +209,8 @@
                 </p>
               </div>
               
-              <!-- Indicadores y acciones - Layout responsive -->
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
+              <!-- Indicadores y botón de acción -->
+              <div class="flex items-center justify-between">
                 <!-- Indicadores -->
                 <div class="flex items-center space-x-3 sm:space-x-4 text-xs text-gray-500">
                   <span class="flex items-center">
@@ -230,41 +229,14 @@
                   </span>
                 </div>
                 
-                <!-- Botones de acción - Responsive -->
-                <div class="flex items-center justify-between sm:justify-end space-x-2">
-                  <!-- Botón Ver Más - Solo móvil -->
-                  <button @click.stop="abrirModalSolicitud(solicitud)" 
-                          class="sm:hidden text-xs text-blue-600 hover:text-blue-800 font-medium">
-                    Ver detalles
-                  </button>
-                  
-                  <!-- Botones de acción -->
-                  <div class="flex space-x-1 sm:space-x-2">
-                    <!-- Botón Aprobar -->
-                    <button @click.stop="aprobarSolicitud(solicitud.id)" 
-                            :disabled="procesando === solicitud.id"
-                            class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-green-500 hover:bg-green-600 disabled:bg-gray-300 text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1"
-                            title="Aprobar solicitud">
-                      <svg v-if="procesando === solicitud.id" class="animate-spin h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                      </svg>
-                    </button>
-                    
-                    <!-- Botón Rechazar -->
-                    <button @click.stop="abrirModalRechazo(solicitud)" 
-                            :disabled="procesando === solicitud.id"
-                            class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
-                            title="Rechazar solicitud">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
+                <!-- Botón Abrir elegante -->
+                <button @click.stop="abrirModalSolicitud(solicitud)" 
+                        class="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all duration-200 text-xs font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1">
+                  <span>Abrir</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
