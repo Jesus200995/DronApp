@@ -153,19 +153,13 @@ class SolicitudesService {
     try {
       console.log(`✅ Aprobando solicitud ${solicitudId}`)
       
-      const formData = new FormData()
-      formData.append('accion', 'aprobar')
-      if (comentarios) {
-        formData.append('comentarios', comentarios)
-      }
-      
       const response = await axios.put(
-        `${this.baseURL}/solicitudes/${solicitudId}`,
-        formData,
+        `${this.baseURL}/supervisor/solicitudes/${solicitudId}/aprobar`,
+        {},
         {
           timeout: 8000,
           headers: {
-            'Content-Type': 'multipart/form-data'
+            'Content-Type': 'application/json'
           }
         }
       )
@@ -195,13 +189,12 @@ class SolicitudesService {
       console.log(`❌ Rechazando solicitud ${solicitudId}`)
       
       const formData = new FormData()
-      formData.append('accion', 'rechazar')
       if (motivo) {
-        formData.append('comentarios', motivo)
+        formData.append('motivo', motivo)
       }
       
       const response = await axios.put(
-        `${this.baseURL}/solicitudes/${solicitudId}`,
+        `${this.baseURL}/supervisor/solicitudes/${solicitudId}/rechazar`,
         formData,
         {
           timeout: 8000,
@@ -223,6 +216,44 @@ class SolicitudesService {
       return {
         success: false,
         error: 'Error al rechazar la solicitud',
+        details: error.response?.data || error.message
+      }
+    }
+  }
+
+  /**
+   * Agregar comentario de supervisor a una solicitud
+   */
+  async agregarComentarioSupervisor(solicitudId, comentario) {
+    try {
+      console.log(`💬 Agregando comentario a solicitud ${solicitudId}`)
+      
+      const formData = new FormData()
+      formData.append('comentario', comentario)
+      
+      const response = await axios.put(
+        `${this.baseURL}/supervisor/solicitudes/${solicitudId}/comentario`,
+        formData,
+        {
+          timeout: 8000,
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      )
+      
+      return {
+        success: true,
+        message: 'Comentario agregado exitosamente',
+        data: response.data
+      }
+      
+    } catch (error) {
+      console.error('❌ Error agregando comentario:', error)
+      
+      return {
+        success: false,
+        error: 'Error al agregar comentario',
         details: error.response?.data || error.message
       }
     }
@@ -262,10 +293,61 @@ class SolicitudesService {
    * Obtener solicitudes pendientes para supervisor (método específico)
    */
   async obtenerSolicitudesPendientes() {
-    return this.obtenerSolicitudes({
-      estado: 'pendiente',
-      limit: 50
-    })
+    try {
+      // Obtener datos del supervisor autenticado
+      const userData = localStorage.getItem('user')
+      if (!userData) {
+        throw new Error('Usuario no autenticado')
+      }
+      
+      const user = JSON.parse(userData)
+      if (user.rol !== 'supervisor') {
+        throw new Error('Usuario no es supervisor')
+      }
+      
+      console.log(`🔍 Obteniendo solicitudes pendientes para supervisor ${user.id}`)
+      
+      const response = await axios.get(`${this.baseURL}/supervisor/solicitudes/${user.id}`, {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      return {
+        success: true,
+        data: response.data,
+        solicitudes: response.data.solicitudes || [],
+        total: response.data.solicitudes?.length || 0
+      }
+      
+    } catch (error) {
+      console.error('❌ Error obteniendo solicitudes del supervisor:', error)
+      
+      let errorMessage = 'Error al obtener solicitudes del supervisor'
+      
+      if (error.message === 'Usuario no autenticado') {
+        errorMessage = 'Sesión expirada. Por favor inicia sesión nuevamente.'
+      } else if (error.message === 'Usuario no es supervisor') {
+        errorMessage = 'No tienes permisos de supervisor para ver estas solicitudes'
+      } else if (error.code === 'ECONNABORTED') {
+        errorMessage = 'Timeout: El servidor tardó demasiado en responder'
+      } else if (error.response?.status === 500) {
+        errorMessage = 'Error interno del servidor'
+      } else if (error.response?.status === 404) {
+        errorMessage = 'Endpoint de solicitudes de supervisor no encontrado'
+      } else if (!navigator.onLine) {
+        errorMessage = 'Sin conexión a internet'
+      }
+      
+      return {
+        success: false,
+        error: errorMessage,
+        details: error.response?.data || error.message,
+        solicitudes: [],
+        total: 0
+      }
+    }
   }
 
   /**

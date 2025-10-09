@@ -756,12 +756,14 @@ async def login(usuario: UserLogin):
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
         
-        # Buscar usuario por correo en la nueva tabla usuarios (con rol)
+        # ✅ ACTUALIZADO: Buscar usuario por correo incluyendo supervisor_id
         query = """
-        SELECT id, correo, nombre, puesto, supervisor, curp, telefono, fecha_registro,
-               COALESCE(rol, 'tecnico') as rol
-        FROM usuarios 
-        WHERE correo = %s
+        SELECT u.id, u.correo, u.nombre, u.puesto, u.supervisor, u.curp, u.telefono, 
+               u.fecha_registro, COALESCE(u.rol, 'tecnico') as rol, u.supervisor_id,
+               s.nombre as supervisor_nombre
+        FROM usuarios u
+        LEFT JOIN usuarios s ON u.supervisor_id = s.id
+        WHERE u.correo = %s
         """
         cursor.execute(query, (usuario.correo,))
         user = cursor.fetchone()
@@ -790,20 +792,27 @@ async def login(usuario: UserLogin):
         if not password_valid:
             raise HTTPException(status_code=401, detail="Credenciales incorrectas")
         
-        print(f"✅ Login exitoso - Usuario: {user[2]}, Rol: {user[8]}")
+        print(f"✅ Login exitoso - Usuario: {user[2]}, Rol: {user[8]}, Supervisor ID: {user[9]}")
         
-        # Devolver datos del usuario con la nueva estructura incluyendo el rol
-        return {
-            "id": user[0],
+        # ✅ RESPUESTA ACTUALIZADA: Incluir supervisor_id para técnicos
+        response_data = {
+            "usuario_id": user[0],  # Cambiar 'id' por 'usuario_id' para consistencia
             "correo": user[1],
             "nombre": user[2],
             "puesto": user[3],
-            "supervisor": user[4],
+            "supervisor": user[4],  # Campo legacy
             "curp": user[5],
             "telefono": user[6],
             "fecha_registro": user[7].isoformat() if user[7] else None,
-            "rol": user[8]  # Campo rol agregado
+            "rol": user[8]
         }
+        
+        # ✅ NUEVO: Incluir supervisor_id solo si es técnico y lo tiene asignado
+        if user[8] == 'tecnico' and user[9]:
+            response_data["supervisor_id"] = user[9]
+            response_data["supervisor_nombre"] = user[10] if user[10] else "Sin nombre"
+        
+        return response_data
         
     except HTTPException:
         raise
@@ -1241,9 +1250,9 @@ async def test_solicitudes_basico():
         print(f"🔍 Traceback: {error_trace}")
         return {"error": str(e), "trace": error_trace}
 
-@app.get("/supervisor/solicitudes")
-async def obtener_solicitudes_pendientes():
-    """Obtener todas las solicitudes pendientes para supervisor"""
+@app.get("/supervisor/solicitudes/{supervisor_id}")
+async def obtener_solicitudes_supervisor(supervisor_id: int):
+    """Obtener solicitudes pendientes de técnicos asignados a un supervisor específico"""
     try:
         print("🔍 Iniciando búsqueda de solicitudes pendientes...")
         
@@ -1252,17 +1261,17 @@ async def obtener_solicitudes_pendientes():
         
         # Usar cursor directo para mayor control
         if use_sqlite:
-            print("📊 Usando SQLite - Consultando solicitudes...")
+            print(f"📊 Usando SQLite - Consultando solicitudes para supervisor {supervisor_id}...")
             try:
                 cursor.execute("""
                     SELECT s.id, s.usuario_id, s.tipo_actividad, s.fecha_solicitud, 
                            s.longitud, s.latitud, s.ubicacion, s.observaciones, s.estado,
-                           u.nombre, u.correo, u.curp
+                           u.nombre, u.correo, u.curp, s.supervisor_id
                     FROM solicitudes_dron s
                     LEFT JOIN usuarios u ON s.usuario_id = u.id
-                    WHERE s.estado = 'pendiente'
+                    WHERE s.estado = 'pendiente' AND s.supervisor_id = ?
                     ORDER BY s.fecha_solicitud DESC
-                """)
+                """, (supervisor_id,))
                 solicitudes_raw = cursor.fetchall()
                 
             except Exception as e:
@@ -1270,18 +1279,19 @@ async def obtener_solicitudes_pendientes():
                 raise HTTPException(status_code=500, detail=f"Error en consulta SQLite: {str(e)}")
                 
         else:
-            print("🐘 Usando PostgreSQL - Consultando solicitudes...")
+            print(f"🐘 Usando PostgreSQL - Consultando solicitudes para supervisor {supervisor_id}...")
             try:
                 cursor.execute("""
                     SELECT s.id, s.usuario_id, s.tipo, s.fecha_hora, 
                            ST_X(s.ubicacion) as longitud, ST_Y(s.ubicacion) as latitud,
                            s.ubicacion::text, s.observaciones, s.estado,
-                           u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist
+                           u.nombre, u.correo, u.curp, s.foto_equipo, s.checklist,
+                           s.supervisor_id, s.respuesta_supervisor
                     FROM solicitudes_dron s
                     LEFT JOIN usuarios u ON s.usuario_id = u.id
-                    WHERE s.estado = 'pendiente'
+                    WHERE s.estado = 'pendiente' AND s.supervisor_id = %s
                     ORDER BY s.fecha_hora DESC
-                """)
+                """, (supervisor_id,))
                 solicitudes_raw = cursor.fetchall()
                 
             except Exception as e:
@@ -1325,6 +1335,7 @@ async def obtener_solicitudes_pendientes():
                     },
                     "observaciones": sol[7] if sol[7] else "Sin observaciones",
                     "estado": sol[8],
+                    "respuesta_supervisor": sol[15] if len(sol) > 15 and sol[15] else None,  # respuesta_supervisor (índice 15)
                     "tecnico": {
                         "nombre": sol[9] if sol[9] else "Usuario Desconocido",  # u.nombre (índice 9)
                         "correo": sol[10] if len(sol) > 10 and sol[10] else "sin-correo@example.com",  # u.correo (índice 10)
@@ -1428,6 +1439,42 @@ async def rechazar_solicitud(solicitud_id: int, motivo: str = Form("")):
         print(f"❌ Error rechazando solicitud: {e}")
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
+@app.put("/supervisor/solicitudes/{solicitud_id}/comentario")
+async def agregar_comentario_supervisor(solicitud_id: int, comentario: str = Form(...)):
+    """Agregar comentario del supervisor a una solicitud"""
+    try:
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
+        
+        # Verificar que la solicitud existe
+        cursor.execute(
+            "SELECT id, estado, supervisor_id FROM solicitudes_dron WHERE id = %s",
+            (solicitud_id,)
+        )
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        # Actualizar respuesta del supervisor
+        cursor.execute(
+            "UPDATE solicitudes_dron SET respuesta_supervisor = %s WHERE id = %s",
+            (comentario, solicitud_id)
+        )
+        
+        conn.commit()
+        
+        print(f"💬 Comentario agregado por supervisor a solicitud {solicitud_id}: {comentario}")
+        
+        return {"success": True, "message": "Comentario agregado exitosamente"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"❌ Error agregando comentario: {e}")
+        raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
+
 # ==================== ENDPOINTS DE SOLICITUDES DE DRONES ====================
 
 @app.post("/solicitudes")
@@ -1502,6 +1549,18 @@ async def crear_solicitud_dron(
 
         # Crear el punto geográfico para PostgreSQL
         punto_ubicacion = f"POINT({longitud} {latitud})"
+        
+        # Obtener datos del usuario para asignación de supervisor
+        cursor.execute("SELECT nombre, puesto, rol, supervisor_id FROM usuarios WHERE id = %s", (usuario_id,))
+        usuario_data = cursor.fetchone()
+        if not usuario_data:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        
+        # Determinar supervisor_id para la solicitud
+        supervisor_id_solicitud = None
+        if usuario_data[2] == 'tecnico' and usuario_data[3]:  # Si es técnico y tiene supervisor asignado
+            supervisor_id_solicitud = usuario_data[3]
+            print(f"👥 Asignando supervisor {supervisor_id_solicitud} a solicitud de técnico {usuario_id}")
 
         # IMPORTANTE: Guardar solo el nombre del archivo en la BD, no la ruta completa
         # Esto permite que el frontend construya la URL correcta usando el endpoint de imágenes
@@ -1510,11 +1569,11 @@ async def crear_solicitud_dron(
         # Insertar solicitud en la base de datos
         cursor.execute("""
             INSERT INTO solicitudes_dron 
-            (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
-            VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
+            (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado, supervisor_id) 
+            VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s, %s)
             RETURNING id
         """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
-              observaciones, punto_ubicacion, 'pendiente'))
+              observaciones, punto_ubicacion, 'pendiente', supervisor_id_solicitud))
         
         solicitud_id = cursor.fetchone()[0]
         
