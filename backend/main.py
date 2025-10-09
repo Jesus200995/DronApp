@@ -2830,6 +2830,94 @@ async def editar_actividad(
         limpiar_transaccion()
         raise HTTPException(status_code=500, detail=f"Error al editar actividad: {str(e)}")
 
+# ==================== ENDPOINTS DE NOTIFICACIONES ====================
+
+@app.get("/notificaciones/unread_count")
+async def obtener_conteo_no_leidas(usuario_id: int):
+    """
+    Obtener conteo de notificaciones no leídas para un usuario
+    """
+    try:
+        print(f"📊 Obteniendo conteo de notificaciones no leídas para usuario {usuario_id}")
+        
+        # Por ahora retornamos un conteo simulado
+        # En el futuro esto consultará una tabla de notificaciones real
+        return {
+            "count": 0,
+            "usuario_id": usuario_id,
+            "message": "Endpoint de notificaciones disponible"
+        }
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo conteo de notificaciones: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo notificaciones: {str(e)}")
+
+@app.get("/notificaciones/usuario/{usuario_id}")
+async def obtener_notificaciones_usuario(usuario_id: int, limit: int = 20, offset: int = 0):
+    """
+    Obtener notificaciones de un usuario específico
+    """
+    try:
+        print(f"📱 Obteniendo notificaciones para usuario {usuario_id}")
+        
+        # Por ahora retornamos notificaciones vacías
+        # En el futuro esto consultará una tabla de notificaciones real
+        return {
+            "usuario": {
+                "id": usuario_id,
+                "nombre_completo": "Usuario"
+            },
+            "notificaciones": [],
+            "total": 0,
+            "limit": limit,
+            "offset": offset
+        }
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo notificaciones del usuario: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo notificaciones: {str(e)}")
+
+@app.get("/notificaciones/list")
+async def obtener_lista_notificaciones(usuario_id: int, filtro: str = "all", limit: int = 200, offset: int = 0):
+    """
+    Obtener lista de notificaciones con filtros
+    """
+    try:
+        print(f"📋 Obteniendo lista filtrada para usuario {usuario_id} (filtro: {filtro})")
+        
+        # Por ahora retornamos lista vacía
+        # En el futuro esto consultará una tabla de notificaciones real
+        return {
+            "notificaciones": [],
+            "total": 0,
+            "limit": limit,
+            "offset": offset,
+            "filtro": filtro
+        }
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo lista de notificaciones: {e}")
+        raise HTTPException(status_code=500, detail=f"Error obteniendo lista de notificaciones: {str(e)}")
+
+@app.post("/notificaciones/{notificacion_id}/leer")
+async def marcar_notificacion_leida(notificacion_id: int, request_data: dict):
+    """
+    Marcar notificación como leída
+    """
+    try:
+        usuario_id = request_data.get("usuario_id")
+        device_id = request_data.get("device_id")
+        
+        print(f"✅ Marcando notificación {notificacion_id} como leída para usuario {usuario_id}")
+        
+        # Por ahora solo retornamos éxito
+        # En el futuro esto actualizará el estado en la tabla de notificaciones
+        return {"ok": True}
+        
+    except Exception as e:
+        print(f"❌ Error marcando notificación como leída: {e}")
+        raise HTTPException(status_code=500, detail=f"Error marcando notificación: {str(e)}")
+
 # ==================== MAIN ====================
 
 # ==================== INICIALIZACIÓN DEL SERVIDOR ====================

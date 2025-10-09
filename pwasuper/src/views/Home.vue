@@ -974,20 +974,41 @@ function obtenerTimestampCDMX() {
 const user = computed(() => {
   const storedUser = localStorage.getItem("user");
   if (!storedUser) {
+    console.warn('⚠️ No hay usuario en localStorage, redirigiendo a login');
     router.push("/login");
-    return {};
+    return null;
   }
-  const userData = JSON.parse(storedUser);
   
-  // 🔧 DEBUGGING: Verificar qué datos tenemos del usuario
-  console.log('🔍 Datos del usuario desde localStorage:', userData);
-  
-  // 🔧 Mapear los campos del backend a los esperados por el frontend
-  return {
-    ...userData,
-    nombre_completo: userData.nombre_completo || userData.nombre || 'Usuario sin nombre',
-    cargo: userData.cargo || userData.puesto || 'Sin cargo asignado'
-  };
+  try {
+    const userData = JSON.parse(storedUser);
+    
+    // 🔧 DEBUGGING: Verificar qué datos tenemos del usuario
+    console.log('🔍 Datos del usuario desde localStorage:', userData);
+    
+    // 🔧 VALIDACIÓN: Verificar que tenemos los campos esenciales
+    if (!userData.usuario_id && !userData.id) {
+      console.error('❌ Error: Usuario sin ID válido');
+      router.push("/login");
+      return null;
+    }
+    
+    // 🔧 Mapear los campos del backend a los esperados por el frontend
+    const mappedUser = {
+      ...userData,
+      id: userData.usuario_id || userData.id, // Asegurar que siempre tengamos un ID
+      nombre_completo: userData.nombre_completo || userData.nombre || 'Usuario sin nombre',
+      cargo: userData.cargo || userData.puesto || 'Sin cargo asignado'
+    };
+    
+    console.log('✅ Usuario mapeado correctamente:', { id: mappedUser.id, nombre: mappedUser.nombre_completo });
+    return mappedUser;
+    
+  } catch (parseError) {
+    console.error('❌ Error al parsear datos de usuario:', parseError);
+    localStorage.removeItem("user");
+    router.push("/login");
+    return null;
+  }
 });
 
 // Determinar si el mensaje es de tipo información (sin conexión) o error
@@ -1030,7 +1051,28 @@ const getUserInitials = computed(() => {
 
 // Computed para verificar si se pueden enviar los datos de solicitud
 const puedeEnviarSolicitud = computed(() => {
-  return latitud.value && longitud.value && foto.value && Object.keys(checklist.value).length > 0;
+  // Verificar que tenemos usuario válido
+  if (!user.value || !user.value.id) {
+    console.warn('⚠️ puedeEnviarSolicitud: Usuario no válido');
+    return false;
+  }
+  
+  // Verificar que tenemos todos los datos requeridos
+  const tieneUbicacion = latitud.value && longitud.value;
+  const tieneFoto = foto.value && archivoFoto.value;
+  const tieneChecklist = Object.keys(checklist.value).length > 0;
+  
+  const puedeEnviar = tieneUbicacion && tieneFoto && tieneChecklist;
+  
+  if (!puedeEnviar) {
+    const faltan = [];
+    if (!tieneUbicacion) faltan.push('ubicación');
+    if (!tieneFoto) faltan.push('foto');
+    if (!tieneChecklist) faltan.push('checklist');
+    console.log(`📝 puedeEnviarSolicitud: Faltan: ${faltan.join(', ')}`);
+  }
+  
+  return puedeEnviar;
 });
 
 // Funciones para el sistema de solicitudes de drones
@@ -1070,9 +1112,17 @@ async function confirmarSolicitud() {
   error.value = null;
   
   try {
-    console.log('� Enviando solicitud de dron:', {
+    // 🔧 VALIDACIÓN: Verificar que tenemos usuario válido
+    if (!user.value || !user.value.id) {
+      console.error('❌ Error: Usuario no definido o sin ID');
+      error.value = "Error: No se pudo obtener la información del usuario. Por favor, reinicia la sesión.";
+      return;
+    }
+
+    console.log('📱 Enviando solicitud de dron:', {
       tipo: tipoAsistencia.value,
       usuario: user.value.id,
+      usuario_nombre: user.value.nombre_completo,
       checklist: checklist.value,
       ubicacion: { lat: latitud.value, lon: longitud.value }
     });
@@ -1086,15 +1136,26 @@ async function confirmarSolicitud() {
       return;
     }
 
+    // 🔧 VALIDACIÓN: Verificar datos requeridos
+    if (!latitud.value || !longitud.value) {
+      error.value = "Error: No se pudo obtener la ubicación. Por favor, intenta obtener la ubicación nuevamente.";
+      return;
+    }
+
+    if (!archivoFoto.value) {
+      error.value = "Error: Se requiere una foto del equipo. Por favor, toma una foto antes de continuar.";
+      return;
+    }
+
     // Crear FormData para enviar al servidor
     const formData = new FormData();
     formData.append("usuario_id", user.value.id.toString());
     formData.append("tipo", tipoAsistencia.value);
-    formData.append("latitud", latitud.value);
-    formData.append("longitud", longitud.value);
+    formData.append("latitud", latitud.value.toString());
+    formData.append("longitud", longitud.value.toString());
     formData.append("foto_equipo", archivoFoto.value);
     formData.append("checklist", JSON.stringify(checklist.value));
-    formData.append("observaciones", descripcion.value);
+    formData.append("observaciones", descripcion.value || "");
     
     // Agregar timestamp offline si está disponible
     const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
@@ -1441,6 +1502,12 @@ async function onFileChangeRegistro(e) {
 }
 
 async function enviarRegistro() {
+  // Validar usuario primero
+  if (!user.value || !user.value.id) {
+    error.value = "❌ Error de sesión: Usuario no válido. Por favor inicia sesión de nuevo.";
+    return;
+  }
+
   // Verificar estado de asistencia
   if (!entradaMarcada.value) {
     error.value = "❌ Debes marcar tu entrada primero para poder registrar actividades.";
@@ -1754,6 +1821,12 @@ function verificarEstadoAsistencia() {
     datosEntrada.value = {};
     datosSalida.value = {};
     
+    // 🔧 VALIDACIÓN: Verificar que tenemos usuario válido
+    if (!user.value || !user.value.id) {
+      console.warn('⚠️ verificarEstadoAsistencia: Usuario no válido');
+      return;
+    }
+    
     // Verificamos si hay datos guardados para el día de hoy específicamente
     const estadoHoy = localStorage.getItem(`asistencia_${user.value.id}_${fechaHoyCDMX}`);
     
@@ -1801,7 +1874,7 @@ function verificarEstadoAsistencia() {
 
 // Función para asegurar que los estados se mantengan correctamente hasta las 23:59:59 CDMX
 function asegurarEstadosConsistentes() {
-  if (!user.value.id) return;
+  if (!user.value || !user.value.id) return;
   
   // *** CORREGIDO: Usar fecha CDMX consistente ***
   const fechaHoyCDMX = new Date().toLocaleString("en-CA", {
@@ -1880,6 +1953,8 @@ function limpiarDatosAntiguos() {
  * Consulta al backend si el usuario ya registró entrada/salida hoy
  */
   async function verificarAsistenciaHoy(forceRefresh = false) {
+    if (!user.value || !user.value.id) return;
+    
     verificandoAsistencia.value = true;
     try {
       // Verificar conexión a internet antes de consultar
@@ -1999,6 +2074,8 @@ function formatearHora(fechaISO) {
 }
 
 function guardarEstadoAsistencia() {
+  if (!user.value || !user.value.id) return;
+  
   // *** CORREGIDO: Usar fecha CDMX consistente ***
   const fechaHoyCDMX = new Date().toLocaleString("en-CA", {
     timeZone: "America/Mexico_City",
@@ -2040,6 +2117,8 @@ function guardarEstadoAsistencia() {
  * @param {boolean} forceRefresh - Si es true, fuerza una actualización desde el servidor
  */
 async function cargarHistorial(forceRefresh = false) {
+  if (!user.value || !user.value.id) return;
+  
   try {
     console.log(`🔄 Cargando historial de registros${forceRefresh ? ' (forzando actualización)' : ''}...`);
     
@@ -2372,7 +2451,7 @@ const puedeGuardarActividad = computed(() => {
 
 // Cargar actividades del usuario
 async function cargarActividades() {
-  if (!user.value.id) return;
+  if (!user.value || !user.value.id) return;
   
   cargandoActividades.value = true;
   try {
