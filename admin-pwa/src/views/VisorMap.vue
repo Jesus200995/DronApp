@@ -189,12 +189,12 @@
             <div class="popup-header">
               <div class="popup-title">
                 <!-- Iconos según el tipo de actividad -->
-                <svg v-if="popupData.tipoClase === 'entrada'" class="popup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg v-if="popupData.tipoSolicitud === 'entrada'" class="popup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
                   <polyline points="10 17 15 12 10 7"/>
                   <line x1="15" y1="12" x2="3" y2="12"/>
                 </svg>
-                <svg v-else-if="popupData.tipoClase === 'salida'" class="popup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg v-else-if="popupData.tipoSolicitud === 'salida'" class="popup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                   <polyline points="16 17 21 12 16 7"/>
                   <line x1="21" y1="12" x2="9" y2="12"/>
@@ -222,21 +222,9 @@
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
                 <strong>{{ 
-                  popupData.tipoActividad === 'campo' ? 'Actividad de Campo' :
-                  popupData.tipoActividad === 'gabinete' ? 'Actividad de Gabinete' :
-                  popupData.tipoActividad === 'entrada' ? 'Entrada' :
-                  popupData.tipoActividad === 'salida' ? 'Salida' :
-                  popupData.tipoActividad === 'oficina' ? 'Actividad de Oficina' :
-                  popupData.tipoActividad === 'registro' ? 'Registro de Actividad' :
-                  popupData.tipoActividad === 'actividades-generales' ? 'Actividad General' :
-                  popupData.tipoClase === 'campo' || popupData.tipoClase === 'campo-hoy' ? 'Actividad de Campo' :
-                  popupData.tipoClase === 'gabinete' || popupData.tipoClase === 'gabinete-hoy' ? 'Actividad de Gabinete' :
-                  popupData.tipoClase === 'actividades-generales' ? 'Actividad General' :
-                  popupData.tipoClase === 'entrada' ? 'Entrada' :
-                  popupData.tipoClase === 'salida' ? 'Salida' :
-                  popupData.tipoClase === 'registro-hoy' ? 'Registro de Hoy' :
-                  popupData.tipoClase === 'registro-antiguo' || popupData.tipoClase === 'antiguo' ? 'Registro Anterior' :
-                  'Actividad'
+                  popupData.tipoSolicitud === 'entrada' ? 'Solicitud de Entrada' :
+                  popupData.tipoSolicitud === 'salida' ? 'Solicitud de Salida' :
+                  'Solicitud'
                 }}</strong>
               </div>
               
@@ -632,11 +620,15 @@ const cargarDatos = async () => {
     
     console.log(`📊 Solicitudes para el mapa: ${solicitudesResult.length}`)
     
+    // Procesar solicitudes para el mapa
+    const solicitudesProcesadas = procesarSolicitudesMapa(solicitudesResult)
+    console.log(`📊 Solicitudes procesadas: ${solicitudesProcesadas.length}`)
+    
     // Si el mapa ya está cargado, actualizar puntos
     if (map && mapInitialized.value) {
-      actualizarPuntosMapa(solicitudesResult)
+      actualizarPuntosMapa(solicitudesProcesadas)
     } else {
-      inicializarMapa(solicitudesResult)
+      inicializarMapa(solicitudesProcesadas)
     }
     
     // Cargar estadísticas del día actual en paralelo (sin bloquear)
@@ -651,7 +643,7 @@ const cargarDatos = async () => {
     
     hasDatosUsuario.value = true
     loading.value = false
-    totalPuntosEnMapa.value = solicitudesResult.length
+    totalPuntosEnMapa.value = solicitudesProcesadas.length
     
     console.log('✅ Carga de datos completada exitosamente')
     
@@ -787,51 +779,19 @@ const cargarUsuariosConReintentos = async (maxReintentos = 3) => {
   }
 }
 
-// Función para cargar estadísticas del día actual en horario CDMX
+// Función para cargar estadísticas del día actual (simplificada para solicitudes)
 const cargarEstadisticasDiaActual = async () => {
   try {
-    console.log('📊 Cargando estadísticas del día actual CDMX...')
+    console.log('📊 Preparando estadísticas del día actual...')
     
-    // Obtener estadísticas completas del día actual
-    const estadisticas = await estadisticasService.obtenerEstadisticasDiaActual()
+    // Para solicitudes, las estadísticas se calculan desde los datos del mapa
+    const fechaActual = obtenerFechaCDMX()
+    estadisticasDiaActual.fechaCDMX = fechaActual.toISOString().split('T')[0]
     
-    // Actualizar el objeto reactivo
-    estadisticasDiaActual.totalUsuariosDia = estadisticas.totalUsuariosDia || 0
-    estadisticasDiaActual.entradasDia = estadisticas.entradasDia || 0
-    estadisticasDiaActual.salidasDia = estadisticas.salidasDia || 0
-    estadisticasDiaActual.actividadesDia = estadisticas.actividadesDia || 0
-    estadisticasDiaActual.fechaCDMX = estadisticas.fechaCDMX
+    console.log('✅ Estadísticas del día preparadas para solicitudes')
     
-    // Obtener estadísticas por tipo de actividad
-    try {
-      const respuestaTipos = await axios.get(`${API_URL}/estadisticas/tipo-actividad`)
-      const estadisticasTipos = respuestaTipos.data.estadisticas_tipo
-      
-      // Actualizar contadores específicos por tipo
-      estadisticasDiaActual.campoHoy = estadisticasTipos.dia_actual?.campo || 0
-      estadisticasDiaActual.gabineteHoy = estadisticasTipos.dia_actual?.gabinete || 0
-      
-      console.log('📊 Estadísticas por tipo cargadas:', {
-        campo: estadisticasDiaActual.campoHoy,
-        gabinete: estadisticasDiaActual.gabineteHoy
-      })
-    } catch (errorTipos) {
-      console.warn('⚠️ Error cargando estadísticas por tipo:', errorTipos)
-      estadisticasDiaActual.campoHoy = 0
-      estadisticasDiaActual.gabineteHoy = 0
-    }
-    
-    console.log('✅ Estadísticas del día actualizadas:', estadisticasDiaActual)
-    
-  } catch (error) {
-    console.error('❌ Error cargando estadísticas del día:', error)
-    // Si hay error, mantener valores en 0 o usar fallback local
-    estadisticasDiaActual.totalUsuariosDia = 0
-    estadisticasDiaActual.entradasDia = 0
-    estadisticasDiaActual.salidasDia = 0
-    estadisticasDiaActual.actividadesDia = 0
-    estadisticasDiaActual.campoHoy = 0
-    estadisticasDiaActual.gabineteHoy = 0
+  } catch (err) {
+    console.error('❌ Error al preparar estadísticas:', err)
   }
 }
 
@@ -1033,17 +993,10 @@ const inicializarMapa = (datos) => {
         paint: {
           'circle-color': [
             'match',
-            ['get', 'tipo_actividad'],
-            'entrada', 'rgb(0, 0, 205)', // Mediumblue para entradas
-            'salida', 'rgb(220, 20, 60)', // Crimson para salidas
-            'campo-hoy', 'rgb(50, 205, 50)', // Limegreen para campo de hoy
-            'gabinete-hoy', 'rgb(255, 140, 0)', // Darkorange para gabinete de hoy
-            'actividades-generales', 'rgb(148, 0, 211)', // Darkviolet para actividades generales
-            'campo-antiguo', 'rgb(192, 192, 192)', // Silver para campo antiguo
-            'gabinete-antiguo', 'rgb(192, 192, 192)', // Silver para gabinete antiguo
-            'registro-hoy', 'rgb(34, 139, 34)', // Verde para compatibilidad (campo por defecto)
-            'registro-antiguo', 'rgb(192, 192, 192)', // Silver para registros antiguos
-            '#A9A9A9' // Gris por defecto (no debería llegar aquí)
+            ['get', 'tipo_solicitud'],
+            'entrada', 'rgb(34, 139, 34)', // Verde fuerte para solicitudes de entrada
+            'salida', 'rgb(220, 20, 60)', // Rojo para solicitudes de salida
+            '#A9A9A9' // Gris por defecto
           ],
           // Tamaño un poco más grande pero manteniendo proporción según nivel de zoom
           'circle-radius': [
@@ -1143,20 +1096,20 @@ const inicializarMapa = (datos) => {
             coordinates: coordinates,
             usuario: usuario,
             correoUsuario: correoUsuario,
-            fecha: fechaCompleta.toLocaleString('es-ES'), // Mantener para compatibilidad
+            fecha: fechaCompleta.toLocaleString('es-ES'),
             fechaFormateada: fechaFormateada,
             horaFormateada: horaFormateada,
-            tipoActividad: tipoActividad,
-            tipoClase: props.tipo_actividad_original || props.tipo_actividad,
+            tipoSolicitud: props.tipo_solicitud,
+            estado: props.estado,
+            tipoClase: props.tipo_solicitud === 'entrada' ? 'entrada' : 'salida',
             coordenadasTexto: `${coordinates[1].toFixed(6)}, ${coordinates[0].toFixed(6)}`,
             expandido: false,
             // Datos adicionales para la vista expandida
-            registroId: props.id || props.registro_id || 'N/A',
+            solicitudId: props.id || 'N/A',
             usuarioId: props.usuario_id || 'N/A',
-            descripcion: props.descripcion || props.descripcion_entrada || props.descripcion_salida || '',
+            descripcion: props.descripcion || '',
             imagenUrl: imagenUrl,
-            precision: props.precision || props.accuracy || null,
-            estadoConexion: props.estado_conexion || (props.offline ? 'Offline' : 'Online'),
+            cargo: props.cargo || 'N/A',
             datosOriginales: props
           };
           
@@ -1742,11 +1695,8 @@ const aplicarFiltros = () => {
   }
 }
 
-// Función para filtrar registros según criterios
-const filtrarRegistros = () => {
-  // Como ya no tenemos filtro de período, simplemente devolvemos todos los registros
-  return [...registros.value]
-}
+// Función para filtrar solicitudes (ya no se usa la función filtrarRegistros)
+// Las solicitudes se filtran directamente en aplicarClasificador
 
 // Función para mostrar/ocultar filtros
 const toggleFiltros = () => {
