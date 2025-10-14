@@ -179,6 +179,32 @@ const solicitudesService = {
   },
 
   /**
+   * Obtener solicitudes para mostrar en el mapa (últimas por usuario)
+   */
+  async obtenerSolicitudesMapa() {
+    try {
+      console.log('🗺️ Solicitando datos de solicitudes para el mapa...')
+      
+      const response = await api.get('/solicitudes/mapa')
+      
+      console.log('✅ Datos de solicitudes para mapa recibidos:', response.data)
+      
+      return {
+        success: true,
+        data: response.data.solicitudes || [],
+        total: response.data.total || 0
+      }
+    } catch (error) {
+      console.error('❌ Error obteniendo solicitudes para mapa:', error)
+      return {
+        success: false,
+        error: error.response?.data?.detail || error.message || 'Error desconocido',
+        data: []
+      }
+    }
+  },
+
+  /**
    * Obtener estadísticas de solicitudes
    */
   async obtenerEstadisticas() {

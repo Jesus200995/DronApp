@@ -1892,6 +1892,75 @@ async def obtener_solicitudes(
         
         raise HTTPException(status_code=500, detail=f"Error al obtener solicitudes: {str(e)}")
 
+@app.get("/solicitudes/mapa")
+async def obtener_solicitudes_para_mapa():
+    """Obtener las últimas solicitudes por usuario para mostrar en el mapa"""
+    try:
+        print("🗺️ Obteniendo solicitudes para el mapa...")
+        
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Obtener la última solicitud por usuario con coordenadas válidas
+        cursor.execute("""
+            SELECT DISTINCT ON (s.usuario_id) 
+                   s.id, s.tipo, s.usuario_id, s.fecha_hora, s.foto_equipo, 
+                   s.observaciones, s.estado,
+                   CASE 
+                       WHEN s.ubicacion IS NOT NULL THEN ST_X(s.ubicacion::geometry)
+                       ELSE NULL 
+                   END as longitud,
+                   CASE 
+                       WHEN s.ubicacion IS NOT NULL THEN ST_Y(s.ubicacion::geometry)
+                       ELSE NULL 
+                   END as latitud,
+                   COALESCE(u.nombre, 'Usuario no encontrado') as nombre,
+                   COALESCE(u.correo, 'sin-correo@ejemplo.com') as correo,
+                   COALESCE(u.puesto, 'Sin cargo') as puesto
+            FROM solicitudes_dron s
+            LEFT JOIN usuarios u ON s.usuario_id = u.id
+            WHERE s.ubicacion IS NOT NULL
+            ORDER BY s.usuario_id, s.fecha_hora DESC
+        """)
+        
+        registros = cursor.fetchall()
+        
+        solicitudes_mapa = []
+        for registro in registros:
+            if registro[7] is not None and registro[8] is not None:  # longitud y latitud
+                solicitudes_mapa.append({
+                    "id": registro[0],
+                    "tipo": registro[1],
+                    "usuario_id": registro[2],
+                    "fecha_hora": registro[3].isoformat() if registro[3] else None,
+                    "foto_equipo": registro[4],
+                    "observaciones": registro[5],
+                    "estado": registro[6],
+                    "longitud": float(registro[7]),
+                    "latitud": float(registro[8]),
+                    "usuario": {
+                        "nombre_completo": registro[9],
+                        "correo": registro[10],
+                        "cargo": registro[11]
+                    }
+                })
+        
+        print(f"✅ {len(solicitudes_mapa)} solicitudes encontradas para el mapa")
+        
+        return {
+            "status": "success",
+            "total": len(solicitudes_mapa),
+            "solicitudes": solicitudes_mapa
+        }
+        
+    except HTTPException:
+        raise
+    except psycopg2.Error as e:
+        manejar_error_db(e, "obtención de solicitudes para mapa")
+    except Exception as e:
+        print(f"❌ Error obteniendo solicitudes para mapa: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener solicitudes para mapa: {str(e)}")
+
 @app.put("/solicitudes/{solicitud_id}")
 async def actualizar_solicitud(
     solicitud_id: int,

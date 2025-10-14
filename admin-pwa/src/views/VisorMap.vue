@@ -13,19 +13,12 @@
           <div class="header-main">
             <div class="header-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M8 3h3a7 7 0 0 0 3 18h-3A17 17 0 0 1 8 3z"/>
-                <path d="M16 12h3"/>
-                <path d="M16 18h2"/>
-                <path d="M16 6h2"/>
-                <path d="M3 12h3"/>
-                <path d="M6 6h2"/>
-                <path d="M6 18h2"/>
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
               </svg>
             </div>
             <div class="header-text">
-              <h1 class="header-title">Visor de seguimiento diario</h1>
-              <p class="header-subtitle">Visualización de registros</p>
+              <h1 class="header-title">Mapa de Solicitudes de Drones</h1>
+              <p class="header-subtitle">Últimas ubicaciones de solicitudes por usuario</p>
             </div>
           </div>
           <div class="header-actions">
@@ -60,13 +53,13 @@
               <button @click="recargarMapa" class="retry-btn-small">Reintentar</button>
             </div>
             <div v-else class="status-message">
-              <p class="status-info-ubicaciones">{{ totalPuntosEnMapa }} ubicaciones en el mapa</p>
+              <p class="status-info-ubicaciones">{{ totalPuntosEnMapa }} solicitudes en el mapa</p>
             </div>
           </div>
           
           <div class="panel-section">
             <div class="section-header" @click="toggleFiltros">
-              <h4>Clasificador</h4>
+              <h4>Filtros</h4>
               <button class="toggle-btn" :class="{ 'rotated': mostrarFiltros }">
                 <svg v-if="mostrarFiltros" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -84,13 +77,12 @@
                     <path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
                   </svg>
                   <select v-model="filtroTipo" class="compact-select" @change="aplicarFiltros">
-                    <option value="">Todas las actividades</option>
+                    <option value="">Todas las solicitudes</option>
                     <option value="entrada">Solo Entradas</option>
                     <option value="salida">Solo Salidas</option>
-                    <option value="campo-hoy">Solo Campo (hoy)</option>
-                    <option value="gabinete-hoy">Solo Gabinete (hoy)</option>
-                    <option value="actividades-generales">Solo Actividades Total (Hoy)</option>
-                    <option value="registro-antiguo">Solo Registros Antiguos</option>
+                    <option value="pendiente">Solo Pendientes</option>
+                    <option value="aprobado">Solo Aprobadas</option>
+                    <option value="rechazado">Solo Rechazadas</option>
                   </select>
                 </div>
               </div>
@@ -101,28 +93,28 @@
             <h4>Estadísticas</h4>
             <div class="stat-grid">
               <div class="stat-item">
-                <span class="stat-label">Total Usuarios</span>
-                <span class="stat-value">{{ totalUsuariosRegistrados }}</span>
+                <span class="stat-label">Total Solicitudes</span>
+                <span class="stat-value">{{ estadisticasSolicitudes.total }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Entradas del día</span>
-                <span class="stat-value entrada">{{ estadisticasDiaActual.entradasDia }}</span>
+                <span class="stat-label">Entradas</span>
+                <span class="stat-value entrada">{{ estadisticasSolicitudes.entradas }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Salidas del día</span>
-                <span class="stat-value salida">{{ estadisticasDiaActual.salidasDia }}</span>
+                <span class="stat-label">Salidas</span>
+                <span class="stat-value salida">{{ estadisticasSolicitudes.salidas }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Campo (hoy)</span>
-                <span class="stat-value campo">{{ estadisticasDiaActual.campoHoy }}</span>
+                <span class="stat-label">Pendientes</span>
+                <span class="stat-value pendiente">{{ estadisticasSolicitudes.pendientes }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Gabinete (hoy)</span>
-                <span class="stat-value gabinete">{{ estadisticasDiaActual.gabineteHoy }}</span>
+                <span class="stat-label">Aprobadas</span>
+                <span class="stat-value aprobado">{{ estadisticasSolicitudes.aprobadas }}</span>
               </div>
               <div class="stat-item">
-                <span class="stat-label">Actividades total (Hoy)</span>
-                <span class="stat-value actividades-total">{{ estadisticasDiaActual.campoHoy + estadisticasDiaActual.gabineteHoy }}</span>
+                <span class="stat-label">Rechazadas</span>
+                <span class="stat-value rechazado">{{ estadisticasSolicitudes.rechazadas }}</span>
               </div>
             </div>
           </div>
@@ -132,46 +124,36 @@
             <div class="leyenda-container">
               <div class="leyenda-grid">
                 
-                <!-- Subtítulo para Asistencias -->
+                <!-- Subtítulo para Tipos de Solicitud -->
                 <div class="leyenda-subtitle">
-                  <h5>Asistencias</h5>
+                  <h5>Tipo de Solicitud</h5>
                 </div>
                 
                 <div class="leyenda-item">
-                  <div class="color-marker entrada"></div>
-                  <span>Entrada (hoy)</span>
+                  <div class="color-marker entrada-solicitud"></div>
+                  <span>Solicitud Entrada</span>
                 </div>
                 <div class="leyenda-item">
-                  <div class="color-marker salida"></div>
-                  <span>Salida (hoy)</span>
+                  <div class="color-marker salida-solicitud"></div>
+                  <span>Solicitud Salida</span>
                 </div>
                 
-                <!-- Subtítulo para Actividades (reducido) -->
+                <!-- Subtítulo para Estados -->
                 <div class="leyenda-subtitle">
-                  <h5>Actividades</h5>
+                  <h5>Estado</h5>
                 </div>
                 
                 <div class="leyenda-item">
-                  <div class="color-marker campo-hoy"></div>
-                  <span>Campo (hoy)</span>
+                  <div class="color-marker pendiente"></div>
+                  <span>Pendiente</span>
                 </div>
                 <div class="leyenda-item">
-                  <div class="color-marker gabinete-hoy"></div>
-                  <span>Gabinete (hoy)</span>
+                  <div class="color-marker aprobado"></div>
+                  <span>Aprobada</span>
                 </div>
                 <div class="leyenda-item">
-                  <div class="color-marker actividades-generales"></div>
-                  <span>Actividades total (Hoy)</span>
-                </div>
-                
-                <!-- Subtítulo para Otros -->
-                <div class="leyenda-subtitle">
-                  <h5>Otros</h5>
-                </div>
-                
-                <div class="leyenda-item">
-                  <div class="color-marker registro-antiguo"></div>
-                  <span>Registro antiguo</span>
+                  <div class="color-marker rechazado"></div>
+                  <span>Rechazada</span>
                 </div>
               </div>
             </div>
@@ -477,7 +459,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from '../components/Sidebar.vue'
 import axios from 'axios'
@@ -486,6 +468,7 @@ import mapboxgl from 'mapbox-gl'
 // import asistenciasService from '../services/asistenciasService.js' // Servicio eliminado
 import { estadisticasService } from '../services/estadisticasService.js'
 import healthCheckService from '../services/healthCheckService.js'
+import solicitudesService from '../services/solicitudesService.js'
 
 // Token de acceso de Mapbox - En producción debe estar en variables de entorno
 mapboxgl.accessToken = 'pk.eyJ1IjoibWFyaWVsMDgiLCJhIjoiY202emV3MDhhMDN6YjJscHVqaXExdGpjMyJ9.F_ACoKzS_4e280lD0XndEw';
@@ -542,8 +525,7 @@ const popupData = ref({
 })
 
 // Registros y filtrado
-const registros = ref([])
-const asistencias = ref([])
+const solicitudes = ref([])
 const usuarios = ref([])
 
 // Variables de filtrado como en VisorView.vue
@@ -558,25 +540,34 @@ const clusterInfo = reactive({
   total: 0,
   entradas: 0,
   salidas: 0,
-  campoHoy: 0,
-  gabineteHoy: 0,
-  registrosHoy: 0,
-  registrosAntiguos: 0
+  pendientes: 0,
+  aprobadas: 0,
+  rechazadas: 0
 })
 
-// Estado para las estadísticas del día actual en horario CDMX
+// Estado para las estadísticas del día actual
 const estadisticasDiaActual = reactive({
-  totalUsuariosDia: 0,
+  totalSolicitudesDia: 0,
   entradasDia: 0,
   salidasDia: 0,
-  actividadesDia: 0,
-  campoHoy: 0,
-  gabineteHoy: 0,
+  pendientesDia: 0,
+  aprobadasDia: 0,
+  rechazadasDia: 0,
   fechaCDMX: null
 })
 
 // Estado para el total de usuarios registrados en el sistema
 const totalUsuariosRegistrados = ref('0')
+
+// Computed para estadísticas de solicitudes
+const estadisticasSolicitudes = computed(() => ({
+  total: clusterInfo.total,
+  entradas: clusterInfo.entradas,
+  salidas: clusterInfo.salidas,
+  pendientes: clusterInfo.pendientes,
+  aprobadas: clusterInfo.aprobadas,
+  rechazadas: clusterInfo.rechazadas
+}))
 
 // Función para obtener la fecha actual en CDMX (tiempo real)
 const obtenerFechaCDMX = () => {
@@ -613,37 +604,21 @@ const cargarDatos = async () => {
   try {
     console.log('🔄 Iniciando carga de datos para VisorMap...')
     
-    const token = localStorage.getItem('admin_token')
-    
-    // Cargar datos con manejo individual de errores y reintentos
-    const [registrosData, asistenciasData, usuariosData] = await Promise.allSettled([
-      cargarRegistrosConReintentos(token),
-      cargarAsistenciasConReintentos(),
+    // Cargar solicitudes del mapa y usuarios
+    const [solicitudesData, usuariosData] = await Promise.allSettled([
+      cargarSolicitudesMapaConReintentos(),
       cargarUsuariosConReintentos()
     ])
     
-    // Procesar resultados de registros
-    let registrosEnriquecidos = []
-    if (registrosData.status === 'fulfilled') {
-      console.log('✅ Registros cargados exitosamente')
-      const registrosRaw = Array.isArray(registrosData.value) ? registrosData.value : (registrosData.value.registros || [])
-      // registrosEnriquecidos = await usuariosService.enriquecerRegistrosConUsuarios(registrosRaw) // Servicio eliminado
-      registrosEnriquecidos = registrosRaw // Usar registros sin enriquecer
-      registros.value = registrosEnriquecidos
+    // Procesar resultados de solicitudes
+    let solicitudesResult = []
+    if (solicitudesData.status === 'fulfilled') {
+      console.log('✅ Solicitudes del mapa cargadas exitosamente')
+      solicitudesResult = solicitudesData.value || []
+      solicitudes.value = solicitudesResult
     } else {
-      console.error('❌ Error al cargar registros:', registrosData.reason)
-      registros.value = []
-    }
-    
-    // Procesar resultados de asistencias
-    let asistenciasResult = []
-    if (asistenciasData.status === 'fulfilled') {
-      console.log('✅ Asistencias cargadas exitosamente')
-      asistenciasResult = asistenciasData.value || []
-      asistencias.value = asistenciasResult
-    } else {
-      console.error('❌ Error al cargar asistencias:', asistenciasData.reason)
-      asistencias.value = []
+      console.error('❌ Error al cargar solicitudes del mapa:', solicitudesData.reason)
+      solicitudes.value = []
     }
     
     // Procesar resultados de usuarios
@@ -655,15 +630,13 @@ const cargarDatos = async () => {
       usuarios.value = []
     }
     
-    // Calcular las últimas actividades por usuario
-    const ultimasActividades = obtenerUltimasActividadesPorUsuario(registrosEnriquecidos, asistenciasResult)
-    console.log(`📊 Últimas actividades calculadas: ${ultimasActividades.length}`)
+    console.log(`📊 Solicitudes para el mapa: ${solicitudesResult.length}`)
     
     // Si el mapa ya está cargado, actualizar puntos
     if (map && mapInitialized.value) {
-      actualizarPuntosMapa(ultimasActividades)
+      actualizarPuntosMapa(solicitudesResult)
     } else {
-      inicializarMapa(ultimasActividades)
+      inicializarMapa(solicitudesResult)
     }
     
     // Cargar estadísticas del día actual en paralelo (sin bloquear)
@@ -678,7 +651,7 @@ const cargarDatos = async () => {
     
     hasDatosUsuario.value = true
     loading.value = false
-    totalPuntosEnMapa.value = ultimasActividades.length
+    totalPuntosEnMapa.value = solicitudesResult.length
     
     console.log('✅ Carga de datos completada exitosamente')
     
@@ -748,6 +721,33 @@ const cargarAsistenciasConReintentos = async (maxReintentos = 3) => {
       
     } catch (err) {
       console.error(`❌ Error en intento ${intento} al cargar asistencias:`, err.message)
+      
+      if (intento === maxReintentos) {
+        throw err
+      }
+      
+      // Esperar más tiempo entre reintentos
+      await new Promise(resolve => setTimeout(resolve, 2000 * intento))
+    }
+  }
+}
+
+// Función auxiliar para cargar solicitudes del mapa con reintentos
+const cargarSolicitudesMapaConReintentos = async (maxReintentos = 3) => {
+  // Verificar salud de la API primero
+  const endpointDisponible = await healthCheckService.isEndpointAvailable('/solicitudes/mapa')
+  if (!endpointDisponible) {
+    console.log('⚠️ Endpoint de solicitudes mapa no disponible según health check')
+  }
+  
+  for (let intento = 1; intento <= maxReintentos; intento++) {
+    try {
+      console.log(`🔄 Intento ${intento}/${maxReintentos} - Cargando solicitudes del mapa...`)
+      
+      return await solicitudesService.obtenerSolicitudesMapa()
+      
+    } catch (err) {
+      console.error(`❌ Error en intento ${intento} al cargar solicitudes del mapa:`, err.message)
       
       if (intento === maxReintentos) {
         throw err
@@ -856,212 +856,48 @@ const cargarTotalUsuarios = async () => {
 }
 
 // Obtener las últimas actividades por usuario (combinando registros y asistencias)
-const obtenerUltimasActividadesPorUsuario = (registros, asistencias) => {
-  const mapaUsuarios = new Map()
-  
-  // Procesar registros normales
-  registros.forEach(registro => {
-    if (!registro.latitud || !registro.longitud) return
-    
-    const usuarioId = registro.usuario_id
-    const fechaHora = new Date(registro.fecha_hora)
-    
-    const actividad = {
-      ...registro,
-      // Conservar el tipo_actividad original (campo, gabinete, etc.)
-      tipo_actividad: registro.tipo_actividad || 'registro',
-      fecha_actividad: fechaHora,
-      latitud: parseFloat(registro.latitud),
-      longitud: parseFloat(registro.longitud)
-    }
-    
-    if (!mapaUsuarios.has(usuarioId) || 
-        fechaHora > mapaUsuarios.get(usuarioId).fecha_actividad) {
-      mapaUsuarios.set(usuarioId, actividad)
-    }
-  })
-  
-  // Procesar asistencias (entrada y salida)
-  asistencias.forEach(asistencia => {
-    const usuarioId = asistencia.usuario_id
-    
-    // Procesar entrada si existe
-    if (asistencia.hora_entrada && asistencia.latitud_entrada && asistencia.longitud_entrada) {
-      const fechaEntrada = new Date(asistencia.hora_entrada)
-      
-      const actividadEntrada = {
-        id: `entrada_${asistencia.id}`,
-        usuario_id: usuarioId,
-        usuario: {
-          nombre_completo: asistencia.nombre_usuario,
-          correo: asistencia.correo_usuario,
-          cargo: asistencia.cargo_usuario
-        },
-        tipo_actividad: 'entrada',
-        fecha_actividad: fechaEntrada,
-        fecha_hora: asistencia.hora_entrada,
-        latitud: parseFloat(asistencia.latitud_entrada),
-        longitud: parseFloat(asistencia.longitud_entrada),
-        foto_url: asistencia.foto_entrada_url,
-        descripcion: asistencia.descripcion_entrada || 'Entrada registrada'
-      }
-      
-      if (!mapaUsuarios.has(usuarioId) || 
-          fechaEntrada > mapaUsuarios.get(usuarioId).fecha_actividad) {
-        mapaUsuarios.set(usuarioId, actividadEntrada)
-      }
-    }
-    
-    // Procesar salida si existe
-    if (asistencia.hora_salida && asistencia.latitud_salida && asistencia.longitud_salida) {
-      const fechaSalida = new Date(asistencia.hora_salida)
-      
-      const actividadSalida = {
-        id: `salida_${asistencia.id}`,
-        usuario_id: usuarioId,
-        usuario: {
-          nombre_completo: asistencia.nombre_usuario,
-          correo: asistencia.correo_usuario,
-          cargo: asistencia.cargo_usuario
-        },
-        tipo_actividad: 'salida',
-        fecha_actividad: fechaSalida,
-        fecha_hora: asistencia.hora_salida,
-        latitud: parseFloat(asistencia.latitud_salida),
-        longitud: parseFloat(asistencia.longitud_salida),
-        foto_url: asistencia.foto_salida_url,
-        descripcion: asistencia.descripcion_salida || 'Salida registrada'
-      }
-      
-      if (!mapaUsuarios.has(usuarioId) || 
-          fechaSalida > mapaUsuarios.get(usuarioId).fecha_actividad) {
-        mapaUsuarios.set(usuarioId, actividadSalida)
-      }
-    }
-  })
-  
-  // Convertir el mapa de vuelta a un array
-  return Array.from(mapaUsuarios.values()).filter(a => {
+const procesarSolicitudesMapa = (solicitudes) => {
+  // Las solicitudes ya vienen procesadas desde el backend
+  // Solo necesitamos validar las coordenadas y formatear si es necesario
+  return solicitudes.filter(solicitud => {
     // Verificar que las coordenadas sean válidas
-    return !isNaN(a.latitud) && !isNaN(a.longitud) && 
-           Math.abs(a.latitud) <= 90 && Math.abs(a.longitud) <= 180
-  })
+    return solicitud.latitud && solicitud.longitud && 
+           !isNaN(solicitud.latitud) && !isNaN(solicitud.longitud) && 
+           Math.abs(solicitud.latitud) <= 90 && Math.abs(solicitud.longitud) <= 180
+  }).map(solicitud => ({
+    ...solicitud,
+    latitud: parseFloat(solicitud.latitud),
+    longitud: parseFloat(solicitud.longitud),
+    fecha_actividad: new Date(solicitud.fecha_solicitud)
+  }))
 }
 
-// Determinar el tipo de actividad para colores en el mapa usando horario CDMX
-const determinarTipoActividad = (actividad) => {
-  // Verificar si la actividad ocurrió hoy en horario CDMX
-  const esActividadDeHoy = esUbicacionReciente(actividad.fecha_hora);
-  
-  // CASO 1: Si la actividad es de tipo entrada
-  if (actividad.tipo_actividad === 'entrada') {
-    // Si la entrada es de hoy (CDMX): Mediumblue
-    if (esActividadDeHoy) {
-      return {
-        tipo: 'entrada',
-        clase: 'entrada',
-        descripcion: 'Entrada de Hoy',
-        color: 'rgb(0, 0, 205)' // Mediumblue
-      };
-    } 
-    // Si la entrada NO es de hoy (CDMX): Silver (antigua)
-    else {
-      return {
-        tipo: 'registro-antiguo',
-        clase: 'antiguo',
-        descripcion: 'Entrada Anterior',
-        color: 'rgb(192, 192, 192)' // Silver
-      };
-    }
+// Determinar el color y tipo para solicitudes
+const determinarTipoSolicitud = (solicitud) => {
+  // Determinar color según el tipo de solicitud
+  if (solicitud.tipo_solicitud === 'entrada') {
+    return {
+      tipo: 'entrada-solicitud',
+      clase: 'entrada-solicitud',
+      descripcion: 'Solicitud de Entrada',
+      color: 'rgb(34, 139, 34)' // Verde fuerte
+    };
+  } else if (solicitud.tipo_solicitud === 'salida') {
+    return {
+      tipo: 'salida-solicitud',
+      clase: 'salida-solicitud',
+      descripcion: 'Solicitud de Salida',
+      color: 'rgb(220, 20, 60)' // Rojo
+    };
   }
   
-  // CASO 2: Si la actividad es de tipo salida
-  else if (actividad.tipo_actividad === 'salida') {
-    // Si la salida es de hoy (CDMX): Rojo
-    if (esActividadDeHoy) {
-      return {
-        tipo: 'salida',
-        clase: 'salida',
-        descripcion: 'Salida de Hoy',
-        color: '#DC2626' // Rojo
-      };
-    }
-    // Si la salida NO es de hoy (CDMX): Silver (antigua)
-    else {
-      return {
-        tipo: 'registro-antiguo',
-        clase: 'antiguo',
-        descripcion: 'Salida Anterior',
-        color: 'rgb(192, 192, 192)' // Silver
-      };
-    }
-  }
-  
-  // CASO 3: Actividades de Campo
-  else if (actividad.tipo_actividad === 'campo') {
-    // Si la actividad de campo es de hoy (CDMX): Limegreen
-    if (esActividadDeHoy) {
-      return {
-        tipo: 'campo-hoy',
-        clase: 'campo-hoy',
-        descripcion: 'Actividad de Campo Hoy',
-        color: 'rgb(50, 205, 50)' // Limegreen
-      };
-    }
-    // Si la actividad de campo NO es de hoy (CDMX): Silver (antigua)
-    else {
-      return {
-        tipo: 'campo-antiguo',
-        clase: 'antiguo',
-        descripcion: 'Actividad de Campo Anterior',
-        color: 'rgb(192, 192, 192)' // Silver
-      };
-    }
-  }
-  
-  // CASO 4: Actividades de Gabinete
-  else if (actividad.tipo_actividad === 'gabinete') {
-    // Si la actividad de gabinete es de hoy (CDMX): Darkorange
-    if (esActividadDeHoy) {
-      return {
-        tipo: 'gabinete-hoy',
-        clase: 'gabinete-hoy',
-        descripcion: 'Actividad de Gabinete Hoy',
-        color: 'rgb(255, 140, 0)' // Darkorange
-      };
-    }
-    // Si la actividad de gabinete NO es de hoy (CDMX): Silver (antigua)
-    else {
-      return {
-        tipo: 'gabinete-antiguo',
-        clase: 'antiguo',
-        descripcion: 'Actividad de Gabinete Anterior',
-        color: 'rgb(192, 192, 192)' // Silver
-      };
-    }
-  }
-  
-  // CASO 5: Actividades sin tipo específico (por compatibilidad)
-  else {
-    // Si el registro es de hoy (CDMX): Limegreen (asumir campo por defecto)
-    if (esActividadDeHoy) {
-      return {
-        tipo: 'campo-hoy',
-        clase: 'campo-hoy',
-        descripcion: 'Actividad de Campo Hoy',
-        color: 'rgb(50, 205, 50)' // Limegreen (campo por defecto)
-      };
-    }
-    // Si el registro NO es de hoy (CDMX): Silver (antiguo)
-    else {
-      return {
-        tipo: 'campo-antiguo',
-        clase: 'antiguo',
-        descripcion: 'Actividad Anterior',
-        color: 'rgb(192, 192, 192)' // Silver
-      };
-    }
-  }
+  // Tipo por defecto
+  return {
+    tipo: 'entrada-solicitud',
+    clase: 'entrada-solicitud',
+    descripcion: 'Solicitud de Entrada',
+    color: 'rgb(34, 139, 34)' // Verde fuerte por defecto
+  };
 }
 
 // Función para inicializar el mapa con Mapbox
@@ -1456,51 +1292,36 @@ const actualizarPuntosMapa = (datos) => {
   if (!map || !puntosSource) return;
   
   try {
-    // Reiniciar contadores
+    // Reiniciar contadores para solicitudes
     clusterInfo.total = 0;
     clusterInfo.entradas = 0;
     clusterInfo.salidas = 0;
-    clusterInfo.campoHoy = 0;
-    clusterInfo.gabineteHoy = 0;
-    clusterInfo.registrosHoy = 0;
-    clusterInfo.registrosAntiguos = 0;
+    clusterInfo.pendientes = 0;
+    clusterInfo.aprobadas = 0;
+    clusterInfo.rechazadas = 0;
     
     // Convertir datos a formato GeoJSON
     const features = datos.map(punto => {
-      // Usar la función determinarTipoActividad para clasificar según horario CDMX
-      const infoActividad = determinarTipoActividad(punto);
-      let tipoActividad = infoActividad.tipo;
-      
-      // Para el mapa: si el filtro está en "actividades-generales", cambiar campo y gabinete por "actividades-generales"
-      let tipoActividadMapa = tipoActividad;
-      if (filtroTipo.value === 'actividades-generales') {
-        if (tipoActividad === 'campo-hoy' || tipoActividad === 'gabinete-hoy') {
-          tipoActividadMapa = 'actividades-generales';
-        }
-      }
-      
-      // Verificar si la actividad es de hoy según el horario CDMX
-      const esHoy = esUbicacionReciente(punto.fecha_hora);
+      // Determinar tipo de solicitud para colores
+      const infoSolicitud = determinarTipoSolicitud(punto);
       
       // Actualizar contadores para las estadísticas
       clusterInfo.total++;
       
-      // Actualizar contadores basados en el tipo de actividad del mapa
-      if (tipoActividadMapa === 'entrada') {
+      // Actualizar contadores basados en el tipo de solicitud
+      if (punto.tipo_solicitud === 'entrada') {
         clusterInfo.entradas++;
-      } else if (tipoActividadMapa === 'salida') {
+      } else if (punto.tipo_solicitud === 'salida') {
         clusterInfo.salidas++;
-      } else if (tipoActividadMapa === 'campo-hoy') {
-        clusterInfo.campoHoy++;
-        clusterInfo.registrosHoy++;
-      } else if (tipoActividadMapa === 'gabinete-hoy') {
-        clusterInfo.gabineteHoy++;
-        clusterInfo.registrosHoy++;
-      } else if (tipoActividadMapa === 'actividades-generales') {
-        // Para actividades generales, no incrementamos contadores específicos
-        clusterInfo.registrosHoy++;
-      } else if (tipoActividadMapa === 'campo-antiguo' || tipoActividadMapa === 'gabinete-antiguo' || tipoActividadMapa === 'registro-antiguo') {
-        clusterInfo.registrosAntiguos++;
+      }
+      
+      // Contadores por estado
+      if (punto.estado === 'pendiente') {
+        clusterInfo.pendientes++;
+      } else if (punto.estado === 'aprobado') {
+        clusterInfo.aprobadas++;
+      } else if (punto.estado === 'rechazado') {
+        clusterInfo.rechazadas++;
       }
       
       return {
@@ -1508,15 +1329,15 @@ const actualizarPuntosMapa = (datos) => {
         properties: {
           id: punto.id,
           usuario_id: punto.usuario_id,
-          nombre: punto.usuario?.nombre_completo || `Usuario ${punto.usuario_id}`,
-          correo: punto.usuario?.correo || '',
-          tipo_actividad: tipoActividadMapa, // Para el color del mapa
-          tipo_actividad_original: tipoActividad, // Para el popup (mantener original)
-          fecha_hora: punto.fecha_hora,
+          nombre: punto.nombre_usuario || `Usuario ${punto.usuario_id}`,
+          correo: punto.correo_usuario || '',
+          tipo_solicitud: punto.tipo_solicitud, // entrada/salida
+          estado: punto.estado, // pendiente/aprobado/rechazado
+          fecha_solicitud: punto.fecha_solicitud,
           descripcion: punto.descripcion || '',
           foto_url: punto.foto_url || null,
-          foto_entrada_url: punto.foto_entrada_url || null,
-          foto_salida_url: punto.foto_salida_url || null
+          cargo: punto.cargo_usuario || '',
+          color: infoSolicitud.color
         },
         geometry: {
           type: 'Point',
@@ -1900,42 +1721,21 @@ const aplicarFiltros = () => {
   try {
     console.log('🎛️ Aplicando clasificador:', { filtroTipo: filtroTipo.value })
     
-    // Obtener las últimas actividades con los filtros aplicados
-    const registrosFiltrados = filtrarRegistros()
-    const actividadesFiltradas = obtenerUltimasActividadesPorUsuario(registrosFiltrados, asistencias.value)
+    // Procesar y filtrar solicitudes
+    const solicitudesProcesadas = procesarSolicitudesMapa(solicitudes.value)
     
-    // Filtrar por tipo de actividad si está especificado
-    let actividadesFinales = actividadesFiltradas
+    // Filtrar por tipo de solicitud si está especificado
+    let solicitudesFinales = solicitudesProcesadas
     if (filtroTipo.value) {
-      actividadesFinales = actividadesFiltradas.filter(actividad => {
-        const tipoActividad = determinarTipoActividad(actividad)
-        
-        switch (filtroTipo.value) {
-          case 'entrada':
-            return tipoActividad.tipo === 'entrada'
-          case 'salida':
-            return tipoActividad.tipo === 'salida'
-          case 'campo-hoy':
-            return tipoActividad.tipo === 'campo-hoy'
-          case 'gabinete-hoy':
-            return tipoActividad.tipo === 'gabinete-hoy'
-          case 'actividades-generales':
-            // Para actividades generales, incluir campo y gabinete del día actual
-            return tipoActividad.tipo === 'campo-hoy' || tipoActividad.tipo === 'gabinete-hoy'
-          case 'registro-hoy':
-            return tipoActividad.tipo === 'registro-hoy' || tipoActividad.tipo === 'campo-hoy' || tipoActividad.tipo === 'gabinete-hoy'
-          case 'registro-antiguo':
-            return tipoActividad.tipo === 'registro-antiguo' || tipoActividad.tipo === 'campo-antiguo' || tipoActividad.tipo === 'gabinete-antiguo'
-          default:
-            return true
-        }
+      solicitudesFinales = solicitudesProcesadas.filter(solicitud => {
+        return solicitud.tipo_solicitud === filtroTipo.value
       })
     }
     
     // Actualizar el mapa con los datos filtrados
-    actualizarPuntosMapa(actividadesFinales)
+    actualizarPuntosMapa(solicitudesFinales)
     
-    console.log(`✅ Clasificador aplicado. Puntos visibles: ${actividadesFinales.length}`)
+    console.log(`✅ Clasificador aplicado. Puntos visibles: ${solicitudesFinales.length}`)
     
   } catch (error) {
     console.error('❌ Error al aplicar clasificador:', error)
@@ -2848,32 +2648,24 @@ watch(filtroTipo, () => {
   border-radius: 50%;
 }
 
-.color-marker.entrada {
-  background-color: rgb(0, 0, 205); /* Mediumblue para entrada */
+.color-marker.entrada-solicitud {
+  background-color: rgb(34, 139, 34); /* Verde fuerte para entrada */
 }
 
-.color-marker.salida {
-  background-color: rgb(220, 20, 60); /* Crimson para salida */
+.color-marker.salida-solicitud {
+  background-color: rgb(220, 20, 60); /* Rojo para salida */
 }
 
-.color-marker.campo-hoy {
-  background-color: rgb(50, 205, 50); /* Limegreen para campo */
+.color-marker.pendiente {
+  background-color: rgb(255, 165, 0); /* Naranja para pendiente */
 }
 
-.color-marker.gabinete-hoy {
-  background-color: rgb(255, 140, 0); /* Darkorange para gabinete */
+.color-marker.aprobado {
+  background-color: rgb(34, 139, 34); /* Verde para aprobado */
 }
 
-.color-marker.actividades-generales {
-  background-color: rgb(148, 0, 211); /* darkviolet para actividades generales */
-}
-
-.color-marker.registro-hoy {
-  background-color: #00BFFF; /* Para compatibilidad */
-}
-
-.color-marker.registro-antiguo {
-  background-color: rgb(192, 192, 192); /* Silver para registros antiguos */
+.color-marker.rechazado {
+  background-color: rgb(220, 20, 60); /* Rojo para rechazado */
 }
 
 /* Subtítulo en la leyenda */
