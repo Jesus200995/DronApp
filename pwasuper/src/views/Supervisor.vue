@@ -973,11 +973,6 @@ function abrirModalRechazoDesdeDetalles() {
   mostrarModalRechazo.value = true
 }
 
-// Función para aprobar solicitud (abre modal de aprobación)
-function aprobarSolicitud(solicitud) {
-  abrirModalAprobacion(solicitud)
-}
-
 // Función para abrir modal de rechazo
 function abrirModalRechazo(solicitud) {
   solicitudSeleccionada.value = solicitud
