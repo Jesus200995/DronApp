@@ -928,12 +928,14 @@ async function confirmarAprobacion() {
       estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
       estadisticas.value.aprobadas = estadisticas.value.aprobadas + 1
       
-      mostrarNotificacion('Solicitud aprobada exitosamente', 'success')
-      
       console.log(`✅ Solicitud ${solicitudSeleccionada.value.id} aprobada correctamente`)
       
-      // Cerrar modal
+      // Cerrar todos los modales y volver a la vista principal
       cerrarModalAprobacion()
+      cerrarModalDetalles()
+      
+      // Mostrar notificación de éxito
+      mostrarNotificacion('🟢 Solicitud aprobada exitosamente', 'success')
     } else {
       console.error('❌ Error del servicio:', resultado.error)
       mostrarNotificacion(resultado.error || 'Error al aprobar solicitud', 'error')
@@ -1014,10 +1016,14 @@ async function confirmarRechazo() {
       estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
       estadisticas.value.rechazadas = estadisticas.value.rechazadas + 1
       
-      mostrarNotificacion('Solicitud rechazada exitosamente', 'success')
-      cerrarModalRechazo()
-      
       console.log(`✅ Solicitud ${solicitudId} rechazada correctamente`)
+      
+      // Cerrar todos los modales y volver a la vista principal
+      cerrarModalRechazo()
+      cerrarModalDetalles()
+      
+      // Mostrar notificación de éxito
+      mostrarNotificacion('🔴 Solicitud rechazada exitosamente', 'success')
     } else {
       console.error('❌ Error del servicio:', resultado.error)
       mostrarNotificacion(resultado.error || 'Error al rechazar solicitud', 'error')
