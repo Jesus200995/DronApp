@@ -1482,7 +1482,7 @@ async def aprobar_solicitud(solicitud_id: int, observaciones: str = Form("")):
         
         # Actualizar estado a aprobado con observaciones del supervisor
         cursor.execute(
-            "UPDATE solicitudes_dron SET estado = 'aprobado', respuesta_supervisor = %s, fecha_aprobacion = NOW() WHERE id = %s",
+            "UPDATE solicitudes_dron SET estado = 'aprobado', respuesta_supervisor = %s WHERE id = %s",
             (observaciones if observaciones else "Aprobado sin observaciones", solicitud_id)
         )
         
@@ -1521,7 +1521,7 @@ async def rechazar_solicitud(solicitud_id: int, observaciones: str = Form("")):
         
         # Actualizar estado a rechazado con observaciones del supervisor
         cursor.execute(
-            "UPDATE solicitudes_dron SET estado = 'rechazado', respuesta_supervisor = %s, fecha_rechazo = NOW() WHERE id = %s",
+            "UPDATE solicitudes_dron SET estado = 'rechazado', respuesta_supervisor = %s WHERE id = %s",
             (observaciones if observaciones else "Rechazado sin observaciones", solicitud_id)
         )
         
