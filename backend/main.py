@@ -1623,15 +1623,20 @@ async def crear_solicitud_dron(
         try:
             cursor.execute("SELECT nombre, puesto, rol, supervisor_id FROM usuarios WHERE id = %s", (usuario_id,))
             usuario_data = cursor.fetchone()
-        except Exception as e:
-            print(f"⚠️ Error obteniendo supervisor_id (probablemente columna no existe): {e}")
-            # Intentar sin la columna supervisor_id
-            cursor.execute("SELECT nombre, puesto, rol FROM usuarios WHERE id = %s", (usuario_id,))
-            usuario_data_temp = cursor.fetchone()
-            if usuario_data_temp:
-                usuario_data = usuario_data_temp + (None,)  # Agregar None para supervisor_id
+        except psycopg2.Error as e:
+            if "supervisor_id" in str(e) or "does not exist" in str(e):
+                print(f"⚠️ Columna supervisor_id no existe en tabla usuarios: {e}")
+                # Rollback y nueva consulta sin supervisor_id
+                conn.rollback()
+                cursor.execute("SELECT nombre, puesto, rol FROM usuarios WHERE id = %s", (usuario_id,))
+                usuario_data_temp = cursor.fetchone()
+                if usuario_data_temp:
+                    usuario_data = usuario_data_temp + (None,)  # Agregar None para supervisor_id
+                else:
+                    usuario_data = None
             else:
-                usuario_data = None
+                # Re-lanzar otros errores de PostgreSQL
+                raise e
         
         if not usuario_data:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
@@ -1649,17 +1654,9 @@ async def crear_solicitud_dron(
         print(f"💾 Guardando en BD solo el nombre de archivo: {nombre_archivo}")
         
         # Insertar solicitud en la base de datos
-        # Verificar si existe la columna supervisor_id
-        cursor.execute("""
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name='solicitudes_dron' AND column_name='supervisor_id'
-        """)
-        
-        supervisor_column_exists = cursor.fetchone() is not None
-        
-        if supervisor_column_exists:
-            print("✅ Columna supervisor_id existe, insertando con supervisor asignado")
+        # Intentar insertar con supervisor_id primero, si falla usar sin supervisor_id
+        try:
+            print("✅ Intentando insertar con columna supervisor_id")
             cursor.execute("""
                 INSERT INTO solicitudes_dron 
                 (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado, supervisor_id) 
@@ -1667,17 +1664,24 @@ async def crear_solicitud_dron(
                 RETURNING id
             """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
                   observaciones, punto_ubicacion, 'pendiente', supervisor_id_solicitud))
-        else:
-            print("⚠️ Columna supervisor_id no existe, insertando sin supervisor")
-            cursor.execute("""
-                INSERT INTO solicitudes_dron 
-                (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
-                VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
-                RETURNING id
-            """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
-                  observaciones, punto_ubicacion, 'pendiente'))
-        
-        solicitud_id = cursor.fetchone()[0]
+            solicitud_id = cursor.fetchone()[0]
+            
+        except psycopg2.Error as e:
+            if "supervisor_id" in str(e) or "does not exist" in str(e):
+                print("⚠️ Columna supervisor_id no existe, insertando sin supervisor")
+                # Rollback de la transacción fallida y crear nueva
+                conn.rollback()
+                cursor.execute("""
+                    INSERT INTO solicitudes_dron 
+                    (tipo, usuario_id, fecha_hora, foto_equipo, checklist, observaciones, ubicacion, estado) 
+                    VALUES (%s, %s, %s, %s, %s, %s, ST_GeomFromText(%s, 4326), %s)
+                    RETURNING id
+                """, (tipo, usuario_id, fecha_hora, nombre_archivo, json.dumps(instantanea_checklist), 
+                      observaciones, punto_ubicacion, 'pendiente'))
+                solicitud_id = cursor.fetchone()[0]
+            else:
+                # Re-lanzar otros errores de PostgreSQL
+                raise e
         
         conn.commit()
         
