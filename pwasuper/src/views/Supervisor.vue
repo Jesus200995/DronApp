@@ -585,6 +585,58 @@
     </div>
   </div>
 
+  <!-- Modal de aprobación - Mobile Optimized -->
+  <div v-if="mostrarModalAprobacion" class="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style="z-index: 999999 !important;">
+    <div class="bg-white rounded-t-2xl sm:rounded-lg w-full sm:w-auto sm:max-w-md mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="p-3 sm:p-4">
+        <!-- Header del modal con botón cerrar móvil -->
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-semibold text-gray-900">Aprobar Solicitud</h3>
+          <button 
+            @click="cerrarModalAprobacion"
+            class="p-1.5 hover:bg-gray-100 rounded-full transition-colors sm:hidden"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        
+        <p class="text-xs text-gray-600 mb-3">
+          ¿Estás seguro de que deseas aprobar la solicitud de {{ solicitudSeleccionada?.tecnico?.nombre || 'este técnico' }}?
+        </p>
+        
+        <div class="mb-4">
+          <label class="block text-xs font-medium text-gray-700 mb-1.5">Observaciones (opcional)</label>
+          <textarea 
+            v-model="observacionesAprobacion"
+            placeholder="Añade observaciones sobre la aprobación..."
+            class="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-xs resize-none"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <!-- Botones responsivos -->
+        <div class="flex flex-col sm:flex-row gap-2">
+          <button 
+            @click="confirmarAprobacion"
+            :disabled="procesando"
+            class="w-full px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium text-xs"
+          >
+            {{ procesando ? 'Procesando...' : 'Confirmar Aprobación' }}
+          </button>
+          <button 
+            @click="cerrarModalAprobacion"
+            :disabled="procesando"
+            class="w-full px-3 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors disabled:opacity-50 font-medium text-xs"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal de rechazo - Mobile Optimized -->
   <div v-if="mostrarModalRechazo" class="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center p-0 sm:p-4" style="z-index: 999999 !important;">
     <div class="bg-white rounded-t-2xl sm:rounded-lg w-full sm:w-auto sm:max-w-md mx-0 sm:mx-4 max-h-[90vh] overflow-y-auto">
@@ -607,12 +659,13 @@
         </p>
         
         <div class="mb-4">
-          <label class="block text-xs font-medium text-gray-700 mb-1.5">Motivo del rechazo</label>
+          <label class="block text-xs font-medium text-gray-700 mb-1.5">Observaciones del rechazo</label>
           <textarea 
-            v-model="motivoRechazo"
-            placeholder="Ingresa el motivo del rechazo..."
+            v-model="observacionesRechazo"
+            placeholder="Describe el motivo del rechazo..."
             class="w-full px-2.5 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent text-xs resize-none"
             rows="3"
+            required
           ></textarea>
         </div>
         
@@ -620,7 +673,7 @@
         <div class="flex flex-col sm:flex-row gap-2">
           <button 
             @click="confirmarRechazo"
-            :disabled="procesando"
+            :disabled="procesando || !observacionesRechazo.trim()"
             class="w-full px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-medium text-xs"
           >
             {{ procesando ? 'Procesando...' : 'Confirmar Rechazo' }}
@@ -706,9 +759,13 @@ const estadisticas = ref({
 const mostrarModalDetalles = ref(false)
 const solicitudSeleccionada = ref(null)
 
+// Modal de aprobación
+const mostrarModalAprobacion = ref(false)
+const observacionesAprobacion = ref('')
+
 // Modal de rechazo
 const mostrarModalRechazo = ref(false)
-const motivoRechazo = ref('')
+const observacionesRechazo = ref('')
 
 // Modal de imagen
 const mostrarModalImagen = ref(false)
@@ -836,16 +893,36 @@ async function cargarEstadisticas() {
 }
 
 // Función para aprobar solicitud
-async function aprobarSolicitud(solicitudId) {
-  procesando.value = solicitudId
+// Función para mostrar modal de aprobación
+function aprobarSolicitud(solicitud) {
+  solicitudSeleccionada.value = solicitud
+  observacionesAprobacion.value = ''
+  mostrarModalAprobacion.value = true
+}
+
+// Función para cerrar modal de aprobación
+function cerrarModalAprobacion() {
+  mostrarModalAprobacion.value = false
+  solicitudSeleccionada.value = null
+  observacionesAprobacion.value = ''
+}
+
+// Función para confirmar aprobación con observaciones
+async function confirmarAprobacion() {
+  if (!solicitudSeleccionada.value) return
+  
+  procesando.value = true
   try {
-    console.log(`✅ Aprobando solicitud ${solicitudId}...`)
+    console.log(`✅ Aprobando solicitud ${solicitudSeleccionada.value.id} con observaciones: ${observacionesAprobacion.value}`)
     
-    const resultado = await SolicitudesService.aprobarSolicitud(solicitudId)
+    const resultado = await SolicitudesService.aprobarSolicitud(
+      solicitudSeleccionada.value.id, 
+      observacionesAprobacion.value
+    )
     
     if (resultado.success) {
       // Remover la solicitud de la lista local
-      solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
+      solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudSeleccionada.value.id)
       
       // Actualizar estadísticas
       estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
@@ -853,7 +930,10 @@ async function aprobarSolicitud(solicitudId) {
       
       mostrarNotificacion('Solicitud aprobada exitosamente', 'success')
       
-      console.log(`✅ Solicitud ${solicitudId} aprobada correctamente`)
+      console.log(`✅ Solicitud ${solicitudSeleccionada.value.id} aprobada correctamente`)
+      
+      // Cerrar modal
+      cerrarModalAprobacion()
     } else {
       console.error('❌ Error del servicio:', resultado.error)
       mostrarNotificacion(resultado.error || 'Error al aprobar solicitud', 'error')
@@ -863,7 +943,7 @@ async function aprobarSolicitud(solicitudId) {
     console.error('❌ Error aprobando solicitud:', error)
     mostrarNotificacion('Error inesperado al aprobar solicitud', 'error')
   } finally {
-    procesando.value = null
+    procesando.value = false
   }
 }
 
@@ -880,23 +960,23 @@ function cerrarModalDetalles() {
 }
 
 // Función para aprobar desde el modal de detalles
-async function aprobarSolicitudDesdeModal() {
+function aprobarSolicitudDesdeModal() {
   if (solicitudSeleccionada.value) {
-    await aprobarSolicitud(solicitudSeleccionada.value.id)
     cerrarModalDetalles()
+    aprobarSolicitud(solicitudSeleccionada.value)
   }
 }
 
 // Función para abrir modal de rechazo desde detalles
 function abrirModalRechazoDesdeDetalles() {
-  motivoRechazo.value = ''
+  observacionesRechazo.value = ''
   mostrarModalRechazo.value = true
 }
 
 // Función para abrir modal de rechazo
 function abrirModalRechazo(solicitud) {
   solicitudSeleccionada.value = solicitud
-  motivoRechazo.value = ''
+  observacionesRechazo.value = ''
   mostrarModalRechazo.value = true
 }
 
@@ -904,7 +984,7 @@ function abrirModalRechazo(solicitud) {
 function cerrarModalRechazo() {
   mostrarModalRechazo.value = false
   solicitudSeleccionada.value = null
-  motivoRechazo.value = ''
+  observacionesRechazo.value = ''
 }
 
 // Función para confirmar rechazo
@@ -917,7 +997,7 @@ async function confirmarRechazo() {
   try {
     console.log(`❌ Rechazando solicitud ${solicitudId}...`)
     
-    const resultado = await SolicitudesService.rechazarSolicitud(solicitudId, motivoRechazo.value)
+    const resultado = await SolicitudesService.rechazarSolicitud(solicitudId, observacionesRechazo.value)
     
     if (resultado.success) {
       // Remover la solicitud de la lista local

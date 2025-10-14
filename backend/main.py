@@ -1461,8 +1461,8 @@ async def obtener_solicitudes_supervisor(supervisor_id: int):
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)} - Trace: {error_trace}")
 
 @app.put("/supervisor/solicitudes/{solicitud_id}/aprobar")
-async def aprobar_solicitud(solicitud_id: int):
-    """Aprobar una solicitud pendiente"""
+async def aprobar_solicitud(solicitud_id: int, observaciones: str = Form("")):
+    """Aprobar una solicitud pendiente con observaciones del supervisor"""
     try:
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
@@ -1480,15 +1480,15 @@ async def aprobar_solicitud(solicitud_id: int):
         if solicitud[1] != 'pendiente':
             raise HTTPException(status_code=400, detail="La solicitud no está pendiente")
         
-        # Actualizar estado a aprobado
+        # Actualizar estado a aprobado con observaciones del supervisor
         cursor.execute(
-            "UPDATE solicitudes_dron SET estado = 'aprobado', fecha_aprobacion = NOW() WHERE id = %s",
-            (solicitud_id,)
+            "UPDATE solicitudes_dron SET estado = 'aprobado', respuesta_supervisor = %s, fecha_aprobacion = NOW() WHERE id = %s",
+            (observaciones if observaciones else "Aprobado sin observaciones", solicitud_id)
         )
         
         conn.commit()
         
-        print(f"✅ Solicitud {solicitud_id} aprobada por supervisor")
+        print(f"✅ Solicitud {solicitud_id} aprobada por supervisor con observaciones: {observaciones}")
         
         return {"success": True, "message": "Solicitud aprobada exitosamente"}
         
@@ -1500,8 +1500,8 @@ async def aprobar_solicitud(solicitud_id: int):
         raise HTTPException(status_code=500, detail=f"Error interno del servidor: {str(e)}")
 
 @app.put("/supervisor/solicitudes/{solicitud_id}/rechazar")
-async def rechazar_solicitud(solicitud_id: int, motivo: str = Form("")):
-    """Rechazar una solicitud pendiente"""
+async def rechazar_solicitud(solicitud_id: int, observaciones: str = Form("")):
+    """Rechazar una solicitud pendiente con observaciones del supervisor"""
     try:
         if not verificar_conexion_db():
             raise HTTPException(status_code=500, detail="Error de conexión a la base de datos")
@@ -1519,15 +1519,15 @@ async def rechazar_solicitud(solicitud_id: int, motivo: str = Form("")):
         if solicitud[1] != 'pendiente':
             raise HTTPException(status_code=400, detail="La solicitud no está pendiente")
         
-        # Actualizar estado a rechazado
+        # Actualizar estado a rechazado con observaciones del supervisor
         cursor.execute(
-            "UPDATE solicitudes_dron SET estado = 'rechazado', motivo_rechazo = %s, fecha_rechazo = NOW() WHERE id = %s",
-            (motivo, solicitud_id)
+            "UPDATE solicitudes_dron SET estado = 'rechazado', respuesta_supervisor = %s, fecha_rechazo = NOW() WHERE id = %s",
+            (observaciones if observaciones else "Rechazado sin observaciones", solicitud_id)
         )
         
         conn.commit()
         
-        print(f"❌ Solicitud {solicitud_id} rechazada por supervisor. Motivo: {motivo}")
+        print(f"❌ Solicitud {solicitud_id} rechazada por supervisor. Observaciones: {observaciones}")
         
         return {"success": True, "message": "Solicitud rechazada exitosamente"}
         

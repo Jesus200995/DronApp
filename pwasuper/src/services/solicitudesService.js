@@ -147,19 +147,24 @@ class SolicitudesService {
   }
 
   /**
-   * Aprobar una solicitud
+   * Aprobar una solicitud con observaciones del supervisor
    */
-  async aprobarSolicitud(solicitudId, comentarios = '') {
+  async aprobarSolicitud(solicitudId, observaciones = '') {
     try {
-      console.log(`✅ Aprobando solicitud ${solicitudId}`)
+      console.log(`✅ Aprobando solicitud ${solicitudId} con observaciones: ${observaciones}`)
+      
+      const formData = new FormData()
+      if (observaciones) {
+        formData.append('observaciones', observaciones)
+      }
       
       const response = await axios.put(
         `${this.baseURL}/supervisor/solicitudes/${solicitudId}/aprobar`,
-        {},
+        formData,
         {
           timeout: 8000,
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'multipart/form-data'
           }
         }
       )
@@ -182,15 +187,15 @@ class SolicitudesService {
   }
 
   /**
-   * Rechazar una solicitud
+   * Rechazar una solicitud con observaciones del supervisor
    */
-  async rechazarSolicitud(solicitudId, motivo = '') {
+  async rechazarSolicitud(solicitudId, observaciones = '') {
     try {
-      console.log(`❌ Rechazando solicitud ${solicitudId}`)
+      console.log(`❌ Rechazando solicitud ${solicitudId} con observaciones: ${observaciones}`)
       
       const formData = new FormData()
-      if (motivo) {
-        formData.append('motivo', motivo)
+      if (observaciones) {
+        formData.append('observaciones', observaciones)
       }
       
       const response = await axios.put(
