@@ -450,8 +450,8 @@
             <p>Esta acción no se puede deshacer. Se eliminará permanentemente:</p>
             <div class="solicitud-info">
               <strong>Solicitud #{{ modalEliminar.solicitud?.id }}</strong>
-              <span>{{ modalEliminar.solicitud?.usuario?.nombre_completo || modalEliminar.solicitud?.tecnico?.nombre }}</span>
-              <span>{{ modalEliminar.solicitud?.tipo?.toUpperCase() }} - {{ modalEliminar.solicitud?.estado?.toUpperCase() }}</span>
+              <span>👤 {{ modalEliminar.solicitud?.usuario_nombre || modalEliminar.solicitud?.tecnico_nombre || `Usuario #${modalEliminar.solicitud?.usuario_id}` }}</span>
+              <span>📋 {{ modalEliminar.solicitud?.tipo?.toUpperCase() }} - {{ modalEliminar.solicitud?.estado?.toUpperCase() }}</span>
             </div>
           </div>
         </div>
@@ -698,6 +698,47 @@
       </div>
     </div>
   </div>
+
+  <!-- Mini-modal de confirmación -->
+  <div v-if="miniModalConfirmacion.mostrar" class="modal-overlay mini-modal-overlay" @click="cerrarMiniModal">
+    <div class="mini-modal-container" @click.stop>
+      <div class="mini-modal-header">
+        <div class="mini-modal-icon" :class="miniModalConfirmacion.tipo">
+          <svg v-if="miniModalConfirmacion.tipo === 'editar'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+          <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <h4>{{ miniModalConfirmacion.tipo === 'editar' ? 'Confirmar Edición' : 'Confirmar Eliminación' }}</h4>
+      </div>
+      
+      <div class="mini-modal-body">
+        <p>{{ miniModalConfirmacion.mensaje }}</p>
+      </div>
+      
+      <div class="mini-modal-actions">
+        <button @click="cerrarMiniModal" class="mini-btn cancel">
+          Cancelar
+        </button>
+        <button 
+          @click="miniModalConfirmacion.accion" 
+          class="mini-btn confirm" 
+          :class="miniModalConfirmacion.tipo"
+          :disabled="guardando || eliminando"
+        >
+          <div v-if="guardando || eliminando" class="loading-spinner-micro"></div>
+          <span v-else>
+            {{ miniModalConfirmacion.tipo === 'editar' ? 'Guardar' : 'Eliminar' }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -742,6 +783,14 @@ const modalEdicion = reactive({
 const modalEliminar = reactive({
   mostrar: false,
   solicitud: null
+})
+
+// Mini-modales de confirmación
+const miniModalConfirmacion = reactive({
+  mostrar: false,
+  tipo: '', // 'editar' o 'eliminar'
+  mensaje: '',
+  accion: null
 })
 
 // Estados de carga
@@ -829,10 +878,22 @@ const cerrarModalEdicion = () => {
   modalEdicion.datos.observaciones = ''
 }
 
-const guardarCambios = async () => {
+const guardarCambios = () => {
+  if (!modalEdicion.solicitud) return
+  
+  // Mostrar mini-modal de confirmación
+  const nombreUsuario = modalEdicion.solicitud.usuario_nombre || `Usuario #${modalEdicion.solicitud.usuario_id}`
+  miniModalConfirmacion.tipo = 'editar'
+  miniModalConfirmacion.mensaje = `¿Confirmar cambios en la solicitud de ${nombreUsuario}?`
+  miniModalConfirmacion.accion = ejecutarEdicion
+  miniModalConfirmacion.mostrar = true
+}
+
+const ejecutarEdicion = async () => {
   if (!modalEdicion.solicitud) return
   
   guardando.value = true
+  error.value = null
   try {
     const datos = {
       estado: modalEdicion.datos.estado,
@@ -843,17 +904,31 @@ const guardarCambios = async () => {
     
     if (result.success) {
       console.log('✅ Solicitud actualizada correctamente')
+      
+      // Actualizar la solicitud en la lista local
+      const index = solicitudes.value.findIndex(s => s.id === modalEdicion.solicitud.id)
+      if (index !== -1) {
+        solicitudes.value[index] = {
+          ...solicitudes.value[index],
+          ...datos
+        }
+      }
+      
       cerrarModalEdicion()
-      await cargarSolicitudes() // Recargar lista
+      await cargarEstadisticas()
+      
+      // Mostrar confirmación
+      mostrarConfirmacionExito('editar', `Solicitud de ${modalEdicion.solicitud.usuario_nombre || 'usuario'} actualizada`)
     } else {
       console.error('❌ Error al actualizar:', result.error)
-      alert('Error al actualizar la solicitud: ' + result.error)
+      error.value = `Error al actualizar: ${result.error}`
     }
   } catch (err) {
     console.error('❌ Error inesperado:', err)
-    alert('Error inesperado al actualizar la solicitud')
+    error.value = `Error inesperado al actualizar la solicitud`
   } finally {
     guardando.value = false
+    miniModalConfirmacion.mostrar = false
   }
 }
 
@@ -868,7 +943,18 @@ const cerrarModalEliminar = () => {
   modalEliminar.solicitud = null
 }
 
-const eliminarSolicitud = async () => {
+const eliminarSolicitud = () => {
+  if (!modalEliminar.solicitud) return
+  
+  // Mostrar mini-modal de confirmación
+  const nombreUsuario = modalEliminar.solicitud.usuario_nombre || `Usuario #${modalEliminar.solicitud.usuario_id}`
+  miniModalConfirmacion.tipo = 'eliminar'
+  miniModalConfirmacion.mensaje = `¿ELIMINAR PERMANENTEMENTE la solicitud de ${nombreUsuario}?`
+  miniModalConfirmacion.accion = ejecutarEliminacion
+  miniModalConfirmacion.mostrar = true
+}
+
+const ejecutarEliminacion = async () => {
   if (!modalEliminar.solicitud) return
   
   eliminando.value = true
@@ -889,10 +975,8 @@ const eliminarSolicitud = async () => {
       cerrarModalEliminar()
       await cargarEstadisticas() // Actualizar contadores
       
-      // Mostrar mensaje de éxito del servidor
-      if (result.data?.mensaje) {
-        console.log('📋 Servidor:', result.data.mensaje)
-      }
+      // Mostrar confirmación
+      mostrarConfirmacionExito('eliminar', `Solicitud de ${modalEliminar.solicitud.usuario_nombre || 'usuario'} eliminada`)
     } else {
       console.error('❌ Error al eliminar:', result.error)
       error.value = `Error al eliminar: ${result.error}`
@@ -903,6 +987,7 @@ const eliminarSolicitud = async () => {
     error.value = `Error al eliminar: ${errorMsg}`
   } finally {
     eliminando.value = false
+    miniModalConfirmacion.mostrar = false
   }
 }
 
@@ -941,6 +1026,18 @@ onMounted(async () => {
   console.log('📋 Solicitudes View cargada')
   await cargarSolicitudes()
 })
+
+const cerrarMiniModal = () => {
+  miniModalConfirmacion.mostrar = false
+  miniModalConfirmacion.tipo = ''
+  miniModalConfirmacion.mensaje = ''
+  miniModalConfirmacion.accion = null
+}
+
+const mostrarConfirmacionExito = (tipo, mensaje) => {
+  console.log(`✅ ${tipo === 'editar' ? 'Edición' : 'Eliminación'} exitosa: ${mensaje}`)
+  // Aquí podrías agregar un toast o notificación visual si quisieras
+}
 
 const logout = () => {
   localStorage.removeItem('admin_token')
@@ -2938,18 +3035,18 @@ const logout = () => {
 }
 
 .modal-btn {
-  flex: 1;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border: 2px solid transparent;
+  border-radius: 8px;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  min-height: 36px;
+  min-height: 32px;
+  min-width: 70px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4548,5 +4645,167 @@ const logout = () => {
   .preview-indicators-modern {
     margin-bottom: 4px;
   }
+}
+
+/* === MINI-MODAL DE CONFIRMACIÓN === */
+.mini-modal-overlay {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.mini-modal-container {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  max-width: 380px;
+  width: 90vw;
+  animation: miniModalSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+@keyframes miniModalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mini-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.05);
+}
+
+.mini-modal-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.mini-modal-icon.editar {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+  color: #3b82f6;
+  border: 2px solid rgba(59, 130, 246, 0.2);
+}
+
+.mini-modal-icon.eliminar {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+  color: #ef4444;
+  border: 2px solid rgba(239, 68, 68, 0.2);
+}
+
+.mini-modal-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.mini-modal-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+}
+
+.mini-modal-body {
+  margin-bottom: 20px;
+}
+
+.mini-modal-body p {
+  margin: 0;
+  font-size: 14px;
+  color: #4b5563;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.mini-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.mini-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 70px;
+  min-height: 32px;
+}
+
+.mini-btn.cancel {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+  border-color: rgba(107, 114, 128, 0.2);
+}
+
+.mini-btn.cancel:hover {
+  background: rgba(107, 114, 128, 0.15);
+  border-color: rgba(107, 114, 128, 0.3);
+  transform: translateY(-1px);
+}
+
+.mini-btn.confirm.editar {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #3b82f6;
+}
+
+.mini-btn.confirm.editar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.mini-btn.confirm.eliminar {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border-color: #ef4444;
+}
+
+.mini-btn.confirm.eliminar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.mini-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.loading-spinner-micro {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 </style>
