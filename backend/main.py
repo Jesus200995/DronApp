@@ -1930,19 +1930,18 @@ async def obtener_solicitudes_para_mapa():
             if registro[7] is not None and registro[8] is not None:  # longitud y latitud
                 solicitudes_mapa.append({
                     "id": registro[0],
-                    "tipo": registro[1],
+                    "tipo_solicitud": registro[1],  # Campo esperado por frontend
                     "usuario_id": registro[2],
-                    "fecha_hora": registro[3].isoformat() if registro[3] else None,
-                    "foto_equipo": registro[4],
-                    "observaciones": registro[5],
+                    "fecha_solicitud": registro[3].isoformat() if registro[3] else None,  # Campo esperado por frontend
+                    "foto_url": registro[4],  # Renombrado para consistencia
+                    "descripcion": registro[5],  # Renombrado de observaciones
                     "estado": registro[6],
                     "longitud": float(registro[7]),
                     "latitud": float(registro[8]),
-                    "usuario": {
-                        "nombre_completo": registro[9],
-                        "correo": registro[10],
-                        "cargo": registro[11]
-                    }
+                    # Campos de usuario para el frontend
+                    "nombre_usuario": registro[9],
+                    "correo_usuario": registro[10],
+                    "cargo_usuario": registro[11]
                 })
         
         print(f"✅ {len(solicitudes_mapa)} solicitudes encontradas para el mapa")
