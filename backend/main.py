@@ -1679,20 +1679,6 @@ async def crear_solicitud_dron(
         
         solicitud_id = cursor.fetchone()[0]
         
-        # Registrar en historial la creación de la solicitud
-        cambios_creacion = {
-            "tipo": tipo,
-            "checklist": instantanea_checklist,
-            "observaciones": observaciones,
-            "foto_equipo": nombre_archivo
-        }
-        
-        cursor.execute("""
-            INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (solicitud_id, usuario_id, 'creacion', fecha_hora, json.dumps(cambios_creacion), 'pendiente', tipo, nombre_archivo, observaciones))
-        
         conn.commit()
         
         print(f"✅ Solicitud de {tipo} creada con ID: {solicitud_id}")
@@ -1927,20 +1913,6 @@ async def actualizar_solicitud(
         # Por ahora usamos el usuario_id de la solicitud como fallback
         cursor.execute("SELECT usuario_id FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
         usuario_solicitante = cursor.fetchone()[0]
-        
-        # Obtener datos de la solicitud original para incluir en historial
-        cursor.execute("SELECT tipo, foto_equipo, observaciones FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
-        solicitud_data = cursor.fetchone()
-        
-        cursor.execute("""
-            INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (solicitud_id, usuario_solicitante, 'revision', datetime.now(CDMX_TZ), 
-              json.dumps(cambios_revision), nuevo_estado, 
-              solicitud_data[0] if solicitud_data else 'entrada',
-              solicitud_data[1] if solicitud_data else None,
-              solicitud_data[2] if solicitud_data else None))
         
         conn.commit()
         
@@ -2326,7 +2298,7 @@ async def eliminar_solicitud(
                 detail="No tienes permisos para eliminar esta solicitud"
             )
         
-        # Registrar en historial antes de eliminar
+        # Registrar en historial antes de eliminar (tabla eliminada - funcionalidad deshabilitada)
         cambios_eliminacion = {
             "tipo": solicitud[2],
             "observaciones": solicitud[4],
@@ -2334,12 +2306,7 @@ async def eliminar_solicitud(
             "motivo": "Eliminación por técnico"
         }
         
-        cursor.execute("""
-            INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, observaciones)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """, (solicitud_id, usuario_id, 'eliminacion', datetime.now(CDMX_TZ), 
-              json.dumps(cambios_eliminacion), solicitud[1], solicitud[2], solicitud[4]))
+        print(f"🗑️ Eliminando solicitud {solicitud_id} con cambios: {cambios_eliminacion}")
         
         # Eliminar la solicitud (el historial se mantiene por la FK)
         cursor.execute("DELETE FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
@@ -2442,22 +2409,9 @@ async def editar_solicitud(
         query = f"UPDATE solicitudes_dron SET {', '.join(campos_actualizar)} WHERE id = %s"
         cursor.execute(query, valores)
         
-        # Registrar en historial la edición
+        # Registrar en historial la edición (tabla eliminada - funcionalidad deshabilitada)
         cambios_realizados["motivo"] = "Edición por técnico"
-        
-        # Obtener datos actuales de la solicitud para el historial
-        cursor.execute("SELECT tipo, foto_equipo, observaciones FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
-        solicitud_actualizada = cursor.fetchone()
-        
-        cursor.execute("""
-            INSERT INTO historial_solicitudes 
-            (solicitud_id, usuario_id, accion, fecha_hora, cambios, estado_final, tipo, foto_equipo, observaciones)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (solicitud_id, datos.usuario_id, 'edicion', datetime.now(CDMX_TZ), 
-              json.dumps(cambios_realizados), 'pendiente',
-              solicitud_actualizada[0] if solicitud_actualizada else 'entrada',
-              solicitud_actualizada[1] if solicitud_actualizada else None,
-              solicitud_actualizada[2] if solicitud_actualizada else None))
+        print(f"📝 Cambios realizados en solicitud {solicitud_id}: {cambios_realizados}")
         
         conn.commit()
         
