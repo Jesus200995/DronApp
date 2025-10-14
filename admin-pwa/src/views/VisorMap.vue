@@ -602,7 +602,8 @@ const cargarDatos = async () => {
     let solicitudesResult = []
     if (solicitudesData.status === 'fulfilled') {
       console.log('✅ Solicitudes del mapa cargadas exitosamente')
-      solicitudesResult = solicitudesData.value || []
+      const respuestaSolicitudes = solicitudesData.value || {}
+      solicitudesResult = respuestaSolicitudes.data || []
       solicitudes.value = solicitudesResult
     } else {
       console.error('❌ Error al cargar solicitudes del mapa:', solicitudesData.reason)
@@ -736,7 +737,12 @@ const cargarSolicitudesMapaConReintentos = async (maxReintentos = 3) => {
     try {
       console.log(`🔄 Intento ${intento}/${maxReintentos} - Cargando solicitudes del mapa...`)
       
-      return await solicitudesService.obtenerSolicitudesMapa()
+      const respuesta = await solicitudesService.obtenerSolicitudesMapa()
+      if (respuesta.success) {
+        return respuesta
+      } else {
+        throw new Error(respuesta.error || 'Error desconocido al cargar solicitudes')
+      }
       
     } catch (err) {
       console.error(`❌ Error en intento ${intento} al cargar solicitudes del mapa:`, err.message)
