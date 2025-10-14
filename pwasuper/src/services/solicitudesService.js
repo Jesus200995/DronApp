@@ -154,9 +154,7 @@ class SolicitudesService {
       console.log(`✅ Aprobando solicitud ${solicitudId} con observaciones: ${observaciones}`)
       
       const formData = new FormData()
-      if (observaciones) {
-        formData.append('observaciones', observaciones)
-      }
+      formData.append('observaciones', observaciones || '')
       
       const response = await axios.put(
         `${this.baseURL}/supervisor/solicitudes/${solicitudId}/aprobar`,
@@ -194,9 +192,7 @@ class SolicitudesService {
       console.log(`❌ Rechazando solicitud ${solicitudId} con observaciones: ${observaciones}`)
       
       const formData = new FormData()
-      if (observaciones) {
-        formData.append('observaciones', observaciones)
-      }
+      formData.append('observaciones', observaciones || '')
       
       const response = await axios.put(
         `${this.baseURL}/supervisor/solicitudes/${solicitudId}/rechazar`,
@@ -206,8 +202,8 @@ class SolicitudesService {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
-        }
-      )
+          }
+        )
       
       return {
         success: true,

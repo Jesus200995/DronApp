@@ -341,7 +341,7 @@
         <div class="sticky bottom-0 bg-white rounded-b-2xl border-t border-gray-200 px-6 py-4">
           <div class="flex space-x-3">
             <button 
-              @click="aprobarSolicitud(solicitudSeleccionada)"
+              @click="abrirModalAprobacion(solicitudSeleccionada)"
               :disabled="procesando"
               class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium"
             >
@@ -560,7 +560,7 @@
       <div class="sticky bottom-0 bg-white rounded-b-2xl border-t border-gray-200 px-4 py-3">
         <div class="flex space-x-2">
           <button 
-            @click="aprobarSolicitud(solicitudSeleccionada)"
+            @click="abrirModalAprobacion(solicitudSeleccionada)"
             :disabled="procesando"
             class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium text-xs"
           >
@@ -963,7 +963,7 @@ function cerrarModalDetalles() {
 function aprobarSolicitudDesdeModal() {
   if (solicitudSeleccionada.value) {
     cerrarModalDetalles()
-    aprobarSolicitud(solicitudSeleccionada.value)
+    abrirModalAprobacion(solicitudSeleccionada.value)
   }
 }
 
@@ -971,6 +971,11 @@ function aprobarSolicitudDesdeModal() {
 function abrirModalRechazoDesdeDetalles() {
   observacionesRechazo.value = ''
   mostrarModalRechazo.value = true
+}
+
+// Función para aprobar solicitud (abre modal de aprobación)
+function aprobarSolicitud(solicitud) {
+  abrirModalAprobacion(solicitud)
 }
 
 // Función para abrir modal de rechazo
@@ -985,6 +990,57 @@ function cerrarModalRechazo() {
   mostrarModalRechazo.value = false
   solicitudSeleccionada.value = null
   observacionesRechazo.value = ''
+}
+
+// Función para abrir modal de aprobación
+function abrirModalAprobacion(solicitud) {
+  solicitudSeleccionada.value = solicitud
+  observacionesAprobacion.value = ''
+  mostrarModalAprobacion.value = true
+}
+
+// Función para cerrar modal de aprobación
+function cerrarModalAprobacion() {
+  mostrarModalAprobacion.value = false
+  solicitudSeleccionada.value = null
+  observacionesAprobacion.value = ''
+}
+
+// Función para confirmar aprobación
+async function confirmarAprobacion() {
+  if (!solicitudSeleccionada.value) return
+  
+  const solicitudId = solicitudSeleccionada.value.id
+  procesando.value = solicitudId
+  
+  try {
+    console.log(`✅ Aprobando solicitud ${solicitudId}...`)
+    
+    const resultado = await SolicitudesService.aprobarSolicitud(solicitudId, observacionesAprobacion.value)
+    
+    if (resultado.success) {
+      // Remover la solicitud de la lista local
+      solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
+      
+      // Actualizar estadísticas
+      estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
+      estadisticas.value.aprobadas = estadisticas.value.aprobadas + 1
+      
+      mostrarNotificacion('Solicitud aprobada exitosamente', 'success')
+      cerrarModalAprobacion()
+      
+      console.log(`✅ Solicitud ${solicitudId} aprobada correctamente`)
+    } else {
+      console.error('❌ Error del servicio:', resultado.error)
+      mostrarNotificacion(resultado.error || 'Error al aprobar solicitud', 'error')
+    }
+    
+  } catch (error) {
+    console.error('❌ Error aprobando solicitud:', error)
+    mostrarNotificacion('Error inesperado al aprobar solicitud', 'error')
+  } finally {
+    procesando.value = null
+  }
 }
 
 // Función para confirmar rechazo
