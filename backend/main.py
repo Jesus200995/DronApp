@@ -3207,40 +3207,36 @@ async def eliminar_solicitud_admin(solicitud_id: int):
         if not solicitud:
             raise HTTPException(status_code=404, detail="Solicitud no encontrada")
         
-        # Registrar eliminación en historial antes de eliminar
-        cambios_eliminacion = {
-            "estado": solicitud[1] if not use_sqlite else solicitud['estado'],
-            "tipo": solicitud[2] if not use_sqlite else solicitud['tipo'],
-            "motivo": "Eliminación por administrador"
-        }
-        
+        # Primero eliminar registros del historial relacionados (para evitar violación de clave foránea)
+        print(f"🔄 Eliminando historial de solicitud {solicitud_id}")
         if use_sqlite:
-            cursor.execute("""
-                INSERT INTO historial_solicitudes 
-                (solicitud_id, usuario_id, accion, fecha_hora, cambios)
-                VALUES (?, 0, 'admin_delete', datetime('now'), ?)
-            """, (solicitud_id, json.dumps(cambios_eliminacion)))
+            cursor.execute("DELETE FROM historial_solicitudes WHERE solicitud_id = ?", (solicitud_id,))
         else:
-            cursor.execute("""
-                INSERT INTO historial_solicitudes 
-                (solicitud_id, usuario_id, accion, fecha_hora, cambios)
-                VALUES (%s, %s, %s, %s, %s)
-            """, (solicitud_id, 0, 'admin_delete', datetime.now(CDMX_TZ), json.dumps(cambios_eliminacion)))
+            cursor.execute("DELETE FROM historial_solicitudes WHERE solicitud_id = %s", (solicitud_id,))
         
-        # Eliminar la solicitud
+        historial_eliminado = cursor.rowcount
+        print(f"📋 Eliminados {historial_eliminado} registros de historial")
+        
+        # Ahora eliminar la solicitud principal
         if use_sqlite:
             cursor.execute("DELETE FROM solicitudes_dron WHERE id = ?", (solicitud_id,))
         else:
             cursor.execute("DELETE FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
         
+        solicitud_eliminada = cursor.rowcount
+        
+        if solicitud_eliminada == 0:
+            raise HTTPException(status_code=404, detail="No se pudo eliminar la solicitud")
+        
         conn.commit()
         
-        print(f"✅ Solicitud {solicitud_id} eliminada por admin")
+        print(f"✅ Solicitud {solicitud_id} eliminada por admin (incluyendo {historial_eliminado} registros de historial)")
         
         return {
             "status": "ok",
-            "mensaje": "Solicitud eliminada exitosamente",
-            "solicitud_id": solicitud_id
+            "mensaje": f"Solicitud eliminada exitosamente (incluyendo {historial_eliminado} registros de historial)",
+            "solicitud_id": solicitud_id,
+            "historial_eliminado": historial_eliminado
         }
         
     except HTTPException:

@@ -872,20 +872,35 @@ const eliminarSolicitud = async () => {
   if (!modalEliminar.solicitud) return
   
   eliminando.value = true
+  error.value = null
   try {
+    console.log('🗑️ Eliminando solicitud:', modalEliminar.solicitud.id)
     const result = await solicitudesService.eliminarSolicitud(modalEliminar.solicitud.id)
     
     if (result.success) {
-      console.log('✅ Solicitud eliminada correctamente')
+      console.log('✅ Solicitud eliminada correctamente:', result.data)
+      
+      // Remover de la lista local para actualización inmediata
+      const index = solicitudes.value.findIndex(s => s.id === modalEliminar.solicitud.id)
+      if (index !== -1) {
+        solicitudes.value.splice(index, 1)
+      }
+      
       cerrarModalEliminar()
-      await cargarSolicitudes() // Recargar lista
+      await cargarEstadisticas() // Actualizar contadores
+      
+      // Mostrar mensaje de éxito del servidor
+      if (result.data?.mensaje) {
+        console.log('📋 Servidor:', result.data.mensaje)
+      }
     } else {
       console.error('❌ Error al eliminar:', result.error)
-      alert('Error al eliminar la solicitud: ' + result.error)
+      error.value = `Error al eliminar: ${result.error}`
     }
   } catch (err) {
     console.error('❌ Error inesperado:', err)
-    alert('Error inesperado al eliminar la solicitud')
+    const errorMsg = err.response?.data?.detail || err.message || 'Error desconocido'
+    error.value = `Error al eliminar: ${errorMsg}`
   } finally {
     eliminando.value = false
   }
