@@ -961,12 +961,12 @@ const logout = () => {
 }
 
 .filters-card {
-  background: rgba(255, 255, 255, 0.95);
+  background: linear-gradient(135deg, #f8faff 0%, #f0f7ff 50%, #ffffff 100%);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid #0c4a6e;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(12, 74, 110, 0.15), 0 2px 4px rgba(12, 74, 110, 0.1);
 }
 
 .filters-header {
@@ -975,7 +975,7 @@ const logout = () => {
   align-items: center;
   margin-bottom: 16px;
   padding-bottom: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(12, 74, 110, 0.15);
 }
 
 .filters-header h3 {
@@ -1029,7 +1029,7 @@ const logout = () => {
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   padding-top: 16px;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(12, 74, 110, 0.15);
   width: 100%;
 }
 
@@ -1039,10 +1039,10 @@ const logout = () => {
   justify-content: center;
   gap: 10px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(12, 74, 110, 0.2);
   border-radius: 10px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 6px rgba(12, 74, 110, 0.08);
   transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
@@ -1052,8 +1052,9 @@ const logout = () => {
 }
 
 .stat-compact:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(12, 74, 110, 0.15);
+  border-color: rgba(12, 74, 110, 0.3);
 }
 
 .stat-compact::before {
@@ -3611,8 +3612,12 @@ const logout = () => {
 
 /* Modo oscuro support */
 @media (prefers-color-scheme: dark) {
+  .filters-card {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+    border-color: #0ea5e9;
+  }
+  
   .stat-card,
-  .filters-card,
   .solicitud-card-preview,
   .loading-state,
   .error-state,
@@ -3665,6 +3670,11 @@ const logout = () => {
     background: rgba(55, 65, 81, 0.8);
     color: #e5e7eb;
     border-color: rgba(75, 85, 99, 0.5);
+  }
+
+  .stat-compact {
+    background: rgba(55, 65, 81, 0.8);
+    border-color: rgba(14, 165, 233, 0.3);
   }
 
   .preview-user-complete,
