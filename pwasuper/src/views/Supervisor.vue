@@ -341,14 +341,14 @@
         <div class="sticky bottom-0 bg-white rounded-b-2xl border-t border-gray-200 px-6 py-4">
           <div class="flex space-x-3">
             <button 
-              @click="aprobarSolicitudDesdeModal"
-              :disabled="procesando === solicitudSeleccionada?.id"
+              @click="aprobarSolicitud(solicitudSeleccionada)"
+              :disabled="procesando"
               class="flex-1 px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
-              {{ procesando === solicitudSeleccionada?.id ? 'Procesando...' : 'Aprobar Solicitud' }}
+              {{ procesando ? 'Procesando...' : 'Aprobar Solicitud' }}
             </button>
             
             <button 
@@ -560,14 +560,14 @@
       <div class="sticky bottom-0 bg-white rounded-b-2xl border-t border-gray-200 px-4 py-3">
         <div class="flex space-x-2">
           <button 
-            @click="aprobarSolicitudDesdeModal"
-            :disabled="procesando === solicitudSeleccionada?.id"
+            @click="aprobarSolicitud(solicitudSeleccionada)"
+            :disabled="procesando"
             class="flex-1 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center disabled:opacity-50 font-medium text-xs"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
             </svg>
-            {{ procesando === solicitudSeleccionada?.id ? 'Procesando...' : 'Aprobar Solicitud' }}
+            {{ procesando ? 'Procesando...' : 'Aprobar Solicitud' }}
           </button>
           
           <button 
