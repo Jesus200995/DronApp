@@ -994,50 +994,6 @@ function abrirModalAprobacion(solicitud) {
   mostrarModalAprobacion.value = true
 }
 
-// Función para cerrar modal de aprobación
-function cerrarModalAprobacion() {
-  mostrarModalAprobacion.value = false
-  solicitudSeleccionada.value = null
-  observacionesAprobacion.value = ''
-}
-
-// Función para confirmar aprobación
-async function confirmarAprobacion() {
-  if (!solicitudSeleccionada.value) return
-  
-  const solicitudId = solicitudSeleccionada.value.id
-  procesando.value = solicitudId
-  
-  try {
-    console.log(`✅ Aprobando solicitud ${solicitudId}...`)
-    
-    const resultado = await SolicitudesService.aprobarSolicitud(solicitudId, observacionesAprobacion.value)
-    
-    if (resultado.success) {
-      // Remover la solicitud de la lista local
-      solicitudes.value = solicitudes.value.filter(s => s.id !== solicitudId)
-      
-      // Actualizar estadísticas
-      estadisticas.value.pendientes = Math.max(0, estadisticas.value.pendientes - 1)
-      estadisticas.value.aprobadas = estadisticas.value.aprobadas + 1
-      
-      mostrarNotificacion('Solicitud aprobada exitosamente', 'success')
-      cerrarModalAprobacion()
-      
-      console.log(`✅ Solicitud ${solicitudId} aprobada correctamente`)
-    } else {
-      console.error('❌ Error del servicio:', resultado.error)
-      mostrarNotificacion(resultado.error || 'Error al aprobar solicitud', 'error')
-    }
-    
-  } catch (error) {
-    console.error('❌ Error aprobando solicitud:', error)
-    mostrarNotificacion('Error inesperado al aprobar solicitud', 'error')
-  } finally {
-    procesando.value = null
-  }
-}
-
 // Función para confirmar rechazo
 async function confirmarRechazo() {
   if (!solicitudSeleccionada.value) return
