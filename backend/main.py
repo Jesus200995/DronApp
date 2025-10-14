@@ -52,6 +52,36 @@ conn = None
 cursor = None
 use_sqlite = True
 
+def reiniciar_conexion_db():
+    """Función para reiniciar completamente la conexión a la base de datos"""
+    global conn, cursor
+    print("🔄 Reiniciando conexión a la base de datos...")
+    try:
+        if conn:
+            conn.close()
+    except:
+        pass
+    return conectar_base_datos()
+
+def manejar_error_db(e, operacion="operación"):
+    """Función para manejar errores de base de datos de manera consistente"""
+    error_msg = str(e).lower()
+    if "transaction is aborted" in error_msg or "commands ignored until end of transaction block" in error_msg:
+        print(f"🔄 Transacción abortada en {operacion}, reiniciando conexión...")
+        try:
+            conn.close()
+        except:
+            pass
+        reiniciar_conexion_db()
+        raise HTTPException(status_code=500, detail=f"Error de transacción en {operacion}, por favor reintentar")
+    else:
+        try:
+            conn.rollback()
+        except:
+            pass
+        print(f"❌ Error de PostgreSQL en {operacion}: {e}")
+        raise HTTPException(status_code=500, detail=f"Error de base de datos en {operacion}: {str(e)}")
+
 def conectar_base_datos():
     """Función para establecer/reestablecer conexión a la base de datos"""
     global conn, cursor, use_sqlite
@@ -1700,9 +1730,7 @@ async def crear_solicitud_dron(
     except HTTPException:
         raise
     except psycopg2.Error as e:
-        conn.rollback()
-        print(f"❌ Error de PostgreSQL en solicitud: {e}")
-        raise HTTPException(status_code=500, detail=f"Error de base de datos: {str(e)}")
+        manejar_error_db(e, "creación de solicitud")
     except Exception as e:
         conn.rollback()
         print(f"❌ Error general en solicitud: {e}")
@@ -1848,6 +1876,8 @@ async def obtener_solicitudes(
         
     except HTTPException:
         raise
+    except psycopg2.Error as e:
+        manejar_error_db(e, "obtención de solicitudes")
     except Exception as e:
         import traceback
         error_trace = traceback.format_exc()
@@ -3002,6 +3032,8 @@ async def consultar_asistencia_hoy(usuario_id: int):
                     "asistencia": None
                 }
                 
+    except psycopg2.Error as e:
+        manejar_error_db(e, "consulta de asistencia")
     except Exception as e:
         print(f"❌ Error consultando asistencia del día: {e}")
         raise HTTPException(status_code=500, detail=f"Error consultando asistencia: {str(e)}")
@@ -3051,6 +3083,8 @@ async def obtener_registros_usuario(usuario_id: int):
                 "total": len(registros)
             }
                 
+    except psycopg2.Error as e:
+        manejar_error_db(e, "obtención de registros")
     except Exception as e:
         print(f"❌ Error obteniendo registros: {e}")
         raise HTTPException(status_code=500, detail=f"Error obteniendo registros: {str(e)}")
