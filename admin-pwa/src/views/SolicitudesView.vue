@@ -1592,12 +1592,11 @@ const logout = () => {
 }
 
 .solicitud-card-preview {
-  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid;
   border-radius: 20px;
-  padding: 14px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -1610,23 +1609,28 @@ const logout = () => {
 }
 
 .solicitud-card-preview:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.2);
 }
 
-.solicitud-card-preview::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  border-radius: 20px 20px 0 0;
+/* Colores según estado */
+.solicitud-card-preview.estado-pendiente {
+  background: linear-gradient(135deg, #fef3c7 0%, #fefce8 80%, #ffffff 100%);
+  border-color: #f59e0b;
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.15);
 }
 
-.solicitud-card-preview.estado-pendiente::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
-.solicitud-card-preview.estado-aprobado::before { background: linear-gradient(90deg, #10b981, #059669); }
-.solicitud-card-preview.estado-rechazado::before { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.solicitud-card-preview.estado-aprobado {
+  background: linear-gradient(135deg, #d1fae5 0%, #f0fdf4 80%, #ffffff 100%);
+  border-color: #10b981;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+}
+
+.solicitud-card-preview.estado-rechazado {
+  background: linear-gradient(135deg, #fee2e2 0%, #fef2f2 80%, #ffffff 100%);
+  border-color: #ef4444;
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.15);
+}
 
 .preview-content-top {
   flex: 1;
@@ -1652,18 +1656,47 @@ const logout = () => {
   gap: 4px;
   font-size: 11px;
   font-weight: 700;
-  color: #4b5563;
   font-family: 'Inter', sans-serif;
-  background: rgba(75, 85, 99, 0.08);
   padding: 4px 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   flex-shrink: 0;
+  border: 1px solid;
 }
 
 .preview-id svg {
   width: 12px;
   height: 12px;
-  color: #6b7280;
+}
+
+/* Colores del preview-id según estado */
+.solicitud-card-preview.estado-pendiente .preview-id {
+  background: rgba(245, 158, 11, 0.1);
+  color: #92400e;
+  border-color: #f59e0b;
+}
+
+.solicitud-card-preview.estado-pendiente .preview-id svg {
+  color: #f59e0b;
+}
+
+.solicitud-card-preview.estado-aprobado .preview-id {
+  background: rgba(16, 185, 129, 0.1);
+  color: #065f46;
+  border-color: #10b981;
+}
+
+.solicitud-card-preview.estado-aprobado .preview-id svg {
+  color: #10b981;
+}
+
+.solicitud-card-preview.estado-rechazado .preview-id {
+  background: rgba(239, 68, 68, 0.1);
+  color: #991b1b;
+  border-color: #ef4444;
+}
+
+.solicitud-card-preview.estado-rechazado .preview-id svg {
+  color: #ef4444;
 }
 
 .estado-badge-modern {
@@ -1738,24 +1771,37 @@ const logout = () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.tipo-icon-container.tipo-entrada {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
-  border: 2px solid #93c5fd;
-}
-
-.tipo-icon-container.tipo-salida {
-  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-  border: 2px solid #fcd34d;
-}
-
 .tipo-icon-container svg {
   width: 20px;
   height: 20px;
-  color: #1e40af;
 }
 
-.tipo-icon-container.tipo-salida svg {
-  color: #92400e;
+/* Colores de tipo según estado de solicitud */
+.solicitud-card-preview.estado-pendiente .tipo-icon-container {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border-color: #f59e0b;
+}
+
+.solicitud-card-preview.estado-pendiente .tipo-icon-container svg {
+  color: #f59e0b;
+}
+
+.solicitud-card-preview.estado-aprobado .tipo-icon-container {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border-color: #10b981;
+}
+
+.solicitud-card-preview.estado-aprobado .tipo-icon-container svg {
+  color: #10b981;
+}
+
+.solicitud-card-preview.estado-rechazado .tipo-icon-container {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+  border-color: #ef4444;
+}
+
+.solicitud-card-preview.estado-rechazado .tipo-icon-container svg {
+  color: #ef4444;
 }
 
 .tipo-label {
@@ -1780,19 +1826,36 @@ const logout = () => {
 .user-avatar-modern {
   width: 28px;
   height: 28px;
-  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(12, 74, 110, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 2px solid;
 }
 
 .user-avatar-modern svg {
   width: 14px;
   height: 14px;
   color: white;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Colores del avatar según estado */
+.solicitud-card-preview.estado-pendiente .user-avatar-modern {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border-color: #f59e0b;
+}
+
+.solicitud-card-preview.estado-aprobado .user-avatar-modern {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #10b981;
+}
+
+.solicitud-card-preview.estado-rechazado .user-avatar-modern {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-color: #ef4444;
 }
 
 .user-details-complete {
@@ -1925,66 +1988,75 @@ const logout = () => {
 }
 
 .preview-actions-modern {
-  margin-top: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
-  min-height: 32px;
+  min-height: 50px;
   display: flex;
-  gap: 4px;
+  gap: 8px;
   justify-content: center;
+  align-items: center;
 }
 
 .action-btn-compact {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  border: none;
-  border-radius: 6px;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  flex: 1;
-  min-width: 32px;
-  max-width: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  width: 38px;
+  height: 38px;
+  backdrop-filter: blur(10px);
 }
 
 .action-btn-compact svg {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
 }
 
 .action-btn-compact.details {
   background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
   color: white;
+  border-color: rgba(12, 74, 110, 0.3);
 }
 
 .action-btn-compact.details:hover {
   background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(12, 74, 110, 0.3);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(12, 74, 110, 0.4);
+  border-color: rgba(12, 74, 110, 0.5);
 }
 
 .action-btn-compact.edit {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: white;
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .action-btn-compact.edit:hover {
-  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  border-color: rgba(16, 185, 129, 0.5);
 }
 
 .action-btn-compact.delete {
   background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
   color: white;
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .action-btn-compact.delete:hover {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+  border-color: rgba(239, 68, 68, 0.5);
 }
 
 /* Header de la tarjeta */
