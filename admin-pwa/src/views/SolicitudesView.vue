@@ -314,17 +314,39 @@
                 </div>
               </div>
 
-              <!-- Botón de acción siempre visible -->
-              <div class="preview-action-modern">
+              <!-- Botones de acción siempre visibles -->
+              <div class="preview-actions-modern">
                 <button 
                   @click="verDetalles(solicitud)"
-                  class="details-btn-modern"
+                  class="action-btn-compact details"
+                  title="Ver detalles"
                 >
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
-                  <span>Ver Detalles</span>
+                </button>
+                <button 
+                  @click="editarSolicitud(solicitud)"
+                  class="action-btn-compact edit"
+                  title="Editar solicitud"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+                <button 
+                  @click="confirmarEliminar(solicitud)"
+                  class="action-btn-compact delete"
+                  title="Eliminar solicitud"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3,6 5,6 21,6"/>
+                    <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
+                    <line x1="10" y1="11" x2="10" y2="17"/>
+                    <line x1="14" y1="11" x2="14" y2="17"/>
+                  </svg>
                 </button>
               </div>
             </div>
@@ -332,6 +354,127 @@
         </div>
       </div>
     </main>
+
+    <!-- Modal de edición -->
+    <div v-if="modalEdicion.mostrar" class="modal-overlay" @click="cerrarModalEdicion">
+      <div class="modal-container modal-edicion" @click.stop>
+        <div class="modal-header">
+          <h3>
+            <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Editar Solicitud #{{ modalEdicion.solicitud?.id }}
+          </h3>
+          <button @click="cerrarModalEdicion" class="modal-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body" v-if="modalEdicion.solicitud">
+          <form @submit.prevent="guardarCambios" class="edit-form">
+            <div class="form-group">
+              <label>Estado:</label>
+              <select v-model="modalEdicion.datos.estado" class="form-select">
+                <option value="pendiente">Pendiente</option>
+                <option value="aprobado">Aprobado</option>
+                <option value="rechazado">Rechazado</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Observaciones:</label>
+              <textarea 
+                v-model="modalEdicion.datos.observaciones" 
+                class="form-textarea"
+                rows="4"
+                placeholder="Agregar observaciones..."
+              ></textarea>
+            </div>
+          </form>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="cerrarModalEdicion" class="modal-btn cancel-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          </button>
+          <button @click="guardarCambios" class="modal-btn save-btn" :disabled="guardando">
+            <svg v-if="!guardando" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9,11 12,14 22,4"/>
+              <path d="M21,12v7a2,2,0,0,1-2,2H5a2,2,0,0,1-2-2V5a2,2,0,0,1,2-2h11"/>
+            </svg>
+            <div v-else class="loading-spinner-small"></div>
+            {{ guardando ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de confirmación de eliminación -->
+    <div v-if="modalEliminar.mostrar" class="modal-overlay" @click="cerrarModalEliminar">
+      <div class="modal-container modal-eliminar" @click.stop>
+        <div class="modal-header delete-header">
+          <h3>
+            <svg class="modal-title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            Eliminar Solicitud
+          </h3>
+          <button @click="cerrarModalEliminar" class="modal-close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="delete-confirmation">
+            <div class="warning-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h4>¿Estás seguro de que deseas eliminar esta solicitud?</h4>
+            <p>Esta acción no se puede deshacer. Se eliminará permanentemente:</p>
+            <div class="solicitud-info">
+              <strong>Solicitud #{{ modalEliminar.solicitud?.id }}</strong>
+              <span>{{ modalEliminar.solicitud?.usuario?.nombre_completo || modalEliminar.solicitud?.tecnico?.nombre }}</span>
+              <span>{{ modalEliminar.solicitud?.tipo?.toUpperCase() }} - {{ modalEliminar.solicitud?.estado?.toUpperCase() }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button @click="cerrarModalEliminar" class="modal-btn cancel-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+            Cancelar
+          </button>
+          <button @click="eliminarSolicitud" class="modal-btn delete-btn" :disabled="eliminando">
+            <svg v-if="!eliminando" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3,6 5,6 21,6"/>
+              <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"/>
+            </svg>
+            <div v-else class="loading-spinner-small"></div>
+            {{ eliminando ? 'Eliminando...' : 'Eliminar' }}
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Modal de detalles -->
     <div v-if="modalDetalles.mostrar" class="modal-overlay" @click="cerrarModalDetalles">
@@ -585,6 +728,26 @@ const modalDetalles = reactive({
   solicitud: null
 })
 
+// Modal de edición
+const modalEdicion = reactive({
+  mostrar: false,
+  solicitud: null,
+  datos: {
+    estado: '',
+    observaciones: ''
+  }
+})
+
+// Modal de eliminación
+const modalEliminar = reactive({
+  mostrar: false,
+  solicitud: null
+})
+
+// Estados de carga
+const guardando = ref(false)
+const eliminando = ref(false)
+
 // Métodos
 const cargarSolicitudes = async () => {
   cargando.value = true
@@ -649,6 +812,83 @@ const verDetalles = (solicitud) => {
 const cerrarModalDetalles = () => {
   modalDetalles.mostrar = false
   modalDetalles.solicitud = null
+}
+
+const editarSolicitud = (solicitud) => {
+  console.log('✏️ Editando solicitud #', solicitud.id)
+  modalEdicion.solicitud = { ...solicitud }
+  modalEdicion.datos.estado = solicitud.estado
+  modalEdicion.datos.observaciones = solicitud.observaciones || ''
+  modalEdicion.mostrar = true
+}
+
+const cerrarModalEdicion = () => {
+  modalEdicion.mostrar = false
+  modalEdicion.solicitud = null
+  modalEdicion.datos.estado = ''
+  modalEdicion.datos.observaciones = ''
+}
+
+const guardarCambios = async () => {
+  if (!modalEdicion.solicitud) return
+  
+  guardando.value = true
+  try {
+    const datos = {
+      estado: modalEdicion.datos.estado,
+      observaciones: modalEdicion.datos.observaciones
+    }
+    
+    const result = await solicitudesService.actualizarSolicitud(modalEdicion.solicitud.id, datos)
+    
+    if (result.success) {
+      console.log('✅ Solicitud actualizada correctamente')
+      cerrarModalEdicion()
+      await cargarSolicitudes() // Recargar lista
+    } else {
+      console.error('❌ Error al actualizar:', result.error)
+      alert('Error al actualizar la solicitud: ' + result.error)
+    }
+  } catch (err) {
+    console.error('❌ Error inesperado:', err)
+    alert('Error inesperado al actualizar la solicitud')
+  } finally {
+    guardando.value = false
+  }
+}
+
+const confirmarEliminar = (solicitud) => {
+  console.log('🗑️ Confirmando eliminación de solicitud #', solicitud.id)
+  modalEliminar.solicitud = { ...solicitud }
+  modalEliminar.mostrar = true
+}
+
+const cerrarModalEliminar = () => {
+  modalEliminar.mostrar = false
+  modalEliminar.solicitud = null
+}
+
+const eliminarSolicitud = async () => {
+  if (!modalEliminar.solicitud) return
+  
+  eliminando.value = true
+  try {
+    const result = await solicitudesService.eliminarSolicitud(modalEliminar.solicitud.id)
+    
+    if (result.success) {
+      console.log('✅ Solicitud eliminada correctamente')
+      cerrarModalEliminar()
+      await cargarSolicitudes() // Recargar lista
+    } else {
+      console.error('❌ Error al eliminar:', result.error)
+      alert('Error al eliminar la solicitud: ' + result.error)
+    }
+  } catch (err) {
+    console.error('❌ Error inesperado:', err)
+    alert('Error inesperado al eliminar la solicitud')
+  } finally {
+    eliminando.value = false
+  }
 }
 
 const formatearFecha = (fechaISO) => {
@@ -1572,43 +1812,67 @@ const logout = () => {
   height: 10px;
 }
 
-.preview-action-modern {
+.preview-actions-modern {
   margin-top: 8px;
   flex-shrink: 0;
-  min-height: 36px;
+  min-height: 32px;
+  display: flex;
+  gap: 4px;
+  justify-content: center;
 }
 
-.details-btn-modern {
-  width: 100%;
+.action-btn-compact {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 6px 10px;
-  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  padding: 6px;
   border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 8px;
-  font-weight: 700;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   font-family: 'Inter', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 4px rgba(12, 74, 110, 0.2);
-  min-height: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-width: 32px;
+  max-width: 40px;
 }
 
-.details-btn-modern:hover {
+.action-btn-compact svg {
+  width: 14px;
+  height: 14px;
+}
+
+.action-btn-compact.details {
+  background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%);
+  color: white;
+}
+
+.action-btn-compact.details:hover {
   background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(12, 74, 110, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(12, 74, 110, 0.3);
 }
 
-.details-btn-modern svg {
-  width: 10px;
-  height: 10px;
+.action-btn-compact.edit {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+}
+
+.action-btn-compact.edit:hover {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+}
+
+.action-btn-compact.delete {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.action-btn-compact.delete:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3);
 }
 
 /* Header de la tarjeta */
@@ -2702,6 +2966,180 @@ const logout = () => {
   height: 12px;
 }
 
+/* Modales de edición y eliminación */
+.modal-edicion, .modal-eliminar {
+  max-width: 500px;
+}
+
+.delete-header {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(255, 255, 255, 0.8) 100%);
+}
+
+.delete-header h3 {
+  color: #dc2626;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  font-family: 'Inter', sans-serif;
+}
+
+.form-select {
+  padding: 8px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  background: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.form-select:focus {
+  outline: none;
+  border-color: #0c4a6e;
+  box-shadow: 0 0 0 3px rgba(12, 74, 110, 0.1);
+}
+
+.form-textarea {
+  padding: 10px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+  background: white;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.2s ease;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #0c4a6e;
+  box-shadow: 0 0 0 3px rgba(12, 74, 110, 0.1);
+}
+
+.delete-confirmation {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.warning-icon {
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #dc2626;
+  margin-bottom: 8px;
+}
+
+.warning-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.delete-confirmation h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+}
+
+.delete-confirmation p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
+}
+
+.solicitud-info {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  width: 100%;
+}
+
+.solicitud-info strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  font-family: 'Inter', sans-serif;
+}
+
+.solicitud-info span {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'Inter', sans-serif;
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.delete-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.cancel-btn {
+  background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.loading-spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
 /* === RESPONSIVE STYLES === */
 @media (max-width: 1400px) {
   .solicitudes-grid {
@@ -2742,10 +3180,15 @@ const logout = () => {
     padding: 12px;
   }
 
-  .details-btn-modern {
-    font-size: 8px;
-    padding: 6px 10px;
-    min-height: 28px;
+  .action-btn-compact {
+    padding: 5px;
+    min-width: 28px;
+    max-width: 35px;
+  }
+  
+  .action-btn-compact svg {
+    width: 12px;
+    height: 12px;
   }
 
   .stats-compact {
@@ -2961,9 +3404,15 @@ const logout = () => {
     min-height: 26px;
   }
 
-  .details-btn-modern svg {
-    width: 10px;
-    height: 10px;
+  .action-btn-compact {
+    padding: 4px;
+    min-width: 26px;
+    max-width: 32px;
+  }
+  
+  .action-btn-compact svg {
+    width: 11px;
+    height: 11px;
   }
 
   .modal-overlay {
@@ -3429,9 +3878,15 @@ const logout = () => {
     min-height: 24px;
   }
 
-  .details-btn-modern svg {
-    width: 9px;
-    height: 9px;
+  .action-btn-compact {
+    padding: 3px;
+    min-width: 24px;
+    max-width: 28px;
+  }
+  
+  .action-btn-compact svg {
+    width: 10px;
+    height: 10px;
   }
 
   .stats-compact {

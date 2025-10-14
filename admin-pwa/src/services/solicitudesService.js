@@ -116,6 +116,48 @@ const solicitudesService = {
   },
 
   /**
+   * Actualizar una solicitud completa (usando endpoint de admin)
+   */
+  async actualizarSolicitud(solicitudId, datos) {
+    try {
+      // Usar endpoint específico de admin para mayor flexibilidad
+      const response = await api.put(`/admin/solicitudes/${solicitudId}`, datos)
+      
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      console.error('Error actualizando solicitud completa:', error)
+      return {
+        success: false,
+        error: error.response?.data?.detail || error.message || 'Error desconocido'
+      }
+    }
+  },
+
+  /**
+   * Eliminar una solicitud (usando endpoint de admin)
+   */
+  async eliminarSolicitud(solicitudId) {
+    try {
+      // Usar endpoint específico de admin
+      const response = await api.delete(`/admin/solicitudes/${solicitudId}`)
+      
+      return {
+        success: true,
+        data: response.data
+      }
+    } catch (error) {
+      console.error('Error eliminando solicitud:', error)
+      return {
+        success: false,
+        error: error.response?.data?.detail || error.message || 'Error desconocido'
+      }
+    }
+  },
+
+  /**
    * Obtener solicitudes para supervisor (endpoint específico)
    */
   async obtenerSolicitudesSupervisor() {

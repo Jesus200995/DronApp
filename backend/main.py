@@ -3097,6 +3097,160 @@ async def obtener_registros_usuario(usuario_id: int):
         print(f"❌ Error obteniendo registros: {e}")
         raise HTTPException(status_code=500, detail=f"Error obteniendo registros: {str(e)}")
 
+# Modelos para actualización de solicitudes por admin
+class SolicitudAdminUpdate(BaseModel):
+    estado: Optional[str] = None
+    observaciones: Optional[str] = None
+
+@app.put("/admin/solicitudes/{solicitud_id}")
+async def actualizar_solicitud_admin(
+    solicitud_id: int,
+    datos: SolicitudAdminUpdate
+):
+    """Actualizar una solicitud desde el panel de administración"""
+    try:
+        print(f"👤 Admin actualizando solicitud {solicitud_id}")
+        
+        verificar_conexion_db()
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la solicitud existe
+        if use_sqlite:
+            cursor.execute("SELECT id, estado, observaciones FROM solicitudes_dron WHERE id = ?", (solicitud_id,))
+        else:
+            cursor.execute("SELECT id, estado, observaciones FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        # Preparar datos de actualización
+        updates = []
+        params = []
+        cambios = {}
+        
+        if datos.estado is not None:
+            if datos.estado not in ['pendiente', 'aprobado', 'rechazado']:
+                raise HTTPException(status_code=400, detail="Estado inválido")
+            updates.append("estado = ?" if use_sqlite else "estado = %s")
+            params.append(datos.estado)
+            cambios['estado_anterior'] = solicitud[1] if not use_sqlite else solicitud['estado']
+            cambios['estado_nuevo'] = datos.estado
+        
+        if datos.observaciones is not None:
+            updates.append("observaciones = ?" if use_sqlite else "observaciones = %s")
+            params.append(datos.observaciones)
+            cambios['observaciones_anterior'] = solicitud[2] if not use_sqlite else solicitud['observaciones']
+            cambios['observaciones_nueva'] = datos.observaciones
+        
+        if not updates:
+            raise HTTPException(status_code=400, detail="No hay datos para actualizar")
+        
+        # Actualizar solicitud
+        params.append(solicitud_id)
+        query = f"UPDATE solicitudes_dron SET {', '.join(updates)} WHERE id = ?" if use_sqlite else f"UPDATE solicitudes_dron SET {', '.join(updates)} WHERE id = %s"
+        cursor.execute(query, params)
+        
+        # Registrar en historial
+        if use_sqlite:
+            cursor.execute("""
+                INSERT INTO historial_solicitudes 
+                (solicitud_id, usuario_id, accion, fecha_hora, cambios)
+                VALUES (?, 0, 'admin_update', datetime('now'), ?)
+            """, (solicitud_id, json.dumps(cambios)))
+        else:
+            cursor.execute("""
+                INSERT INTO historial_solicitudes 
+                (solicitud_id, usuario_id, accion, fecha_hora, cambios)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (solicitud_id, 0, 'admin_update', datetime.now(CDMX_TZ), json.dumps(cambios)))
+        
+        conn.commit()
+        
+        print(f"✅ Solicitud {solicitud_id} actualizada por admin")
+        
+        return {
+            "status": "ok",
+            "mensaje": "Solicitud actualizada exitosamente",
+            "solicitud_id": solicitud_id,
+            "cambios": cambios
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"❌ Error actualizando solicitud admin: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al actualizar solicitud: {str(e)}")
+
+@app.delete("/admin/solicitudes/{solicitud_id}")
+async def eliminar_solicitud_admin(solicitud_id: int):
+    """Eliminar una solicitud desde el panel de administración"""
+    try:
+        print(f"🗑️ Admin eliminando solicitud {solicitud_id}")
+        
+        verificar_conexion_db()
+        if not conn:
+            raise HTTPException(status_code=500, detail="No hay conexión a la base de datos")
+        
+        # Verificar que la solicitud existe
+        if use_sqlite:
+            cursor.execute("SELECT id, estado, tipo FROM solicitudes_dron WHERE id = ?", (solicitud_id,))
+        else:
+            cursor.execute("SELECT id, estado, tipo FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        
+        solicitud = cursor.fetchone()
+        
+        if not solicitud:
+            raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+        
+        # Registrar eliminación en historial antes de eliminar
+        cambios_eliminacion = {
+            "estado": solicitud[1] if not use_sqlite else solicitud['estado'],
+            "tipo": solicitud[2] if not use_sqlite else solicitud['tipo'],
+            "motivo": "Eliminación por administrador"
+        }
+        
+        if use_sqlite:
+            cursor.execute("""
+                INSERT INTO historial_solicitudes 
+                (solicitud_id, usuario_id, accion, fecha_hora, cambios)
+                VALUES (?, 0, 'admin_delete', datetime('now'), ?)
+            """, (solicitud_id, json.dumps(cambios_eliminacion)))
+        else:
+            cursor.execute("""
+                INSERT INTO historial_solicitudes 
+                (solicitud_id, usuario_id, accion, fecha_hora, cambios)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (solicitud_id, 0, 'admin_delete', datetime.now(CDMX_TZ), json.dumps(cambios_eliminacion)))
+        
+        # Eliminar la solicitud
+        if use_sqlite:
+            cursor.execute("DELETE FROM solicitudes_dron WHERE id = ?", (solicitud_id,))
+        else:
+            cursor.execute("DELETE FROM solicitudes_dron WHERE id = %s", (solicitud_id,))
+        
+        conn.commit()
+        
+        print(f"✅ Solicitud {solicitud_id} eliminada por admin")
+        
+        return {
+            "status": "ok",
+            "mensaje": "Solicitud eliminada exitosamente",
+            "solicitud_id": solicitud_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        if conn:
+            conn.rollback()
+        print(f"❌ Error eliminando solicitud admin: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al eliminar solicitud: {str(e)}")
+
 if __name__ == "__main__":
     import uvicorn
     # Conectar a la base de datos antes de iniciar el servidor
