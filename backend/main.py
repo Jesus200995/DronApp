@@ -2765,6 +2765,135 @@ async def obtener_actividades_usuario(
         print(f"❌ Error al consultar actividades: {e}")
         raise HTTPException(status_code=500, detail=f"Error al obtener actividades: {str(e)}")
 
+@app.get("/supervisor/actividades/{supervisor_id}")
+async def obtener_actividades_supervisor(
+    supervisor_id: int,
+    limit: Optional[int] = 50,
+    offset: Optional[int] = 0,
+    tipo_actividad: Optional[str] = None
+):
+    """Obtener todas las actividades registradas por los técnicos asignados a un supervisor"""
+    try:
+        print(f"📋 Consultando actividades para supervisor {supervisor_id}")
+        
+        # Validar que supervisor_id no sea None o 0
+        if supervisor_id is None or supervisor_id <= 0:
+            print(f"❌ Supervisor ID inválido: {supervisor_id}")
+            raise HTTPException(status_code=422, detail="ID de supervisor inválido")
+        
+        # Verificar y limpiar conexión
+        if not verificar_conexion_db():
+            raise HTTPException(status_code=500, detail="No se pudo conectar a la base de datos")
+        
+        # Primero obtener los IDs de técnicos asignados a este supervisor
+        tecnicos_query = "SELECT id FROM usuarios WHERE rol = 'tecnico' AND supervisor_id = %s"
+        tecnicos_result = ejecutar_consulta_segura(tecnicos_query, [supervisor_id], fetch_type='all')
+        
+        if not tecnicos_result:
+            print(f"⚠️ No hay técnicos asignados al supervisor {supervisor_id}")
+            return {
+                "actividades": [],
+                "total": 0,
+                "supervisor_id": supervisor_id,
+                "mensaje": "No hay técnicos asignados a este supervisor"
+            }
+        
+        tecnicos_ids = [t[0] for t in tecnicos_result]
+        print(f"👥 Técnicos encontrados: {tecnicos_ids}")
+        
+        # Verificar si PostGIS está disponible
+        try:
+            test_query = "SELECT 1 WHERE EXISTS (SELECT proname FROM pg_proc WHERE proname = 'st_x')"
+            test_result = ejecutar_consulta_segura(test_query, [], fetch_type='one')
+            postigs_available = test_result is not None
+        except:
+            postigs_available = False
+            
+        print(f"🗺️ PostGIS disponible: {postigs_available}")
+        
+        # Construir placeholders para la consulta IN
+        placeholders = ','.join(['%s'] * len(tecnicos_ids))
+        
+        # Construir consulta base según disponibilidad de PostGIS
+        if postigs_available:
+            query = f"""
+                SELECT a.id, a.usuario_id, a.fecha_hora, a.tipo_actividad, 
+                       a.descripcion, a.imagen,
+                       ST_X(a.ubicacion::geometry) as longitud, ST_Y(a.ubicacion::geometry) as latitud,
+                       u.nombre, u.puesto, u.correo
+                FROM actividades_dron a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                WHERE a.usuario_id IN ({placeholders})
+            """
+        else:
+            print("⚠️ PostGIS no disponible, usando coordenadas NULL")
+            query = f"""
+                SELECT a.id, a.usuario_id, a.fecha_hora, a.tipo_actividad, 
+                       a.descripcion, a.imagen,
+                       NULL as longitud, NULL as latitud,
+                       u.nombre, u.puesto, u.correo
+                FROM actividades_dron a
+                LEFT JOIN usuarios u ON a.usuario_id = u.id
+                WHERE a.usuario_id IN ({placeholders})
+            """
+        
+        params = list(tecnicos_ids)
+        
+        # Agregar filtro por tipo si se especifica
+        if tipo_actividad:
+            query += " AND a.tipo_actividad = %s"
+            params.append(tipo_actividad)
+        
+        # Ordenar por fecha más reciente y aplicar límites
+        query += " ORDER BY a.fecha_hora DESC LIMIT %s OFFSET %s"
+        params.extend([limit, offset])
+        
+        registros = ejecutar_consulta_segura(query, params, fetch_type='all')
+        
+        if not registros:
+            registros = []
+        
+        actividades = []
+        for registro in registros:
+            actividad = {
+                "id": registro[0],
+                "usuario_id": registro[1],
+                "fecha_hora": registro[2].isoformat() if registro[2] else None,
+                "tipo_actividad": registro[3],
+                "descripcion": registro[4],
+                "imagen": registro[5],
+                "ubicacion": {
+                    "longitud": float(registro[6]) if registro[6] else None,
+                    "latitud": float(registro[7]) if registro[7] else None
+                },
+                "tecnico": {
+                    "nombre": registro[8],
+                    "puesto": registro[9],
+                    "correo": registro[10] if len(registro) > 10 else None
+                }
+            }
+            actividades.append(actividad)
+        
+        print(f"✅ Encontradas {len(actividades)} actividades de técnicos del supervisor {supervisor_id}")
+        
+        return {
+            "actividades": actividades,
+            "total": len(actividades),
+            "supervisor_id": supervisor_id,
+            "tecnicos_count": len(tecnicos_ids),
+            "filtros": {
+                "tipo_actividad": tipo_actividad,
+                "limit": limit,
+                "offset": offset
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error al consultar actividades del supervisor: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al obtener actividades: {str(e)}")
+
 @app.delete("/actividades/{id}")
 async def eliminar_actividad(
     id: int,
